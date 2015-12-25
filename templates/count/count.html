@@ -1,0 +1,89 @@
+{% extends "count/base.html" %}
+{% block title %}Bike And Walk Web{% endblock %}
+{% block body %}
+<div id="modalDiv"></div>
+<div id="contain">
+	<div id="menuContain">
+		<p onclick="showMenu()" id="menuButton">...</p>
+		<div id="menuList">
+			<ul>
+				<li onclick="showCountPage()">Show Count Page</li>
+				<li onclick="showFormPage()">Show Form Page</li>
+				<li onclick="submitReport()">Submit Report</li>
+			</ul>
+		</div>
+	</div>
+	<div id="countContain">
+		<p id="countName"><strong>{{ location.locationName }}</strong></p>
+		<p id="eastWestStreetName"><img class="arrows" src="{{ url_for('static', filename='count/images/arrows/EastToWest.png') }}" />&nbsp;{{ location.EW_Street }}&nbsp;<img class="arrows" src="{{ url_for('static', filename='count/images/arrows/WestToEast.png') }}" /></p>
+		<p id="northSouthStreetName"><img class="arrows" src="{{ url_for('static', filename='count/images/arrows/EastToWest.png') }}" />&nbsp;{{ location.NS_Street}}&nbsp;<img class="arrows" src="{{ url_for('static', filename='count/images/arrows/WestToEast.png') }}" /></p>
+		<div id="streetPattern">
+		<!-- The traffic counting layout -->
+			<p id="northWay" >
+				<span id="A3" name="AD" class="entry N_Entry">A3</span><img class="shoulder" src="{{ url_for('static', filename='count/images/spacer.png') }}" />
+				<span id="A2" name="AC" class="entry N_Entry">A2</span><img class="shoulder" src="{{ url_for('static', filename='count/images/spacer.png') }}" />
+				<span id="A1" name="AB" class="entry N_Entry">A1</span>
+			</p>
+			<p class="eastWestWay" >
+				<span id="D1" name="DA" class="entry W_Entry">D1</span><img class="intersection" src="{{ url_for('static', filename='count/images/spacer.png') }}" /><span id="B3" name="BA" class="entry E_Entry">B3</span>
+			</p>                                                                                                                                                 
+			<p class="eastWestWay" >                                                                                                                             
+				<span id="D2" name="DB" class="entry W_Entry">D2</span><img class="intersection" src="{{ url_for('static', filename='count/images/spacer.png') }}" /><span id="B2" name="BD" class="entry E_Entry">B2</span>
+			</p>                                                                                                                                                 
+			<p class="eastWestWay" >                                                                                                                             
+				<span id="D3" name="DC" class="entry W_Entry">D3</span><img class="intersection" src="{{ url_for('static', filename='count/images/spacer.png') }}" /><span id="B1" name="BC" class="entry E_Entry">B1</span>
+			</p>
+			<p id="southWay" >
+				<span id="C1" name="CD" class="entry S_Entry">C1</span><img class="shoulder" src="{{ url_for('static', filename='count/images/spacer.png') }}" />
+				<span id="C2" name="CA" class="entry S_Entry">C2</span><img class="shoulder" src="{{ url_for('static', filename='count/images/spacer.png') }}" />
+				<span id="C3" name="CB" class="entry S_Entry">C3</span>
+			</p>
+		</div>
+		<div id="travelerList">
+			{% for elem in range(g.travelerCnt) %}
+				<p id="traveler_{{travelers[elem].row}}" class="traveler" name="{{travelers[elem].ID}}"
+					style="background-image:url({{travelers[elem].iconURL}});"
+				>
+					<span id="Cnt_traveler_{{travelers[elem].row}}" class="travelerCnt"></span>
+				</p>
+				{% endfor %}
+		</div>
+		<p class="clear"></p>
+		<p id="undoCounts" >Clear</p>
+	</div>
+	<div id="infoContain">
+		<!-- User and location information -->
+		<form id="countInfo" method="post" action="#" onSubmit="return false">
+			<input id="location" type="hidden" value="{{ location.ID }}" >
+			<input id="countEvent" type="hidden" value="{{ event.ID }}" >
+			<p>Counting Location ID: <br />
+				<input id="countingLocationUID" name="countingLocationUID" type="text" value="{{ g.UID }}" disabled="disabled" /></p>
+			<p>Location Name: <br />
+				<input name="locationName" type="text" value="{{ location.locationName }}" disabled="disabled" /></p>
+			<p>Street running North to South: <br />
+				<input name="NS_streetName" type="text" value="{{ location.NS_Street }}" disabled="disabled" /></p>
+			<p>Street running East to West: <br />
+				<input name="EW_streetName" type="text" value="{{ location.EW_Street }}" disabled="disabled" /></p>
+			<p>Your name: <br />
+				<input name="counterName" type="text" value="{{user.name}}" disabled="disabled" /></p>
+			<p>Weather: <select name="weather" >
+					<option disabled="disabled" selected="selected" >Select...</option>
+					<option >Fair</option>
+					<option >Rainy</option>
+					<option >Very cold</option>
+				</select>
+			</p>
+			<p id="buttonRow">
+				<input type="reset" value="Reset">&nbsp;&nbsp;&nbsp;&nbsp;
+				<input id="infoFormSubmit" type="submit" value="Save">
+			</p>
+		</form>
+	</div>
+	<div id="dataContain">
+		<p class="smallPrint">Total Count: <span id="total"></span></p>
+		<p>Data: </p>
+		<pre id="data"></pre>
+	</div>
+	<p id="footer">Bike and Walk</p>
+</div>
+{% endblock %}

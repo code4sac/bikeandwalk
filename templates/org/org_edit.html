@@ -1,0 +1,31 @@
+{% extends "layout.html" %}
+{% block title %}Edit User{% endblock %}
+{% block body %}
+  {% if g.user and g.role == 'super' %}
+	<h2>Edit Organization</h2>
+    <form action="{{ g.editURL }}{{rec.ID|default("0",true)}}/" method=post class="entry">
+		<input type=hidden name="ID" value="{{rec.ID|default("0",true)}}">
+      <dl>
+		<dd class="form_button_row" ><input type=submit value=Save>  
+			{% if rec.ID and rec.ID > 0 %}
+			&nbsp;&nbsp;<a href = "{{g.deleteURL}}{{rec.ID|default('0',true)}}/" onclick="return confirmRecordDelete();">Delete...</a>
+			{% endif %}
+			&nbsp;&nbsp;<a href="{{ g.listURL }}" >Cancel</a>
+		</dd> 
+        <dt>Name:
+        <dd><input type=text size=60 name="name" value="{{rec.name}}"/>
+        <dt>Email:
+        <dd><input type=text size=60 name="email" value="{{rec.email|default("",true)}}"/>
+        <dt>Default Time Zone:
+        <dd><select name="defaultTimeZone">
+		{% for zone in timeZones.keys() %}
+			<option value="{{zone}}" {%if rec.defaultTimeZone == zone %}selected="selected"{%endif%}>{{timeZones[zone]["longName"]}}</option>
+		{% endfor %}
+		</select>
+      </dl>
+    </form>
+ {%else%}
+ 	<p>You must <a href="#" class=signin>Sign in</a> as a super administrator to use this feature. 
+	If you are not an administrator, you may want to view our main <a href="http://www.bikeandwalk.org" target="_blank">web site</a>.</p>
+ {% endif %}
+{% endblock %}

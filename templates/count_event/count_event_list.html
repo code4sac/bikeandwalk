@@ -1,0 +1,31 @@
+{% extends "layout.html" %}
+{% block title %}{{ g.title }} List{% endblock %}
+{% block body %}
+{% if g.role == 'admin' or g.role =="super" %}
+	<h2>{{g.title}} List</h2>
+	{%if recs %}
+		<table class="datatable">
+		<tr>
+			<th>ID</th>
+			<th>Date</th>
+			<th>Start Time</th>
+			<th>End Time</th>
+		</tr>
+		{% for rec in recs %}
+	    <tr>
+			<td><a href="{{ g.editURL }}{{ rec.ID }}/">{{ rec.ID }}</a></td>
+			<td><a href="{{ g.editURL }}{{ rec.ID }}/">{{ theTime[rec.ID]["month"]}}/{{ theTime[rec.ID]["day"]}}/{{ theTime[rec.ID]["year"]}}</a></td>
+			<td>{{ theTime[rec.ID]["hour"]}}:{{ theTime[rec.ID]["strMinute"]}} {{ theTime[rec.ID]["AMPM"]}}</td>
+			<td>{{ theTime[rec.ID]["hourEnd"]}}:{{ theTime[rec.ID]["strMinuteEnd"]}} {{ theTime[rec.ID]["AMPMEnd"]}}</td>
+		</tr>
+		{% endfor %}
+	  </table>
+  	{% else %}
+    	<p><em>No {{ g.title }}s here so far</em></p>
+	{% endif %}
+  	<p id="addRecord"><a href="{{ g.editURL }}0/">Add a new {{ g.title }}</a></p>
+ {%else%}
+ 	<p>You must <a href="#" class=signin>Sign in</a> as an administrator to use this feature. 
+	If you are not an administrator, you may want to view our main <a href="http://www.bikeandwalk.org" target="_blank">web site</a>.</p>
+{% endif %}
+{% endblock %}

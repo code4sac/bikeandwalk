@@ -1,0 +1,44 @@
+{% extends "layout.html" %}
+{% block title %}Admin Center{% endblock %}
+{% block body %}
+  <h3>Welcome to the Bike and Walk Admin Area</h3>
+
+	{% if g.role == 'super' %}
+	<p><strong>Select Org:</strong>
+	<select value="orgSwitch" onchange="orgSwitch(this)">
+		{% for org in orgs %}
+		<option value="{{org.ID}}" {% if org.ID == g.orgID %}selected="selected"{% endif %}>{{org.name}}</option>
+		{% endfor %}
+	</select></p>
+	{% endif %}
+	{% if g.role == 'admin' or g.role == 'super' %}
+	{% if g.role == 'super' %}
+	<div id="super_menu" class="admin_menu">
+		<h5>Super Menu</h5>
+		<ul>
+			<li><a href="{{ url_for('org_list')}}">Organization List</a></li>
+			<li><a href="{{ url_for('feature_list')}}">Feature List</a></li>
+			<li><a href="{{ url_for('traveler_list')}}">Traveler List</a></li>
+			<li><a href="{{ url_for('org_list')}}">Trip List</a></li>
+		</ul>
+	</div>	{% endif %}
+	<div class="admin_menu">
+			<h5>Administration Menu</h5>
+		<ul>
+			<li><a href="{{ url_for('user_list')}}">User List</a></li>
+			<li><a href="{{ url_for('user_list')}}">Location List</a></li>
+			<li><a href="{{ url_for('count_event_list')}}">Event List</a></li>
+			<li><a href="{{ url_for('countingLocation_list')}}">Counting Locations List</a></li>
+			<li><a href="{{ url_for('user_list')}}">Reports and Exports</a></li>
+		</ul>
+	</div>
+	<p class="clear">&nbsp;</p>
+	{% endif %}
+	{% if not g.user %}
+	<p>
+		You must be an Administrator to use this site. </p>
+		<p>For more information about the Bike and Walk system please
+		<a href="http://www.bikeandwalk.org/contact/">contact us</a> from the main web site.</p>
+	<p>If you are an Administrator you must <a href="#" class=signin>Sign in</a> to gain access to your records.</p>
+	{% endif %}
+{% endblock %}

@@ -1,0 +1,210 @@
+html, body, div, span, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, samp,
+small, strike, strong, sub, sup, tt, var,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	outline: 0;
+	font-weight: inherit;
+	font-style: inherit;
+	font-size: 12pt;
+	font-family: inherit;
+	vertical-align: baseline;
+}
+
+/* Remember to define focus styles! */
+:focus {
+
+}
+
+/* End Resets */
+/* IE Hacks*/
+div {zoom:1;height:1%;}
+
+
+html {
+	background-color: white;
+	color:rgb(65,65,65);
+	font-family:helvetica,arial,sans-serif;
+}
+
+body
+{
+}
+
+p
+{
+	margin-bottom:.5em;
+	line-height: 1.2;
+	font-size:100%;
+}
+
+div, p, th, td, li, dd, dl, a
+{
+}
+strong {
+    font-weight:800;
+}
+a, .script-link
+{
+text-decoration:underline;
+cursor:pointer;
+color:rgb(65,ff,65);
+}
+.no-decoration {
+	text-decoration:none;
+}
+a:hover {}
+
+dt { font-weight: bold; }
+
+ol, li, dl, dt, dd 
+{ 
+	line-height: 1.5em; 
+}
+
+input.num {text-align:right;}
+
+
+table, th, td, tr {
+border: 1pt #aaa solid;
+padding: 2pt 6pt;
+border-collapse: collapse;
+
+}
+table {margin: 10pt 0;}
+th {text-align:center;font-weight:bold;font-size:.8em;}
+td {text-align:left;}
+
+h1, h2, h3, h4, h5, h6 {
+	font-family: helvetica, arial, sans-serif;
+	font-weight: bold;
+	text-align: left;
+	background-color: transparent;
+	margin: 2% 0;
+	padding:0;
+	line-height:.8;
+}
+h1 { font-size: 300%;}
+h2 { font-size: 200%; }
+h3 { font-size: 150%; }
+h4 { font-size: 140%; }
+h5 { font-size: 120%; }
+h6 { font-size: 100%; }
+
+img
+{
+	border: 0;
+}
+
+/* clear any floats */
+.clear, .clearer {
+    clear:both;
+}
+.form_button_row {
+    margin-bottom:0.5em;
+    padding-bottom:.25em;
+    border-bottom:1pt solid #666;
+    width:15em;
+}
+
+#contain {
+    margin:2em 4em;
+}
+div.authbar {
+    padding: 0.25em 0;
+    margin: 10px 0;
+    line-height: 1;
+    border: 1pt solid #666;
+    border-left:none;
+    border-right:none;
+    margin-left:9em;
+}
+div.authbar p {
+    margin:.25em;
+    padding-left:.5em;
+}
+div.signinprogress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8) url(spinner.png) center center no-repeat;
+    font-size: 0;
+}
+
+a#header_home, a:hover#header_home, a:visited#header_home {
+    text-decoration:none;
+    font-size:inherit;
+    color:#222;
+}
+img#headerlogo {
+    height:118px;
+    padding-right:1em;
+    float:left;
+}
+#flasher_contain {
+    width:80%;
+    background-color:yellow;
+    padding:.5em;
+    border:1pt solid red;
+}
+p.flash {
+    font-style:italic;
+    line-height:1.2;
+    margin:0 0 0 1em;
+    font-size:.8em;
+}
+
+#super_menu {
+    width:20%;
+    float:left;
+    height:10em;
+}
+.admin_menu li{
+    list-style:none;
+}
+.admin_menu h5 {
+    margin-bottom:.5em;
+    margin-top:0;
+}
+
+div#eventRecordForm {
+    width:30%;
+    float:left;
+    padding-right:1em;
+}
+
+div#travelerForm {
+    margin-left:34%;
+    
+}
+div#travelerList {
+    border:1pt solid black;
+    overflow-y:scroll;
+    width:240pt;
+    height:200pt;
+}
+
+div#locationForm {
+    margin-top:1em;
+}
+div#locationList {
+    border:1pt solid black;
+    overflow-y:scroll;
+    width:80%;
+    min-height:20em;
+    clear:both;
+}
+
+img#travelerIcon {
+    height:57px;
+    width:57px;
+    background-image:url(//bikeandwalk.org/images/travelers/unknown.png);
+}

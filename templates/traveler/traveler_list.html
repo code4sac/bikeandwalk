@@ -1,0 +1,29 @@
+{% extends "layout.html" %}
+{% block title %}{{ g.title }} List{% endblock %}
+{% block body %}
+{% if g.role == 'super' %}
+	<h2>{{ g.title }} List</h2>
+	{%if recs %}
+		<table class="datatable">
+		<tr>
+			<th>ID</th>
+			<th>Name</th>
+			<th>Description</th>
+		</tr>
+		{% for rec in recs %}
+	    <tr>
+			<td><a href="{{ g.editURL }}{{ rec.ID }}/">{{ rec.ID }}</a></td>
+			<td><a href="{{ g.editURL }}{{ rec.ID }}/">{{ rec.name }}</a></td>
+			<td>{{ rec.description }}</td>
+		</tr>
+		{% endfor %}
+	  </table>
+  	{% else %}
+    	<p><em>No {{ g.title }}s here so far</em></p>
+	{% endif %}
+  	<p id="addRecord"><a href="{{ g.editURL }}0/">Add a new {{ g.title }}</a></p>
+ {%else%}
+ 	<p>You must <a href="#" class=signin>Sign in</a> as a super administrator to use this feature. 
+	If you are not an administrator, you may want to view our main <a href="http://www.bikeandwalk.org" target="_blank">web site</a>.</p>
+{% endif %}
+{% endblock %}

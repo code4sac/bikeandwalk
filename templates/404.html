@@ -1,0 +1,9 @@
+{% extends "layout.html" %}
+{% block title %}Something Wrong{% endblock %}
+{% block body %}
+  <h2>Sorry! We really screwed up!</h2>
+  <p>
+	It looks like we can't find what you're looking for.
+</p>
+<p>Maybe you can <a href="{{ url_for('home') }}">try again</a>.</p>
+{% endblock %}

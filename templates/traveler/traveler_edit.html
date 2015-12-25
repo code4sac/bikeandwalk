@@ -1,0 +1,39 @@
+{% extends "layout.html" %}
+{% block title %}Edit {{ g.title }}{% endblock %}
+{% block body %}
+  {% if g.role == 'super' %}
+	<h2>Edit {{ g.title }}</h2>
+    <form action="{{ g.editURL }}{{rec.ID|default("0",true)}}/" method=post class="entry">
+		<input type=hidden name="ID" value="{{rec.ID|default("0",true)}}">
+      <dl>
+		<dd class="form_button_row" ><input type=submit value=Save>  
+			{% if rec.ID and rec.ID > 0 %}
+			&nbsp;&nbsp;<a href = "{{g.deleteURL}}{{rec.ID|default('0',true)}}/" onclick="return confirmRecordDelete();">Delete...</a>
+			{% endif %}
+			&nbsp;&nbsp;<a href="{{ g.listURL }}" >Cancel</a>
+		</dd> 
+		<dt>Name:
+		<dd><input class="req" type=text size=30 name="name" value="{{rec.name|default("",true)}}"/>
+		<dt>Traveler Code:
+		<dd><input class="req" type=text size=30 name="travelerCode" value="{{rec.travelerCode|default("",true)}}"/>
+		<dt>Description:
+		<dd><textarea type=text cols="30" rows="5" name="description" >{{rec.description|default("",true)}}</textarea>
+		<dt>Icon URL:
+		<dd><input type=text size=60 name="iconURL" value="{{rec.iconURL|default("",true)}}" onchange="updateImage(this.value,'#travelerIcon')"/>
+			<br><img src="{{rec.iconURL|default("//bikeandwalk.org/images/travelers/unknown.png",true)}}" id="travelerIcon" />
+		
+		<dt>Features:</dt>
+		<dd>
+			<select id="featureSet" style="min-height:10em;" name="featureSet" multiple>
+				{% for elem in range(lastFeature) %}
+				<option value="{{features[elem].ID}}" {% if features[elem].featureSelected %}selected="selected"{% endif %} >{{features[elem].featureClass}} = {{features[elem].featureValue}}</option>
+				{% endfor %}
+			</select>
+		</dd>
+      </dl>
+    </form>
+ {%else%}
+ 	<p>You must <a href="#" class=signin>Sign in</a> as a super administrator to use this feature. 
+	If you are not an administrator, you may want to view our main <a href="http://www.bikeandwalk.org" target="_blank">web site</a>.</p>
+ {% endif %}
+{% endblock %}

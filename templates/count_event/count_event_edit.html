@@ -1,0 +1,81 @@
+{% extends "layout.html" %}
+{% block title %}Edit {{ g.title }}{% endblock %}
+{% block body %}
+  {% if g.role == 'admin' or g.role == 'super' %}
+	<h2>Edit {{ g.title }}</h2>	
+<div id="eventRecordForm">
+	    <form action="{{ g.editURL }}{{rec.ID|default("0",true)}}/" method=post class="entry">
+		<input type=hidden name="ID" value="{{rec.ID|default("0",true)}}">
+		<input type=hidden name="organization_ID" value="{{rec.organization_ID|default(g.orgID,true)}}">
+      <dl>
+		<dd class="form_button_row" ><input type=submit value=Save>  
+			{% if rec.ID and rec.ID > 0 %}
+			&nbsp;&nbsp;<a href = "{{g.deleteURL}}{{rec.ID|default('0',true)}}/" onclick="return confirmRecordDelete();">Delete...</a>
+			{% endif %}
+			&nbsp;&nbsp;<a href="{{ g.listURL }}" >Cancel</a>
+		</dd> 
+        <dt>Month (MM): 
+		<dd><input type=num size=2 maxlength="2" name="month" value="{{theTime.month}}" />
+        <dt>Day (DD): 
+		<dd><input type=num size=2 maxlength="2" name="day" value="{{theTime.day}}" />
+        <dt>Year (YYYY): 
+		<dd><input type=num size=4 maxlength="4" name="year" value="{{theTime.year}}" />
+        <dt>Starting Time (HH:MM): Hour: {{theTime.hour}}
+		<dd>
+			<select name="hour">
+				{% for i in range(1,13) %}
+				<option value="0{{i}}" {% if theTime.hour == i %}selected="selected" {% endif %}>{{i}}</option>
+				{% endfor %}
+			</select>
+			<select name="minute">
+				<option value="00" {% if theTime.minute == 0 %}selected="selected" {% endif %}>00</option>
+				<option value="15" {% if theTime.minute == 15 %}selected="selected" {% endif %}>15</option>
+				<option value="30" {% if theTime.minute == 30 %}selected="selected" {% endif %}>30</option>
+				<option value="45" {% if theTime.minute == 45 %}selected="selected" {% endif %}>45</option>
+			</select>
+			<select name="AMPM">
+				<option value="AM" {% if theTime.AMPM == "AM" %}selected="selected" {% endif %}>AM</option>
+				<option value="PM" {% if theTime.AMPM == "PM" %}selected="selected" {% endif %}>PM</option>
+			</select>
+		<dt>Time Zone:
+	        <select name="timeZone">
+			{% for zone in timeZones.keys() %}
+				<option value="{{zone}}" {%if rec.timeZone == zone or (g.timeZone and g.timeZone == zone )%}selected="selected"{%endif%} >{{timeZones[zone]["longName"]}}</option>
+			{% endfor %}
+			</select>
+		<dd>
+			Daylight Savings time? 
+			<input type="radio" name="isDST" value="0" {%if rec.isDST != 1 %}checked="checked"{%endif%} /> No
+			<input type="radio" name="isDST" value="1" {%if rec.isDST == 1 %}checked="checked"{%endif%} /> Yes
+			
+        <dt>Duration: 
+		<dd><select name="duration" >
+				<option value="1" {% if theTime.duration == 1 %}selected="selected" {% endif %}>1 Hour</option>
+				{% for i in range(2,9) %}
+					<option value="{{i}}" {% if theTime.duration == i %}selected="selected" {% endif %}>{{i}} Hours</option>
+				{% endfor %}
+			</select>
+		</dl>
+    </form>
+</div> <!--Event record form -->
+<div id="travelerForm">
+	<h3>Traveler List</h3>
+	<div id="travelerList">
+		
+	</div>
+		<p><a href="{{url_for("traveler_select")}}">Select a Traveler...</a></p>
+</div>
+<div id="locationForm">
+	<h3>Locations</h3>
+<div id="locationList">
+	
+</div>
+</div>
+
+ {% else %}
+ 	<p>You must <a href="#" class=signin>Sign in</a> as an administrator to use this feature. 
+	If you are not an administrator, you may want to view our main <a href="http://www.bikeandwalk.org" target="_blank">web site</a>.</p>
+ {% endif %}
+{% endblock %}
+
+

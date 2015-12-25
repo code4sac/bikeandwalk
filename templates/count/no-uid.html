@@ -1,0 +1,52 @@
+{% extends "count/base.html" %}
+{% block title %}{{g.title}} - {% endblock %}
+{% block body %}
+<div id="contain-nocount">
+	<div id="head">
+		<img src="http://bikeandwalk.org/images/HeaderLogo128.png" id="headerlogo" />
+	  <h1>Bike and Walk App</h1>
+	</div>
+	<h2>{{g.title}}</h2>
+	{% if g.UIDStatus == "noEvent" %}
+	<p>A valid Count Event record could not be found in our system.</p>
+	<p>Contact your count administrator for more information about this event.</p>
+
+	{% elif g.UIDStatus == "noLocation" %}
+	<p>A valid Location record could not be found in our system.</p>
+	<p>Contact your count administrator for more information about this location.</p>
+
+	{% elif g.UIDStatus == "noTravelers" %}
+	<p>No traveler records could not be found in our system.</p>
+	<p>Contact your count administrator for more information about this problem.</p>
+
+	{% elif g.UIDStatus == "countOver" %}
+	<p>
+		The Count Event has Expired. It's too late to start or continue this count. 
+		End Date: {{g.endDate}} its now {{g.now}}
+	</p>
+	<p>Contact your count administrator if you have count results to submit.</p>
+
+	{% else %}
+	<p>The "Counting Location ID" you provided could not be found in our system.</p>
+	<p>You must provide a valid "Counting Location ID" to begin a count.</p>
+	<p>
+		You may have received an email from your count Administrator which included
+		a link with your location ID. If you did, click that link. If not, contact 
+		your count administrator for help.
+	</p>
+	<div >
+		<p>You can try entering a new Counting Location ID here:</p>
+		<form id="UID_Form" action="{{g.countBeginURL}}" method="post">
+			<p>
+				<strong>ID: </strong><input size="30" type="text" name="UID" value="{{g.UID}}" />
+				&nbsp;&nbsp;<input type="submit" value="Submit" />
+			</p>
+		</form>
+	</div>
+	{% endif %}
+	<p>
+		If you have a printer available, you can <a href="http://bikeandwalk.org/docs/forms/NBPD_Forms_March_2010.pdf">download</a> the count forms, print them and complete
+		your count manually.
+	</p>
+</div>
+{% endblock %}

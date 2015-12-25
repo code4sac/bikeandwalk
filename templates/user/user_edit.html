@@ -1,0 +1,45 @@
+{% extends "layout.html" %}
+{% block title %}Edit {{ g.title }}{% endblock %}
+{% block body %}
+  {% if g.role == 'admin' or g.role == 'super' %}
+	<h2>Edit {{ g.title }}</h2>	
+    <form action="{{ g.editURL }}{{rec.ID|default("0",true)}}/" method=post class="entry">
+		<input type=hidden name="ID" value="{{rec.ID|default("0",true)}}">
+      <dl>
+		<dd class="form_button_row" ><input type=submit value=Save>  
+			{% if rec.ID and rec.ID > 0 %}
+			&nbsp;&nbsp;<a href = "{{g.deleteURL}}{{rec.ID|default('0',true)}}/" onclick="return confirmRecordDelete();">Delete...</a>
+			{% endif %}
+			&nbsp;&nbsp;<a href="{{ g.listURL }}" >Cancel</a>
+		</dd> 
+        <dt>Name:
+        <dd><input type=text size=30 name="name" value="{{rec.name}}"/>
+        <dt>Email:
+        <dd><input type=text size=30 name="email" value="{{rec.email|default("",true)}}"/>
+		{% if False %}
+        <dt>User Name:
+        <dd><input type=text size=30 name="userName" value="{{rec.userName|default("",true)}}"/>
+        <dt>Password:
+        <dd><input type=text size=30 name="password" value="{{rec.password|default("",true)}}"/>
+		{% endif %}
+		{% if g.role == 'super' or g.role == 'admin' %}
+        <dt>Role:
+		<dd><select name="role">
+			<option value="counter" {% if rec.role == 'counter' %}selected="selected" {% endif %}>counter</option>
+			<option value="admin" {% if rec.role == 'admin' %}selected="selected" {% endif %}>admin</option>
+		{% if g.role == 'super' %}
+			<option value="super" {% if rec.role == 'super' %}selected="selected" {% endif %}>super</option>
+		{% endif %}
+		</select>
+		{% else %}
+		<input type=hidden name="role" value="{{rec.role|default("0",true)}}">
+		{% endif %}
+		<input type=hidden name="organization_ID" value="{{g.orgID}}">
+        <dt>Inactive:<input type=checkbox  name="inactive" value="1" {% if rec.inactive %} checked="checked" {% endif %}/>
+      </dl>
+    </form>
+ {%else%}
+ 	<p>You must <a href="#" class=signin>Sign in</a> as an administrator to use this feature. 
+	If you are not an administrator, you may want to view our main <a href="http://www.bikeandwalk.org" target="_blank">web site</a>.</p>
+ {% endif %}
+{% endblock %}
