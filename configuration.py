@@ -4,8 +4,11 @@ class Config(object):
     DEBUG = False
     TESTING = False
     SECRET_KEY = "somereallylongstringtouseasakey"
+    
     DATABASE = "bikeandwalk.sqlite"
-    DATABASE_URI = 'sqlite:////Users/bleddy/Sites/bikeandwalk.org/app/' + DATABASE
+    DATABASE_PATH_PREFIX = '/Users/bleddy/Sites/bikeandwalk.org/app/'
+    DATABASE_URI = 'sqlite:///' + DATABASE_PATH_PREFIX + DATABASE
+    
     # set session expiration in seconds
     PERMANENT_SESSION_LIFETIME = 60*20
     
