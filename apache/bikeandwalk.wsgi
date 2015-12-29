@@ -1,7 +1,4 @@
-import sys
-
-## put the app into the python path
-sys.path.insert(0, '/Users/bleddy/Sites/bikeandwalk.org/app')
+##  WSGI Setup ##
 
 #####################################
 # Notes on the apache setup:
@@ -38,6 +35,11 @@ sys.path.insert(0, '/Users/bleddy/Sites/bikeandwalk.org/app')
 #     ErrorLog "/Library/Logs/Apache2/localhost.com.error_log"
 # </VirtualHost>
 #########################################################
+
+
+import sys
+## put the app into the python path
+sys.path.insert(0, '/Users/bleddy/Sites/bikeandwalk.org/app')
 
 from bikeandwalk import app as application
 
