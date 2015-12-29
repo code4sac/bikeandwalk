@@ -140,23 +140,16 @@ def validForm():
     return goodForm
     
 def setUserStatus(email):
-    ## locate the user with this email and set some globals
-    sessionTimeout = 1200 #20 minutes
-    if session.get('timeout') and session.get('timeout') < time():
-        ## log the user out
-        session.clear()
-        flash("Your session has timed out. Please sign in again.")
-        return False
-        
+    ## locate the user with this email and set some globals        
     rec = User.query.filter(User.email == email).first()
     if rec:
         g.user = rec.email
         g.role = rec.role
         g.orgID = rec.organization_ID
         if g.role == "super" and ('superOrgID' in session) :
+            ## super user is managing another organization's data
             g.orgID = int(session.get('superOrgID'))
         
-        session['timeout'] = time() + sessionTimeout
         return True
     else:
         session.clear()

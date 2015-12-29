@@ -5,6 +5,13 @@ __pycache__/
 # C extensions
 *.so
 
+# Specific to bikeandwalk
+instance/
+*.sqlite
+db/
+*.log
+venv/
+
 # Distribution / packaging
 .Python
 env/

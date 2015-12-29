@@ -17,30 +17,23 @@ from flask import Flask, request, session, g, redirect, url_for, abort, \
      render_template, flash, _app_ctx_stack, json
 from datetime import datetime
 import logging
-
+import configuration
 import requests
 
-# configuration
-DATABASE = 'bikeandwalk2.sqlite'
-DEBUG = True
-SECRET_KEY = 'nowisthetimeforallpeopletogetonabike'
+from setup import init_site_settings
+init_site_settings() #this has to be done before creating app
 
 # create our little application :)
-app = Flask(__name__)
-app.config.from_object(__name__)
-
-app.debug = DEBUG
-
-app.config.update(
-    PERSONA_JS='https://login.persona.org/include.js',
-    PERSONA_VERIFIER='https://verifier.login.persona.org/verify',
-)
+app = Flask(__name__, instance_relative_config=True)
+app.config.from_object(configuration.Config)
+app.config.from_pyfile('settings.conf', silent=True)
 
 # setup Flask-SQLAlchemy
 from flask.ext.sqlalchemy import SQLAlchemy
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////Users/bleddy/Sites/bikeandwalk.org/app/' + DATABASE
+app.config['SQLALCHEMY_DATABASE_URI'] = app.config["DATABASE_URI"]
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
+
 
 ## views modules need db from above
 #import models #### don't import models here, do it in views
@@ -217,7 +210,7 @@ def init_db():
     if app.debug:
         sample = ''
     
-    views.db.db_init(sample)
+    views.db.db_init()
     
 #    """Creates the database tables."""
 #    with app.app_context():
@@ -261,7 +254,7 @@ def before_request():
         if g.user is not None:
             ## email must be linked to a user
             if views.user.setUserStatus(g.user):
-                # Session is refreshed
+                # Session timeout is set in app.config["PERMANENT_SESSION_LIFETIME"]
                 # g.email, g.role, & g.orgID will be set
                 g.organizationName = views.org.getName(g.orgID)
             else:
@@ -333,9 +326,8 @@ if __name__ == '__main__':
     """
     ## Turn on logging:
     startLogging()
-    
     try:
-        f=open(DATABASE,'r')
+        f=open(app.config["DATABASE"],'r')
         f.close()
     except IOError as e:
         init_db()

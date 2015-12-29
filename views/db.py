@@ -1,4 +1,4 @@
-from bikeandwalk import db,app, DEBUG
+from bikeandwalk import db,app
 import models
 from datetime import datetime, timedelta
 import linecache
@@ -64,7 +64,7 @@ def printException(mes="An Unknown Error Occured",level="error",err=None):
         line = linecache.getline(filename, lineno, f.f_globals)
         debugMes = 'EXCEPTION IN ({}, LINE {} "{}"): {}'.format(filename, lineno, line.strip(), exc_obj)
 
-    if level=="error" or DEBUG:
+    if level=="error" or app.config["DEBUG"]:
         #always log errors
         if debugMes:
             app.logger.error(nowString() + " - " + debugMes)
@@ -72,7 +72,7 @@ def printException(mes="An Unknown Error Occured",level="error",err=None):
         if err:
             app.logger.error(nowString() + "    " + str(err))
         
-    if DEBUG:
+    if app.config["DEBUG"]:
         if debugMes:
             mes = mes + " -- " +debugMes
         return mes

@@ -1,0 +1,24 @@
+## Site Settings
+
+## Changes to this settings file only take effect after restarting the server ###
+
+# The basics...
+#DEBUG = True ## default is False
+
+SECRET_KEY = "somereallylongstringtouseasakey"
+
+# set session expiration in seconds
+#PERMANENT_SESSION_LIFETIME = 60*20
+
+#DATABASE = "bikeandwalk.sqlite"
+
+#DATABASE_URI = 'sqlite:///' + '< absolute path to your data directory >' + DATABASE
+
+## Email Sending...
+#SMTP_HOST = ""
+#SMTP_PORT = ""
+#SMTP_USER = ""
+#SMTP_PASSWORD = ""
+
+# Uploads ...
+#MAX_CONTENT_LENGTH = 300000
