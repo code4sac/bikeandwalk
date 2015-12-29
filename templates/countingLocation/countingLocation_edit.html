@@ -1,0 +1,29 @@
+{% extends "layout.html" %}
+{% block title %}Edit {{ g.title }}{% endblock %}
+{% block body %}
+  {% if g.role == 'super' %}
+	<h2>Edit {{ g.title }}</h2>
+    <form action="{{ g.editURL }}{{rec.ID|default("0",true)}}/" method=post class="entry">
+		<input type=hidden name="ID" value="{{rec.ID|default("0",true)}}">
+      <dl>
+        <dt>Feature Class:
+			<dd class="form_button_row" ><input type=submit value=Save>  
+				{% if rec.ID and rec.ID > 0 %}
+				&nbsp;&nbsp;<a href = "{{g.deleteURL}}{{rec.ID|default('0',true)}}/" onclick="return confirmRecordDelete();">Delete...</a>
+				{% endif %}
+				&nbsp;&nbsp;<a href="{{ g.listURL }}" >Cancel</a>
+			</dd> 
+		<dd><select name="featureClass">
+				<option value="Behavior" {% if rec.featureClass == 'Behavior' %}selected="selected" {% endif %}>Behavior</option>
+				<option value="Gender" {% if rec.featureClass == 'Gender' %}selected="selected" {% endif %}>Gender</option>
+				<option value="Mode" {% if rec.featureClass == 'Mode' %}selected="selected" {% endif %}>Mode</option>
+			</select>
+        <dt>Feature Value:
+        <dd><input type=text size=30 name="featureValue" value="{{rec.featureValue|default("",true)}}"/>
+      </dl>
+    </form>
+ {%else%}
+ 	<p>You must <a href="#" class=signin>Sign in</a> as a super administrator to use this feature. 
+	If you are not an administrator, you may want to view our main <a href="http://www.bikeandwalk.org" target="_blank">web site</a>.</p>
+ {% endif %}
+{% endblock %}
