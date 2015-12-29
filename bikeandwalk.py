@@ -29,7 +29,7 @@ SECRET_KEY = 'nowisthetimeforallpeopletogetonabike'
 app = Flask(__name__)
 app.config.from_object(__name__)
 
-app.debug = True
+app.debug = DEBUG
 
 app.config.update(
     PERSONA_JS='https://login.persona.org/include.js',

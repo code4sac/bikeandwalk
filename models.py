@@ -1,4 +1,8 @@
 from bikeandwalk import db
+from sqlalchemy import *
+from sqlalchemy.orm import *
+
+
 """
     So, it seems that SQLAlchemy can't figure out the table relationships if I try
     to suppress the underscore it wants to put into camelCase table names.
@@ -88,6 +92,15 @@ class CountingLocation(db.Model):
     location_ID = db.Column(db.Integer, db.ForeignKey('location.ID'))
     user_ID = db.Column(db.Integer, db.ForeignKey('user.ID'))
 
+    countevent = relationship(CountEvent)
+    location = relationship(Location)
+    user = relationship(User)
+    
+    # Get the Starting date of the related event
+    eventStartDate = deferred(select([CountEvent.startDate]).where(CountEvent.ID == countEvent_ID))
+    counter = deferred(select([User.name]).where(User.ID == user_ID))
+    locationName = deferred(select([Location.locationName]).where(Location.ID == location_ID))
+    
     def __init__(self, UID):
         self.countingLocationUID = UID
 
