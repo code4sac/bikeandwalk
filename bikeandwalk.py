@@ -51,7 +51,7 @@ import views.feature
 import views.count_event
 import views.traveler
 import views.count
-import views.countingLocation
+#import views.countingLocation
 import views.db
 
 ## custom template filters
@@ -179,22 +179,22 @@ def traveler_delete(id=0):
 def traveler_select(id=0):
     return "Traveler Select goes here!"
     
-#### CountingLocation routes #####
-
-@app.route('/countinglocation/')
-def countingLocation_list():
-    return views.countingLocation.countingLocation_list()
-
-@app.route('/countinglocation/edit', methods=['POST', 'GET'])
-@app.route('/countinglocation/edit/', methods=['POST', 'GET'])
-@app.route('/countinglocation/edit/<id>/', methods=['POST', 'GET'])
-def countingLocation_edit(id=0):
-    return views.countingLocation.countingLocation_edit(id)
-
-@app.route('/countinglocation/delete/', methods=['GET'])
-@app.route('/countinglocation/delete/<id>/', methods=['GET'])
-def countingLocation_delete(id=0):
-    return views.countingLocation.countingLocation_delete(id)
+##### CountingLocation routes #####
+#
+#@app.route('/countinglocation/')
+#def countingLocation_list():
+#    return views.countingLocation.countingLocation_list()
+#
+#@app.route('/countinglocation/edit', methods=['POST', 'GET'])
+#@app.route('/countinglocation/edit/', methods=['POST', 'GET'])
+#@app.route('/countinglocation/edit/<id>/', methods=['POST', 'GET'])
+#def countingLocation_edit(id=0):
+#    return views.countingLocation.countingLocation_edit(id)
+#
+#@app.route('/countinglocation/delete/', methods=['GET'])
+#@app.route('/countinglocation/delete/<id>/', methods=['GET'])
+#def countingLocation_delete(id=0):
+#    return views.countingLocation.countingLocation_delete(id)
 
 
 #### The Count pages ###
