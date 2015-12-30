@@ -330,7 +330,14 @@ if __name__ == '__main__':
         f=open(app.config["DATABASE"],'r')
         f.close()
     except IOError as e:
-        init_db()
-        
+        try:
+            init_db()
+        except Exception as e:
+            print "Not able to create database file."
+            print "Error: " + str(e)
+            import sys
+            sys.exit(0)
+
+    print "Web Server Running"
     app.run()
     ##app.run('10.0.1.9',5000)

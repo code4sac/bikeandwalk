@@ -10,10 +10,12 @@ SECRET_KEY = "somereallylongstringtouseasakey"
 # set session expiration in seconds
 #PERMANENT_SESSION_LIFETIME = 60*20
 
-## If you need to change any of these, uncomment all 3 lines
-#DATABASE = "bikeandwalk.sqlite"
-#DATABASE_PATH_PREFIX = '/Users/baw/Sites/app.bikeandwalk.org/'
-#DATABASE_URI = 'sqlite:///' + DATABASE_PATH_PREFIX + DATABASE
+## If you need to change the value for DATABASE_PATH_PREFIX to
+## match the absolute path to your database file.
+## You can change DATABASE to another name if you like.
+DATABASE_PATH_PREFIX = '/Users/baw/Sites/app.bikeandwalk.org/'
+DATABASE = "bikeandwalk.sqlite"
+DATABASE_URI = 'sqlite:///' + DATABASE_PATH_PREFIX + DATABASE
 
 ## Email Sending...
 #SMTP_HOST = ""
