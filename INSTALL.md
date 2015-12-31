@@ -52,9 +52,15 @@ Run the setup script to create your local configuration settings:
 
 `(env)app.bikeandwalk.org $ python setup.py`
 
-This will create a directory named `instance` containing a file named `settings.conf`
-which you will use to set some of the configuration options for the app.
+This will create two directories and three files.
 
+1. A directory named `instance` containing a file named `settings.conf`
+2. A directory named `apache` containing a file named `bikeandwalk.wsgi`
+3. An empty file named `bikeandwalk.sqlite` which will serve as your datafile
+
+You will use these files to set some of the configuration options for the app.
+
+####Settings.conf
 At a minimum you will need to set the location for the database file by un-commenting
 and changing the values for:
 
@@ -66,14 +72,36 @@ the filename itself.
 `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER` and `SMTP_PASSWORD` need to be set to your mail server so
 that you can send email invitation to your counters.
 
+#####bikeandwalk.wsgi
+`bikeandwalk.wsgi` is the file that apache web server will call for each web request.
+
+You may need to change the `FULL_PATH_TO_YOUR_APP` to match your path.
+
+###Set up Apache and mod_wsgi
+In the main apache config file, enable the mod_wsgi extension with `LoadModule wsgi_module` and
+the location of the .so file.
+
+Next create a "virgin" virtualenv directory as described above but located somewhere other than
+your app directory. The WSGI docs recommend something like:
+`$ cd /usr/local/pythonenv`
+
+`$ sudo virtualenv --no-site-packages BASELINE`
+
+Back in the main apache config file, add:
+
+`WSGIPythonHome /usr/local/pythonenv/BASELINE`
+
 ###Run the app
 Run the app from the terminal to initialize the database and test the installation:
 
 `(env)app.bikeandwalk.org $ python bikeandwalk.py`
 
-You should see a message "Web Server Running". If you do, type control+c to stop the server.
+You should see a message "Web Server Running". If you do, type control+c to stop the server or you
+can test the app in your browser at `localhost:5000`.
 
 To exit the virtual environment type:
 
 `(env)app.bikeandwalk.org $ deactivate`
 
+
+For more information on mod_wsgi, see the [WSGI Documentation](http://modwsgi.readthedocs.org/en/develop/installation.html)

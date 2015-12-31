@@ -1,0 +1,50 @@
+##  WSGI Setup ##
+
+### Don't import any modules until the virtual environment is activated
+
+FULL_PATH_TO_YOUR_APP = '/Users/baw/Sites/app.bikeandwalk.org'
+
+## Activate the virtualenv
+activate_this = FULL_PATH_TO_YOUR_APP + '/env/bin/activate_this.py'
+execfile(activate_this, dict(__file__=activate_this))
+
+import sys
+## put the app into the python path
+sys.path.insert(0, FULL_PATH_TO_YOUR_APP)
+
+from bikeandwalk import app as application
+
+##Sample vhosts.conf entry:
+######################################
+## Notes on the apache setup:
+## a directive like this must be in the MAIN http.confg file...
+## WSGIPythonHome /Users/bleddy/Sites/bikeandwalk.org/app/env
+## 
+## Create a virgin virualenv with
+## virtualenv --no-site-packages --python=python2.6 env
+## (my version of mod_wsgi was built for python 2.6 so need match in virtualenv)
+## 
+# <VirtualHost *:80>
+#     ServerName app.yourdomain.com
+#     ServerAdmin you@yourdomain.com
+#
+#     DocumentRoot "/Users/user/Sites/app.bikandwalk.org"
+#
+#     # Add static directory aliase
+#     AliasMatch ^/(static/.*)$ /Users/user/Sites/app.bikandwalk.org/$1 
+#
+#     # user should be non-priveliged, not a sudoer but with write privileges in the app directory 
+#     WSGIDaemonProcess bikeandwalk user=baw group=staff threads=5
+#     WSGIScriptAlias / /Users/user/Sites/app.bikeandwalk.org/apache/bikeandwalk.wsgi
+#     
+#     <Directory /Users/user/Sites/app.bikeandwalk.org>
+#         WSGIProcessGroup bikeandwalk
+#         WSGIApplicationGroup %{GLOBAL}
+#         Order deny,allow
+#         Allow from all
+#     </Directory>
+# 
+#     CustomLog "/Library/Logs/Apache2/bikeandwalk.app.access_log" common
+#     ErrorLog "/Library/Logs/Apache2/bikeandwalk.app.error_log"
+# </VirtualHost>
+#########################################################
