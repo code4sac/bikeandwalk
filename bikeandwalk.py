@@ -20,9 +20,6 @@ import logging
 import configuration
 import requests
 
-from setup import init_site_settings
-init_site_settings() #this has to be done before creating app
-
 # create our little application :)
 app = Flask(__name__, instance_relative_config=True)
 app.config.from_object(configuration.Config)
