@@ -60,7 +60,7 @@ This will create two directories and three files.
 
 You will use these files to set some of the configuration options for the app.
 
-####Settings.conf
+#####Settings.conf
 At a minimum you will need to set the location for the database file by un-commenting
 and changing the values for:
 
