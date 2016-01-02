@@ -50,52 +50,7 @@ def ping():
 @app.route('/login', methods=['GET'])
 def login():
     return views.index.login()
-         
-from views import user
-app.register_blueprint(user.mod)
-from views import org
-app.register_blueprint(org.mod)
-from views import feature
-app.register_blueprint(feature.mod)
-from views import count_event
-app.register_blueprint(count_event.mod)
-from views import traveler
-app.register_blueprint(traveler.mod)
-from views import countingLocation
-app.register_blueprint(countingLocation.mod)
-from views import count
-app.register_blueprint(count.mod)
-
-    
-## database connection ##
-def init_db():
-    sample = None
-    if app.debug:
-        sample = ''
-    
-    views.utils.db_init()
-    
-#    """Creates the database tables."""
-#    with app.app_context():
-#        db = get_db()
-#        with app.open_resource('db/CreateTables2.sql', mode='r') as f:
-#            db.cursor().executescript(f.read())
-#        db.commit()
-#        with app.open_resource('db/insertTestData2.sql', mode='r') as f:
-#            db.cursor().executescript(f.read())
-#        db.commit()
         
-#def get_db():
-#    """Opens a new database connection if there is none yet for the
-#    current application context.
-#    """
-#    top = _app_ctx_stack.top
-#    if not hasattr(top, 'sqlite_db'):
-#        sqlite_db = sqlite3.connect(app.config['DATABASE'])
-#        sqlite_db.row_factory = sqlite3.Row
-#        top.sqlite_db = sqlite_db
-#
-#    return top.sqlite_db
 
 @app.before_request
 def before_request():
@@ -119,6 +74,7 @@ def before_request():
             if views.user.setUserStatus(g.user):
                 # Session timeout is set in app.config["PERMANENT_SESSION_LIFETIME"]
                 # g.email, g.role, & g.orgID will be set
+                
                 g.organizationName = views.org.getName(g.orgID)
             else:
                 # Not a valid email or session timed out, go to login page...
@@ -132,9 +88,6 @@ def before_request():
     
 @app.teardown_request
 def teardown_request(exception):
-#    db = getattr(g, 'db', None)
-#    if db is not None:
-#        db.close()
     pass
 
 
@@ -142,41 +95,24 @@ def teardown_request(exception):
 def page_not_found(e):
     return render_template('404.html'), 404
 
-        
-## persona authentication ##
-@app.route('/_auth/login', methods=['GET', 'POST'])
-def login_handler():
-    """This is used by the persona.js file to kick off the
-    verification securely from the server side.  If all is okay
-    the email address is remembered on the server.
-    """
-    resp = requests.post(app.config['PERSONA_VERIFIER'], data={
-        'assertion': request.form['assertion'],
-        'audience': request.host_url,
-    }, verify=True)
-    if resp.ok:
-        verification_data = json.loads(resp.content)
-        if verification_data['status'] == 'okay':
-            session['email'] = verification_data['email']
-            logging.info(verification_data['email'])
-            return 'OK'
+### Blueprinted views ####
+from views import user
+app.register_blueprint(user.mod)
+from views import org
+app.register_blueprint(org.mod)
+from views import feature
+app.register_blueprint(feature.mod)
+from views import count_event
+app.register_blueprint(count_event.mod)
+from views import traveler
+app.register_blueprint(traveler.mod)
+from views import countingLocation
+app.register_blueprint(countingLocation.mod)
+from views import count
+app.register_blueprint(count.mod)
+from views import persona
+app.register_blueprint(persona.mod)
 
-    abort(400)
-
-@app.route('/_auth/logout', methods=['POST'])
-def logout_handler():
-    """This is what persona.js will call to sign the user
-    out again.
-    """
-    session.clear()
-    return 'OK'
-
-def checkLoggedin():
-    """ bail if the user is not logged in """
-    if not g.user:
-        abort(401)
-    else:
-        return
 
 def startLogging():
         logging.basicConfig(filename='bikeandwalk.log', level=logging.DEBUG)
