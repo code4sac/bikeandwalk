@@ -1,46 +1,48 @@
-<!doctype html>
-<title>{% block title%}{% endblock %} - Bike and Walk</title>
-<link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
-<meta http-equiv="X-UA-Compatible" content="IE=Edge">
-<script src="{{ config.PERSONA_JS }}"></script>
-<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
-<script>
-  /* the url root is useful for doing HTTP requests */
-  var $URL_ROOT = {{ request.url_root|tojson }};
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>{% block title%}{% endblock %} - Bike and Walk</title> 
+	<link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
+	<meta http-equiv="X-UA-Compatible" content="IE=Edge">
+	<script src="{{ config.PERSONA_JS }}"></script>
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script> <script>
+	  /* the url root is useful for doing HTTP requests */
+	  var $URL_ROOT = {{ request.url_root|tojson }};
 
-  /* we store the current user here so that the persona
-     javascript support knows about the current user */
-  var $CURRENT_USER = {{ g.user|tojson }};
-</script>
-<script src="{{ url_for('static', filename='persona-local.js') }}"></script>
-<script src="{{ url_for('static', filename='bikeandwalk.js') }}"></script>
+	  /* we store the current user here so that the persona
+	     javascript support knows about the current user */
+	  var $CURRENT_USER = {{ g.user|tojson }};
+	</script> 
+	<script src="{{ url_for('static', filename='persona-local.js') }}"></script>
+	<script src="{{ url_for('static', filename='bikeandwalk.js') }}"></script> 
+</head>
+<body>
 <div id="contain">
-	<a id="header_home" href="{{ url_for('home')}}">
-		<img src="http://bikeandwalk.org/images/HeaderLogo128.png" id="headerlogo" />
-	</a>
-  <h1><a id="header_home" href="{{ url_for('home')}}">Bike and Walk App</a></h1>
-  <div class="authbar"><p>
-    {% if g.user %}
-      Signed in as <em>{{ g.user }}</em>
-      (<a href="#" class=signout>Sign out</a>)
-    {% else %}
-      Not signed in. <a href="#" class=signin>Sign in</a>
-    {% endif %}
-  </p>
-	{% if g.organizationName and g.organizationName != '': %}
-  <p>
-  	Organization Name: <strong>{{g.organizationName}}</strong> {% if request.path != url_for('home') %}&nbsp;&nbsp;&nbsp;<a href="{{url_for('home')}}">Go to Menu</a>{%endif%}
-  </p>
-  {% endif %}
-  </div>
-{% with messages = get_flashed_messages() %}
-	{% if messages %}
-	<div class="clear" id="flasher_contain">
-	  {% for message in messages %}
-	    <p class="flash">{{ message }}</p>
-	  {% endfor %}
+	<div>
+		<a id="header_home" href="{{ url_for('home')}}"> 
+			<img src="http://bikeandwalk.org/images/HeaderLogo128.png" id="headerlogo" />
+		</a>
+		<h1><a id="header_home" href="{{ url_for('home')}}">Bike and Walk App</a></h1> 
 	</div>
-	{% endif %}
-{% endwith %}
-  {% block body %}{% endblock %}
+	<div class="authbar">
+		<p>
+			{% if g.user %} Signed in as <em>{{ g.user }}</em> (<a href="#" class=signout>Sign out</a>) {% else %} Not signed in. <a href="#" class=signin>Sign in</a> {% endif %} 
+		</p>
+		{% if g.organizationName and g.organizationName != '': %} 
+		<p>
+			Organization Name: <strong>{{g.organizationName}}</strong> {% if request.path != url_for('home') %}&nbsp;&nbsp;&nbsp;<a href="{{url_for('home')}}">Go to Menu</a>{%endif%} 
+		</p>
+		{% endif %} 
+	</div>
+	{% with messages = get_flashed_messages() %} {% if messages %} 
+	<div class="clear" id="flasher_contain">
+		{% for message in messages %} 
+		<p class="flash">
+			{{ message }}
+		</p>
+		{% endfor %} 
+	</div>
+	{% endif %} {% endwith %} {% block body %}{% endblock %} 
 </div>
+</body>
+</html>

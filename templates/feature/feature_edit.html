@@ -1,7 +1,6 @@
 {% extends "layout.html" %}
 {% block title %}Edit {{ g.title }}{% endblock %}
 {% block body %}
-  {% if g.role == 'super' %}
 	<h2>Edit {{ g.title }}</h2>
     <form action="{{ g.editURL }}{{rec.ID|default("0",true)}}/" method=post class="entry">
 		<input type=hidden name="ID" value="{{rec.ID|default("0",true)}}">
@@ -22,8 +21,4 @@
         <dd><input type=text size=30 name="featureValue" value="{{rec.featureValue|default("",true)}}"/>
       </dl>
     </form>
- {%else%}
- 	<p>You must <a href="#" class=signin>Sign in</a> as a super administrator to use this feature. 
-	If you are not an administrator, you may want to view our main <a href="http://www.bikeandwalk.org" target="_blank">web site</a>.</p>
- {% endif %}
 {% endblock %}

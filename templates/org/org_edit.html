@@ -1,7 +1,6 @@
 {% extends "layout.html" %}
 {% block title %}Edit User{% endblock %}
 {% block body %}
-  {% if g.user and g.role == 'super' %}
 	<h2>Edit Organization</h2>
     <form action="{{ g.editURL }}{{rec.ID|default("0",true)}}/" method=post class="entry">
 		<input type=hidden name="ID" value="{{rec.ID|default("0",true)}}">
@@ -24,8 +23,4 @@
 		</select>
       </dl>
     </form>
- {%else%}
- 	<p>You must <a href="#" class=signin>Sign in</a> as a super administrator to use this feature. 
-	If you are not an administrator, you may want to view our main <a href="http://www.bikeandwalk.org" target="_blank">web site</a>.</p>
- {% endif %}
-{% endblock %}
+{% endblock body %}
