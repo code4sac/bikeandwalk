@@ -1,0 +1,7 @@
+<dd class="form_button_row" >
+	<input type=submit value=Save />  
+	{% if rec.ID and rec.ID > 0 %}
+	&nbsp;&nbsp;<a href = "{{g.deleteURL}}{{rec.ID|default('0',true)}}/" onclick="return confirmRecordDelete();">Delete...</a>
+	{% endif %}
+	&nbsp;&nbsp;<a href="{{ g.listURL }}" >Cancel</a>
+</dd> 

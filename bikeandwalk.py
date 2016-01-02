@@ -58,7 +58,7 @@ def before_request():
     superUserDirectories = ("org","feature","trip","traveler",) #first directory of request URL
     rootURL = request.path.split("/")
     rootURL = rootURL[1]
-    adminOnly = rootURL in superUserDirectories
+    superRequired = rootURL in superUserDirectories
     noLoginRequired = rootURL in freeDirectories
     g.role = None
     g.orgID = None
@@ -72,22 +72,21 @@ def before_request():
         pass
     else:
         # login required
-        if g.user is not None:
-            ## email must be linked to a user
-            if views.user.setUserStatus(g.user):
-                # Session timeout is set in app.config["PERMANENT_SESSION_LIFETIME"]
-                # g.email, g.role, & g.orgID will be set
-                
-                g.organizationName = views.org.getName(g.orgID)
-                if adminOnly and g.role != "super":
-                    flash("Sorry, you don't have access for that feature.")
-                    return redirect(url_for("home"))
-            else:
-                # Not a valid email or session timed out, go to login page...
-                return redirect(url_for('login'))
-        else:
+        if g.user is None:
             # no email in session
-            flash("You must log in to use this site")
+            return redirect(url_for('login'))
+            
+        ## email must be linked to a user
+        if views.user.setUserStatus(g.user):
+            # Session timeout is set in app.config["PERMANENT_SESSION_LIFETIME"]
+            # g.email, g.role, & g.orgID will be set
+            
+            g.organizationName = views.org.getName(g.orgID)
+            if superRequired and g.role != "super":
+                flash("Sorry, you don't have access for that feature.")
+                return redirect(url_for("home"))
+        else:
+            # Not a valid email or session timed out, go to login page...
             return redirect(url_for('login'))
                 
     ## otherwise, serve the requested page...
