@@ -35,7 +35,7 @@ db = SQLAlchemy(app)
 ## views modules need db from above
 #import models #### don't import models here, do it in views
 import views.index
-import views.db
+from views.utils import db_init
      
 ### Base Routes #########
  
@@ -73,7 +73,7 @@ def init_db():
     if app.debug:
         sample = ''
     
-    views.db.db_init()
+    views.utils.db_init()
     
 #    """Creates the database tables."""
 #    with app.app_context():

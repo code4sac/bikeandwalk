@@ -2,7 +2,7 @@ from flask import request, session, g, redirect, url_for, \
      render_template, flash, Blueprint
 from bikeandwalk import db
 from models import Feature
-from views.db import printException
+from views.utils import printException
 
 mod = Blueprint('feature',__name__)
 

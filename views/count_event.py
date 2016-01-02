@@ -3,7 +3,7 @@ from flask import request, session, g, redirect, url_for, \
 from datetime import datetime, timedelta
 
 from bikeandwalk import db,app
-from views.db import nowString, printException, getTimeZones
+from views.utils import nowString, printException, getTimeZones
 from models import CountEvent, Organization
 
 mod = Blueprint('count_event',__name__)

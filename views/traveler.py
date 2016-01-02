@@ -1,9 +1,9 @@
 from flask import request, session, g, redirect, url_for, \
      render_template, flash, Blueprint
 from bikeandwalk import db, app
-from views.db import nowString
+from views.utils import nowString
 from models import Traveler, EventTraveler, TravelerFeature, Feature, Trip
-from views.db import printException
+from views.utils import printException
 
 mod = Blueprint('traveler',__name__)
 

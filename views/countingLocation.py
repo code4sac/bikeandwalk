@@ -2,7 +2,7 @@ from flask import request, session, g, redirect, url_for, \
      render_template, flash, Blueprint, abort
 from bikeandwalk import db
 from models import CountingLocation, Location, User
-from views.db import printException, getDatetimeFromString
+from views.utils import printException, getDatetimeFromString
 
 mod = Blueprint('countingLocation',__name__)
 

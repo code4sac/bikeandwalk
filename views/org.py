@@ -2,7 +2,7 @@ from flask import request, session, g, redirect, url_for, \
      render_template, flash, Blueprint
 from bikeandwalk import db
 from models import Organization
-from views.db import getTimeZones, printException
+from views.utils import getTimeZones, printException
 
 mod = Blueprint('org',__name__)
 
