@@ -35,32 +35,14 @@ db = SQLAlchemy(app)
 ## views modules need db from above
 #import models #### don't import models here, do it in views
 import views.index
-import views.user
-import views.org
-import views.feature
-import views.count_event
-import views.traveler
-import views.count
-import views.countingLocation
 import views.db
-
-## custom template filters
-@app.template_filter()
-def eventListFormat(value=datetime.now().isoformat(),format='%d-%m-%Y / %I:%M %p'):
-#    return value.strftime(value,format)
-     pass
      
-### Generic Routes #########
+### Base Routes #########
  
 @app.route('/')
 def home():
     return views.index.home()
     
-@app.route('/orgSwitch/<org>/', methods=['GET'])
-def switchOrg(org):
-    views.user.orgSwitch(org)
-    return redirect(url_for('home'))
-
 @app.route('/ping', methods=['GET'])
 def ping():
     return "OK"
@@ -69,137 +51,21 @@ def ping():
 def login():
     return views.index.login()
          
-## User Routes ######
-       
-@app.route('/users/')
-@app.route('/user/')
-def user_list():
-    return views.user.user_list()
+from views import user
+app.register_blueprint(user.mod)
+from views import org
+app.register_blueprint(org.mod)
+from views import feature
+app.register_blueprint(feature.mod)
+from views import count_event
+app.register_blueprint(count_event.mod)
+from views import traveler
+app.register_blueprint(traveler.mod)
+from views import countingLocation
+app.register_blueprint(countingLocation.mod)
+from views import count
+app.register_blueprint(count.mod)
 
-@app.route('/user/edit', methods=['POST', 'GET'])
-@app.route('/user/edit/', methods=['POST', 'GET'])
-@app.route('/user/edit/<id>/', methods=['POST', 'GET'])
-def user_edit(id=0):
-    #checkLoggedin()
-    return views.user.user_edit(id)
-    
-@app.route('/user/delete', methods=['GET'])
-@app.route('/user/delete/', methods=['GET'])
-@app.route('/user/delete/<id>/', methods=['GET'])
-def user_delete(id=0):
-    return views.user.user_delete(id)
-    
-## Org Routes ######
-       
-@app.route('/org')
-def org_list():
-    return views.org.org_list()
-
-@app.route('/org/edit', methods=['POST', 'GET'])
-@app.route('/org/edit/', methods=['POST', 'GET'])
-@app.route('/org/edit/<id>/', methods=['POST', 'GET'])
-def org_edit(id=0):
-    #checkLoggedin()
-    return views.org.org_edit(id)
-    
-@app.route('/org/delete', methods=['GET'])
-@app.route('/org/delete/', methods=['GET'])
-@app.route('/org/delete/<id>/', methods=['GET'])
-def org_delete(id=0):
-    return views.org.org_delete(id)
-    
-## Feature Routes ######
-       
-@app.route('/features')
-@app.route('/feature')
-def feature_list():
-    return views.feature.feature_list()
-
-@app.route('/feature/edit', methods=['POST', 'GET'])
-@app.route('/feature/edit/', methods=['POST', 'GET'])
-@app.route('/feature/edit/<id>/', methods=['POST', 'GET'])
-def feature_edit(id=0):
-    #checkLoggedin()
-    return views.feature.feature_edit(id)
-    
-@app.route('/feature/delete', methods=['GET'])
-@app.route('/feature/delete/', methods=['GET'])
-@app.route('/feature/delete/<id>/', methods=['GET'])
-def feature_delete(id=0):
-    return views.feature.feature_delete(id)
-    
-## CountEvent Routes ######
-
-@app.route('/event/')
-def count_event_list():
-    return views.count_event.count_event_list()
-
-@app.route('/event/edit', methods=['POST', 'GET'])
-@app.route('/event/edit/', methods=['POST', 'GET'])
-@app.route('/event/edit/<id>/', methods=['POST', 'GET'])
-def count_event_edit(id=0):
-    #checkLoggedin()
-    return views.count_event.count_event_edit(id)
-
-@app.route('/event/delete', methods=['GET'])
-@app.route('/event/delete/', methods=['GET'])
-@app.route('/event/delete/<id>/', methods=['GET'])
-def count_event_delete(id=0):
-    return views.count_event.count_event_delete(id)
-    
-## Traveler Routes ######
-
-@app.route('/traveler/')
-def traveler_list():
-    return views.traveler.traveler_list()
-
-@app.route('/traveler/edit', methods=['POST', 'GET'])
-@app.route('/traveler/edit/', methods=['POST', 'GET'])
-@app.route('/traveler/edit/<id>/', methods=['POST', 'GET'])
-def traveler_edit(id=0):
-    return views.traveler.traveler_edit(id)
-
-@app.route('/traveler/delete/', methods=['GET'])
-@app.route('/traveler/delete/<id>/', methods=['GET'])
-def traveler_delete(id=0):
-    return views.traveler.traveler_delete(id)
-
-@app.route('/traveler/select/', methods=['GET'])
-@app.route('/traveler/select/<id>/', methods=['GET'])
-def traveler_select(id=0):
-    return "Traveler Select goes here!"
-    
-#### CountingLocation routes #####
-
-@app.route('/countinglocation/')
-def countingLocation_list():
-    return views.countingLocation.countingLocation_list()
-
-@app.route('/countinglocation/edit', methods=['POST', 'GET'])
-@app.route('/countinglocation/edit/', methods=['POST', 'GET'])
-@app.route('/countinglocation/edit/<id>/', methods=['POST', 'GET'])
-def countingLocation_edit(id=0):
-    return views.countingLocation.countingLocation_edit(id)
-
-@app.route('/countinglocation/delete/', methods=['GET'])
-@app.route('/countinglocation/delete/<id>/', methods=['GET'])
-def countingLocation_delete(id=0):
-    return views.countingLocation.countingLocation_delete(id)
-
-
-#### The Count pages ###
-
-@app.route('/count', methods=['POST', 'GET'])
-@app.route('/count/', methods=['POST', 'GET'])
-@app.route('/count/<UID>', methods=['POST', 'GET'])
-@app.route('/count/<UID>/', methods=['POST', 'GET'])
-def count_begin(UID=""):
-    return views.count.count_begin(UID)
-    
-@app.route('/count/trip', methods=['POST', 'GET'])
-@app.route('/count/trip/', methods=['POST', 'GET'])
-def count_trip():
-    return views.count.count_trip()
     
 ## database connection ##
 def init_db():

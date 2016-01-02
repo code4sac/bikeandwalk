@@ -1,16 +1,19 @@
 from flask import request, session, g, redirect, url_for, abort, \
-     render_template, flash
+     render_template, flash, Blueprint
 from time import time
 import re
 from bikeandwalk import db,app
 from models import User
 
+mod = Blueprint('user',__name__)
+
 def setExits():
-    g.listURL = url_for('user_list')
-    g.editURL = url_for('user_edit')
-    g.deleteURL = url_for('user_delete')
+    g.listURL = url_for('.user_list')
+    g.editURL = url_for('.user_edit')
+    g.deleteURL = url_for('.user_delete')
     g.title = 'User'
 
+@mod.route('/user/')
 def user_list():
     if db :
         setExits()
@@ -21,6 +24,9 @@ def user_list():
     return redirect(url_for('index'))
     
 # Edit the user
+@mod.route('/user/edit', methods=['POST', 'GET'])
+@mod.route('/user/edit/', methods=['POST', 'GET'])
+@mod.route('/user/edit/<id>/', methods=['POST', 'GET'])
 def user_edit(id=0):
     if db:
         rec = None
@@ -48,6 +54,7 @@ def user_edit(id=0):
                     ## create a new record stub
                     rec = User(request.form['name'],request.form['email'],request.form['organization_ID'])
                     db.session.add(rec)
+                    
                 #update the record
                 rec.name = request.form['name']
                 rec.email = request.form['email']
@@ -68,9 +75,11 @@ def user_edit(id=0):
                 
                 db.session.commit()
                 
-                return redirect(url_for('user_list'))
             except:
                 flash(printException('Error attempting to save '+g.title+' record.',"error",e))
+                db.session.rollback()
+                
+            return redirect(url_for('.user_list'))
 
         # form not valid - redisplay
         return render_template('user/user_edit.html', rec=request.form)
@@ -78,8 +87,11 @@ def user_edit(id=0):
     else:
         flash('Could not open database')
 
-    return redirect(url_for('user_list'))
+    return redirect(url_for('.user_list'))
 
+@mod.route('/user/delete', methods=['GET'])
+@mod.route('/user/delete/', methods=['GET'])
+@mod.route('/user/delete/<id>/', methods=['GET'])
 def user_delete(id=0):
     setExits()
     if int(id) > 0:
@@ -93,7 +105,7 @@ def user_delete(id=0):
         else:
             flash("Record could not be deleted.")
             
-    return redirect(url_for('user_list'))
+    return redirect(url_for('.user_list'))
     
 def validForm():
     # Validate the form
@@ -155,9 +167,12 @@ def setUserStatus(email):
         session.clear()
         flash("That email address is not on file")
         return False
-         
+            
+
+@mod.route('/orgSwitch/<org>/', methods=['GET'])
 def orgSwitch(newOrg=None):
     # switch to another organization
     if g.role == 'super' and newOrg :
         session['superOrgID'] = newOrg
-                     
+        
+    return redirect(url_for('home'))           

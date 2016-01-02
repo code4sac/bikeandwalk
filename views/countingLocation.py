@@ -1,15 +1,19 @@
 from flask import request, session, g, redirect, url_for, \
-     render_template, flash
+     render_template, flash, Blueprint, abort
 from bikeandwalk import db
 from models import CountingLocation, Location, User
 from views.db import printException, getDatetimeFromString
 
-def setExits():
-    g.listURL = url_for('countingLocation_list')
-    g.editURL = url_for('countingLocation_edit')
-    g.deleteURL = url_for('countingLocation_delete')
-    g.title = 'Counting Location'
+mod = Blueprint('countingLocation',__name__)
 
+def setExits():
+    g.listURL = url_for('.countingLocation_list')
+    g.editURL = url_for('.countingLocation_edit')
+    g.deleteURL = url_for('.countingLocation_delete')
+    g.title = 'Counting Location'
+    
+@mod.route("/countingLocation/", methods=['GET'])
+@mod.route("/countingLocation", methods=['GET'])
 def countingLocation_list():
     setExits()
     if db :
@@ -34,7 +38,9 @@ def countingLocation_list():
         return redirect(url_for('home'))
         
     
-# Edit the Org
+@mod.route("/countingLocation/edit/", methods=['GET'])
+@mod.route("/countingLocation/edit/<id>", methods=['GET','POST'])
+@mod.route("/countingLocation/edit/<id>/", methods=['GET','POST'])
 def countingLocation_edit(id=0):
     setExits()
     if db:
@@ -44,7 +50,10 @@ def countingLocation_edit(id=0):
             rec = None
             if int(id) > 0:
                 rec = CountingLocation.query.get(id)
-                
+                if not rec:
+                    flash(printException("Could not edit that "+g.title + " record. ID="+str(id)+")",'error'))
+                    return redirect(url_for("countingLocation_list"))
+                    
             return render_template('countingLocation/countingLocation_edit.html', rec=rec)
 
         #have the request form
@@ -61,19 +70,21 @@ def countingLocation_edit(id=0):
                 rec.featureValue = request.form['featureValue']
                 db.session.commit()
                 
-                return redirect(url_for('countingLocation_list'))
+                return redirect(url_for('.countingLocation_list'))
 
             except Exception as e:
                 flash(printException('Could not save record. Unknown Error',"error",e))
 
         # form not valid - redisplay
-        return render_template('feature/countingLocation_edit.html', rec=request.form)
+        return render_template('countingLocation/countingLocation_edit.html', rec=request.form)
 
     else:
         flash(printException('Could not open database'),"info")
 
     return redirect(url_for('countingLocation_list'))
 
+@mod.route("/countingLocation/delete/", methods=['GET'])
+@mod.route("/countingLocation/delete/<id>", methods=['GET','POST'])
 def countingLocation_delete(id=0):
     setExits()
     if db:
@@ -83,11 +94,11 @@ def countingLocation_delete(id=0):
                 db.session.delete(rec)
                 db.session.commit()
             else:
-                flash(printException(g.title + " Record ID "+str(id)+" could not be found.","info"))
+                flash(printException("Could not delete that "+g.title + " record ID="+str(id)+" could not be found.","error"))
     else:
         flash(printException("Could not open database","info"))
         
-    return redirect(url_for('countingLocation_list'))
+    return redirect(url_for('.countingLocation_list'))
     
 def validForm():
     # Validate the form

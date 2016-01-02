@@ -1,17 +1,21 @@
 from flask import request, session, g, redirect, url_for, \
-     render_template, flash
+     render_template, flash, Blueprint
 from datetime import datetime, timedelta
 
 from bikeandwalk import db,app
 from views.db import nowString, printException, getTimeZones
 from models import CountEvent, Organization
 
+mod = Blueprint('count_event',__name__)
+
+
 def setExits():
-    g.listURL = url_for('count_event_list')
-    g.editURL = url_for('count_event_edit')
-    g.deleteURL = url_for('count_event_delete')
+    g.listURL = url_for('.count_event_list')
+    g.editURL = url_for('.count_event_edit')
+    g.deleteURL = url_for('.count_event_delete')
     g.title = 'Count Event' ## Always singular
 
+@mod.route('/event/')
 def count_event_list():
     if db :
         theTime = getTimeDictionary()
@@ -28,7 +32,9 @@ def count_event_list():
     flash('Could not open Database')
     return redirect(url_for('home'))
     
-# Edit the Org
+@mod.route('/event/edit', methods=['POST', 'GET'])
+@mod.route('/event/edit/', methods=['POST', 'GET'])
+@mod.route('/event/edit/<id>/', methods=['POST', 'GET'])
 def count_event_edit(id=0):
     if db:
         timeZones = getTimeZones()
@@ -83,7 +89,7 @@ def count_event_edit(id=0):
                     db.session.add(cur)
                 db.session.commit()
                 
-                return redirect(url_for('count_event_list'))
+                return redirect(url_for('.count_event_list'))
 
             except Exception as e:
                 flash(printException('Error attempting to save '+g.title+' record.',"error",e))
@@ -105,8 +111,11 @@ def count_event_edit(id=0):
     else:
         flash('Could not open database')
 
-    return redirect(url_for('count_event_list'))
+    return redirect(url_for('.count_event_list'))
 
+@mod.route('/event/delete', methods=['GET'])
+@mod.route('/event/delete/', methods=['GET'])
+@mod.route('/event/delete/<id>/', methods=['GET'])
 def count_event_delete(id=0):
     setExits()
     if int(id) > 0:
@@ -122,7 +131,7 @@ def count_event_delete(id=0):
         else:
             flash("Record could not be found.")
             
-    return redirect(url_for('count_event_list'))
+    return redirect(url_for('.count_event_list'))
     
 def validForm():
     # Validate the form

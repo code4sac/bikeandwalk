@@ -1,16 +1,20 @@
 from flask import request, session, g, redirect, url_for, \
-     render_template, flash
+     render_template, flash, Blueprint
 from bikeandwalk import db, app
 from views.db import nowString
 from models import Traveler, EventTraveler, TravelerFeature, Feature, Trip
 from views.db import printException
 
+mod = Blueprint('traveler',__name__)
+
+
 def setExits():
-    g.listURL = url_for('traveler_list')
-    g.editURL = url_for('traveler_edit')
-    g.deleteURL = url_for('traveler_delete')
+    g.listURL = url_for('.traveler_list')
+    g.editURL = url_for('.traveler_edit')
+    g.deleteURL = url_for('.traveler_delete')
     g.title = 'Traveler'
 
+@mod.route('/traveler/')
 def traveler_list():
     if db :
         cur = Traveler.query.all()
@@ -20,7 +24,10 @@ def traveler_list():
     flash('Could not open Database')
     return redirect(url_for('home'))
     
-# Edit the Org
+
+@mod.route('/traveler/edit', methods=['POST', 'GET'])
+@mod.route('/traveler/edit/', methods=['POST', 'GET'])
+@mod.route('/traveler/edit/<id>/', methods=['POST', 'GET'])
 def traveler_edit(id=0):
     if db:
         setExits()
@@ -65,7 +72,7 @@ def traveler_edit(id=0):
                     db.session.add(tf)
                 db.session.commit()    
                     
-                return redirect(url_for('traveler_list'))
+                return redirect(url_for('.traveler_list'))
 
             except Exception as e:
                 flash(printException('Could not Update '+g.title+' record.',"error",e))
@@ -79,8 +86,10 @@ def traveler_edit(id=0):
     else:
         flash('Could not open database')
 
-    return redirect(url_for('traveler_list'))
+    return redirect(url_for('.traveler_list'))
 
+@mod.route('/traveler/delete/', methods=['GET'])
+@mod.route('/traveler/delete/<id>/', methods=['GET'])
 def traveler_delete(id=0):
     setExits()
     if int(id) > 0:
@@ -92,7 +101,7 @@ def traveler_delete(id=0):
                 if trip:
                     #can't delete
                     flash("You can't delete this Traveler because there are Trip records that use it")
-                    return redirect(url_for('traveler_list'))
+                    return redirect(url_for('.traveler_list'))
                 
                 # Delete the related records
                 et = EventTraveler.query.filter_by(traveler_ID = str(id)).delete(synchronize_session='fetch')
@@ -107,7 +116,14 @@ def traveler_delete(id=0):
             db.session.rollback()
             return traveler_edit(str(id))
 
-    return redirect(url_for('traveler_list'))
+    return redirect(url_for('.traveler_list'))
+
+
+@mod.route('/traveler/select/', methods=['GET'])
+@mod.route('/traveler/select/<id>/', methods=['GET'])
+def traveler_select(id=0):
+    return "Traveler Select goes here!"
+
     
 def validForm():
     # Validate the form

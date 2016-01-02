@@ -16,20 +16,20 @@
 	<div id="super_menu" class="admin_menu">
 		<h5>Super Menu</h5>
 		<ul>
-			<li><a href="{{ url_for('org_list')}}">Organization List</a></li>
-			<li><a href="{{ url_for('feature_list')}}">Feature List</a></li>
-			<li><a href="{{ url_for('traveler_list')}}">Traveler List</a></li>
-			<li><a href="{{ url_for('org_list')}}">Trip List</a></li>
+			<li><a href="{{ url_for('org.org_list')}}">Organization List</a></li>
+			<li><a href="{{ url_for('feature.feature_list')}}">Feature List</a></li>
+			<li><a href="{{ url_for('traveler.traveler_list')}}">Traveler List</a></li>
+			<li><a href="{{ url_for('org.org_list')}}">Trip List</a></li>
 		</ul>
 	</div>	{% endif %}
 	<div class="admin_menu">
 			<h5>Administration Menu</h5>
 		<ul>
-			<li><a href="{{ url_for('user_list')}}">User List</a></li>
-			<li><a href="{{ url_for('user_list')}}">Location List</a></li>
-			<li><a href="{{ url_for('count_event_list')}}">Event List</a></li>
-			<li><a href="{{ url_for('countingLocation_list')}}">Counting Locations List</a></li>
-			<li><a href="{{ url_for('user_list')}}">Reports and Exports</a></li>
+			<li><a href="{{ url_for('user.user_list')}}">User List</a></li>
+			<li><a href="{{ url_for('user.user_list')}}">Location List</a></li>
+			<li><a href="{{ url_for('count_event.count_event_list')}}">Event List</a></li>
+			<li><a href="{{ url_for('countingLocation.countingLocation_list')}}">Counting Locations List</a></li>
+			<li><a href="{{ url_for('user.user_list')}}">Reports and Exports</a></li>
 		</ul>
 	</div>
 	<p class="clear">&nbsp;</p>

@@ -1,6 +1,6 @@
 ## this is where the count data is received and stored
 from flask import request, session, g, redirect, url_for, \
-     render_template, flash
+     render_template, flash, Blueprint
 from datetime import datetime, timedelta
 from bikeandwalk import db,app
 from models import CountEvent, Trip, Location, CountingLocation,\
@@ -8,12 +8,19 @@ from models import CountEvent, Trip, Location, CountingLocation,\
 from db import printException, getDatetimeFromString, getLocalTimeAtEvent
 import json
 
+mod = Blueprint('count',__name__)
+
+
 def setExits():
-    g.countBeginURL = url_for('count_begin')
+    g.countBeginURL = url_for('.count_begin')
     #g.editURL = url_for('feature_edit')
     #g.deleteURL = url_for('feature_delete')
     g.title = 'Count'
 
+@mod.route('/count', methods=['POST', 'GET'])
+@mod.route('/count/', methods=['POST', 'GET'])
+@mod.route('/count/<UID>', methods=['POST', 'GET'])
+@mod.route('/count/<UID>/', methods=['POST', 'GET'])
 def count_begin(UID=""):
     UID = UID.strip()
     # remember if the initial request did not include a UID
@@ -95,6 +102,9 @@ def count_begin(UID=""):
 def isValidUID(UID=""):
     return CountingLocation.query.filter_by(countingLocationUID= UID).exists()
     
+
+@mod.route('/count/trip', methods=['POST', 'GET'])
+@mod.route('/count/trip/', methods=['POST', 'GET'])
 def count_trip():
     theResult = "Unknown"
     try:

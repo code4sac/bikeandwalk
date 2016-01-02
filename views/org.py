@@ -1,15 +1,18 @@
 from flask import request, session, g, redirect, url_for, \
-     render_template, flash
+     render_template, flash, Blueprint
 from bikeandwalk import db
 from models import Organization
 from views.db import getTimeZones, printException
 
+mod = Blueprint('org',__name__)
+
 def setExits():
-    g.listURL = url_for('org_list')
-    g.editURL = url_for('org_edit')
-    g.deleteURL = url_for('org_delete')
+    g.listURL = url_for('.org_list')
+    g.editURL = url_for('.org_edit')
+    g.deleteURL = url_for('.org_delete')
     g.title = 'Orgnaization' ## Always singular
 
+@mod.route('/org')
 def org_list():
     if db :
         cur = Organization.query.all()
@@ -20,6 +23,9 @@ def org_list():
     return redirect(url_for('home'))
     
 # Edit the Org
+@mod.route('/org/edit', methods=['POST', 'GET'])
+@mod.route('/org/edit/', methods=['POST', 'GET'])
+@mod.route('/org/edit/<id>/', methods=['POST', 'GET'])
 def org_edit(id=0):
     if db:
         setExits()
@@ -47,15 +53,11 @@ def org_edit(id=0):
                 cur.email = request.form['email']
                 cur.defaultTimeZone = request.form["defaultTimeZone"]
                 db.session.commit()
-                
-                return redirect(url_for('org_list'))
-#                    except sqlite3.OperationalError:
-#                        flash('sqlite3 Operational error')
-#                    except sqlite3.IntegrityError:
-#                        flash('sqlite3 Integrity Error')
             except Exception as e:
                 flash(printException('Error attempting to create '+g.title+' record.',"error",e))
                 db.session.rollback()
+                
+            return redirect(url_for('.org_list'))
             
 
         # form not valid - redisplay
@@ -64,8 +66,11 @@ def org_edit(id=0):
     else:
         flash('Could not open database')
 
-    return redirect(url_for('org_list'))
+    return redirect(url_for('.org_list'))
 
+@mod.route('/org/delete', methods=['GET'])
+@mod.route('/org/delete/', methods=['GET'])
+@mod.route('/org/delete/<id>/', methods=['GET'])
 def org_delete(id=0):
     setExits()
     if int(id) > 0:
@@ -76,7 +81,7 @@ def org_delete(id=0):
         else:
             flash("Record could not be deleted.")
             
-    return redirect(url_for('org_list'))
+    return redirect(url_for('.org_list'))
     
 def validForm():
     # Validate the form

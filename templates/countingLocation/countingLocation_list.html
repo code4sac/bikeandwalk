@@ -14,8 +14,8 @@
 		</tr>
 		{% for rec in recs %}
 	    <tr>
-			<td><a href="{{ g.editURL }}{{ rec["ID"] }}/">{{ recs[rec]["ID"] }}</a></td>
-			<td><a href="{{ g.editURL }}{{ rec["ID"] }}/">{{ recs[rec]["startDate"] }}</a></td>
+			<td><a href="{{ g.editURL }}{{ recs[rec]["ID"] }}/">{{ recs[rec]["ID"] }}</a></td>
+			<td><a href="{{ g.editURL }}{{ recs[rec]["ID"] }}/">{{ recs[rec]["startDate"] }}</a></td>
 			<td>{{ recs[rec]["location"]}}</td>
 			<td>{{ recs[rec]["UID"] }}</td>
 			<td>{{ recs[rec]["counter"]|default("Unassigned",true)}}</td>
