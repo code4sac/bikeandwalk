@@ -169,7 +169,7 @@ def setUserStatus(email):
         return False
             
 
-@mod.route('/orgSwitch/<org>/', methods=['GET'])
+@mod.route('/orgSwitch/<newOrg>/', methods=['GET'])
 def orgSwitch(newOrg=None):
     # switch to another organization
     if g.role == 'super' and newOrg :
