@@ -55,8 +55,11 @@ def login():
 @app.before_request
 def before_request():
     freeDirectories = ("login","count","static","ping","_auth",) #first directory of request URL
+    superUserDirectories = ("org","feature","trip","traveler",) #first directory of request URL
     rootURL = request.path.split("/")
     rootURL = rootURL[1]
+    adminOnly = rootURL in superUserDirectories
+    noLoginRequired = rootURL in freeDirectories
     g.role = None
     g.orgID = None
     g.user = session.get('email')
@@ -64,7 +67,7 @@ def before_request():
     if rootURL == "login" and g.user != None:
         # usually this is the refresh after the persona validation
         return redirect(url_for('home'))
-    elif rootURL in freeDirectories:
+    elif noLoginRequired:
         #No login required
         pass
     else:
@@ -76,6 +79,9 @@ def before_request():
                 # g.email, g.role, & g.orgID will be set
                 
                 g.organizationName = views.org.getName(g.orgID)
+                if adminOnly and g.role != "super":
+                    flash("Sorry, you don't have access for that feature.")
+                    return redirect(url_for("home"))
             else:
                 # Not a valid email or session timed out, go to login page...
                 return redirect(url_for('login'))

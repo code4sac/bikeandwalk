@@ -2,9 +2,6 @@
 {% block title %}{{ g.title }} List{% endblock %}
 {% block body %}
 	<h2>{{ g.title }} List</h2>
-{% if not g.user or g.role != 'super' %}
-	{% include "onlySupers.html" %}
-{% else %}
 	{%if recs %}
 		<table class="datatable">
 		<tr>
@@ -24,5 +21,4 @@
     	<p><em>No {{ g.title }}s here so far</em></p>
 	{% endif %}
   	<p id="addRecord"><a href="{{ g.editURL }}0/">Add a new {{ g.title }}</a></p>
-{% endif %}
 {% endblock body %}

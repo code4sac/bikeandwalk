@@ -7,9 +7,6 @@
 			<p>Go to the <a href="{{url_for("home")}}">Administration Menu</a></p>
 	      (<a href="#" class=signout>Sign out</a>)</p>
 	    {% else %}
-		<p>You must be an Administrator to use this site. </p>
-		<p>For more information about the Bike and Walk system please
-		<a href="http://www.bikeandwalk.org/contact/">contact us</a> from the main web site.</p>
-	<p>If you are an Administrator click here to <a href="/" class=signin>Sign in</a> and gain access to your records.</p>
+			{% include "onlyAdmins.html" %}
 	{% endif %}
 {% endblock %}
