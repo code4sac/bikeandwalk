@@ -7,14 +7,14 @@ from views.utils import printException
 mod = Blueprint('feature',__name__)
 
 def setExits():
-    g.listURL = url_for('.feature_list')
-    g.editURL = url_for('.feature_edit')
-    g.deleteURL = url_for('.feature_delete')
+    g.listURL = url_for('.display')
+    g.editURL = url_for('.edit')
+    g.deleteURL = url_for('.delete')
     g.title = 'Feature'
 
 @mod.route('/features')
 @mod.route('/feature')
-def feature_list():
+def display():
     if db :
         recs = Feature.query.all()
         setExits()
@@ -27,7 +27,7 @@ def feature_list():
 @mod.route('/feature/edit', methods=['POST', 'GET'])
 @mod.route('/feature/edit/', methods=['POST', 'GET'])
 @mod.route('/feature/edit/<id>/', methods=['POST', 'GET'])
-def feature_edit(id=0):
+def edit(id=0):
     if db:
         setExits()
         if not request.form:
@@ -53,7 +53,7 @@ def feature_edit(id=0):
                 rec.featureValue = request.form['featureValue']
                 db.session.commit()
                 
-                return redirect(url_for('.feature_list'))
+                return redirect(url_for('.display'))
 
             except Exception as e:
                 flash(printException('Could not save record. Unknown Error',"error",e))
@@ -64,13 +64,11 @@ def feature_edit(id=0):
     else:
         flash(printException('Could not open database'),"info")
 
-    return redirect(url_for('.feature_list'))
+    return redirect(url_for('.display'))
 
-
-@mod.route('/feature/delete', methods=['GET'])
-@mod.route('/feature/delete/', methods=['GET'])
+@mod.route('/feature/delete', methods=['POST'])
 @mod.route('/feature/delete/<id>/', methods=['GET'])
-def feature_delete(id=0):
+def delete(id=0):
     setExits()
     if db:
         if int(id) > 0:
@@ -83,7 +81,7 @@ def feature_delete(id=0):
     else:
         flash(printException("Could not open database","info"))
         
-    return redirect(url_for('.feature_list'))
+    return redirect(url_for('.display'))
     
 def validForm():
     # Validate the form
