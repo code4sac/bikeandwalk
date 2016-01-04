@@ -59,7 +59,7 @@ class Location(db.Model):
         self.organization_ID = org
 
     def __repr__(self):
-        return '<Loc: %r>' % self.locationName
+        return self.locationName
     
 
 class CountEvent(db.Model):

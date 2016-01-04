@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+{% block title %}{{ g.title }} List{% endblock %}
+{% block body %}
+	<h2>{{ g.title }} List</h2>
+	{%if recs %}
+		<table class="datatable">
+		<tr>
+			<th>ID</th>
+			<th>Location Name</th>
+		</tr>
+		{% for rec in recs %}
+	    <tr>
+			<td><a href="{{ g.editURL }}{{ rec.ID }}/">{{ rec.ID }}</a></td>
+			<td><a href="{{ g.editURL }}{{ rec.ID }}/">{{ rec.locationName }}</a></td>
+		</tr>
+		{% endfor %}
+	  </table>
+  	{% else %}
+    	<p><em>No {{ g.title }}s here so far</em></p>
+	{% endif %}
+  	<p id="addRecord"><a href="{{ g.editURL }}0/">Add a new {{ g.title }}</a></p>
+{% endblock body %}
