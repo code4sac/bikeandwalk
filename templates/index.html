@@ -19,7 +19,7 @@
 				<li><a href="{{ url_for('feature.display')}}">Feature List</a></li>
 				<li><a href="{{ url_for('traveler.traveler_list')}}">Traveler List</a></li>
 				<li><a href="{{ url_for('countingLocation.display')}}">Counting Locations List</a></li>
-				<li><a href="{{ url_for('org.org_list')}}">Trip List</a></li>
+				<li><a href="{{ url_for('trip.display')}}">Trip List</a></li>
 			</ul>
 		</div>
 		{% endif %} {# super menu #}
@@ -30,7 +30,7 @@
 				<li><a href="{{ url_for('user.user_list')}}">User List</a></li>
 				<li><a href="{{ url_for('location.display')}}">Location List</a></li>
 				<li><a href="{{ url_for('count_event.count_event_list')}}">Event List</a></li>
-				<li><a href="{{ url_for('user.user_list')}}">Reports and Exports</a></li>
+				<li><a href="{{ url_for('user.user_list')}}">Reports and Exports (TODO)</a></li>
 			</ul>
 		</div>
 		{% else %}

@@ -2,7 +2,6 @@ from bikeandwalk import db
 from sqlalchemy import *
 from sqlalchemy.orm import *
 
-
 """
     So, it seems that SQLAlchemy can't figure out the table relationships if I try
     to suppress the underscore it wants to put into camelCase table names.
@@ -108,6 +107,20 @@ class CountingLocation(db.Model):
     def __repr__(self):
         return '<UID: %r>' % self.countingLocationUID
     
+class Traveler(db.Model):
+    ID = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.Text, nullable=False)
+    description = db.Column(db.Text)
+    iconURL = db.Column(db.Text)
+    travelerCode = db.Column(db.Text, nullable=False, unique=True)
+
+    def __init__(self, name, code):
+        self.name = name
+        self.travelerCode = code
+
+    def __repr__(self):
+        return '<Trav: %r>' % self.name
+
 
 class Trip(db.Model):
     ID = db.Column(db.Integer, primary_key=True)
@@ -118,6 +131,17 @@ class Trip(db.Model):
     location_ID = db.Column(db.Integer, db.ForeignKey('location.ID'))
     traveler_ID = db.Column(db.Integer, db.ForeignKey('traveler.ID'))
     countEvent_ID = db.Column(db.Integer, db.ForeignKey('count_event.ID'))
+
+    countevent = relationship(CountEvent)
+    location = relationship(Location)
+    traveler = relationship(Traveler)
+    
+    #from views.utils import getDatetimeFromString
+    
+    # Get the Starting date of the related event
+    eventStartDate = deferred(select([CountEvent.startDate]).where(CountEvent.ID == countEvent_ID))
+    travelerName = deferred(select([Traveler.name]).where(Traveler.ID == traveler_ID))
+    locationName = deferred(select([Location.locationName]).where(Location.ID == location_ID))
 
     def __init__(self, tripCnt,tripDate,turnDirection,seqNo,location_ID,traveler_ID,countEvent_ID):
         self.tripCount = tripCnt
@@ -151,31 +175,8 @@ class EventTraveler(db.Model):
 
     def __repr__(self):
         return '<EventTrav: %r : %r>' % (self.countEvent_ID, self.traveler_ID)
-    
 
-"""
-CREATE TABLE IF NOT EXISTS traveler (
-   ID INTEGER PRIMARY KEY AUTOINCREMENT,
-   name TEXT NOT NULL,
-   description TEXT,
-   iconURL TEXT,
-   travelerCode TEXT UNIQUE NOT NULL
-);
-"""
-class Traveler(db.Model):
-    ID = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.Text, nullable=False)
-    description = db.Column(db.Text)
-    iconURL = db.Column(db.Text)
-    travelerCode = db.Column(db.Text, nullable=False, unique=True)
 
-    def __init__(self, name, code):
-        self.name = name
-        self.travelerCode = code
-
-    def __repr__(self):
-        return '<Trav: %r>' % self.name
-        
 """
 CREATE TABLE IF NOT EXISTS travelerFeature (
    ID INTEGER PRIMARY KEY AUTOINCREMENT,

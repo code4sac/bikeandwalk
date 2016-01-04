@@ -2,7 +2,8 @@ from flask import request, session, g, redirect, url_for, \
      render_template, flash, Blueprint, abort
 from bikeandwalk import db, app
 from models import CountingLocation, Location, User, CountEvent
-from views.utils import printException, getDatetimeFromString, nowString
+from views.utils import printException, getDatetimeFromString, nowString, getUserChoices, getCountEventChoices, \
+    getLocationChoices
 from forms import CountingLocationForm
 import hmac
 
@@ -93,25 +94,26 @@ def delete(id=0):
         
     return redirect(g.listURL)
     
-def getUserChoices():
-    a = [(0,u"Select a User")]
-    b = [(x.ID, x.name) for x in User.query.filter(User.organization_ID == g.orgID).order_by('name')]
-    return a + b
-    
 def getAssignedUsers(id=0):
     """ A list of the User IDs for those who are already
     assigned to a location for this event
     """
     a = [x.user_ID for x in CountingLocation.query.filter(CountingLocation.countEvent_ID == id) ]
     return a
-    
-def getCountEventChoices():
-    a = [(0,u"Select a Count Event")]
-    b = [(x.ID, getDatetimeFromString(x.startDate).strftime('%x')) for x in CountEvent.query.filter(CountEvent.organization_ID == g.orgID).order_by(CountEvent.startDate.desc())]
-    return a + b
-    
-def getLocationChoices():
-    a = [(0,u"Select a Location")]
-    b = [(x.ID, x.locationName) for x in Location.query.filter(Location.organization_ID == g.orgID).order_by(Location.locationName)]
-    return a + b
+
+### Mover to utils    
+##def getUserChoices():
+##    a = [(0,u"Select a User")]
+##    b = [(x.ID, x.name) for x in User.query.filter(User.organization_ID == g.orgID).order_by('name')]
+##    return a + b
+##    
+##def getCountEventChoices():
+##    a = [(0,u"Select a Count Event")]
+##    b = [(x.ID, getDatetimeFromString(x.startDate).strftime('%x')) for x in CountEvent.query.filter(CountEvent.organization_ID == g.orgID).order_by(CountEvent.startDate.desc())]
+##    return a + b
+##    
+##def getLocationChoices():
+##    a = [(0,u"Select a Location")]
+##    b = [(x.ID, x.locationName) for x in Location.query.filter(Location.organization_ID == g.orgID).order_by(Location.locationName)]
+##    return a + b
     

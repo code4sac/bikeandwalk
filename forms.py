@@ -29,3 +29,22 @@ class LocationForm(Form):
     latitude = StringField("Latitude",  )
     longitude = StringField("Longitude", )
     #organization_ID = IntegerField("Organization ID", [validators.DataRequired(),], )
+
+class TripForm(Form):
+    #ID = HiddenField("ID")
+    tripCount = IntegerField("Count", [validators.DataRequired(),],)
+    tripDate = StringField("Date/Time", [validators.DataRequired(),], )
+    turnDirection = SelectField("Turn Direction",
+        [validators.Length(min=1, message="You must indicate the turn direction")], 
+        choices=[], )
+    seqNo = StringField("SeqNo", default="0", )
+    location_ID = SelectField("Location",
+        [validators.NumberRange(min=1, message="You must select a location")], 
+        coerce=int, choices=[], )
+    traveler_ID = SelectField("Traveler",
+        [validators.NumberRange(min=1, message="You must select a Traveler")], 
+        coerce=int, choices=[], )
+    countEvent_ID = SelectField("Count Event",
+        [validators.NumberRange(min=1, message="You must select a Count Event")], 
+        coerce=int, choices=[], )
+    

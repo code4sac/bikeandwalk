@@ -20,8 +20,7 @@ def display():
     if db :
         recs = None
         recs = Location.query.filter(Location.organization_ID == g.orgID).order_by(Location.locationName)
-        print g.orgID
-        print recs
+        
         return render_template('location/location_List.html', recs=recs)
         
     else:

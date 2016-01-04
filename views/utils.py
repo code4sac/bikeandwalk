@@ -1,5 +1,6 @@
+from flask import g
 from bikeandwalk import db,app
-import models
+from models import Traveler, CountEvent, User, Location
 from datetime import datetime, timedelta
 import linecache
 import sys
@@ -26,6 +27,34 @@ def getDatetimeFromString(dateString):
         theDate = None
         
     return theDate.replace(microsecond=0)
+
+def getUserChoices():
+    a = [(0,u"Select a User")]
+    b = [(x.ID, x.name) for x in User.query.filter(User.organization_ID == g.orgID).order_by('name')]
+    return a + b
+
+def getCountEventChoices():
+    a = [(0,u"Select a Count Event")]
+    b = [(x.ID, getDatetimeFromString(x.startDate).strftime('%x')) for x in CountEvent.query.filter(CountEvent.organization_ID == g.orgID).order_by(CountEvent.startDate.desc())]
+    return a + b
+
+def getLocationChoices():
+    a = [(0,u"Select a Location")]
+    b = [(x.ID, x.locationName) for x in Location.query.filter(Location.organization_ID == g.orgID).order_by(Location.locationName)]
+    return a + b
+
+def getTravelerChoices():
+    a = [(0,u"Select a Traveler")]
+    b = [(x.ID, x.name) for x in Traveler.query.order_by(Traveler.name)]
+    return a + b
+    
+def getTurnDirectionList():
+    return ("A1","A2","A3","B1","B2","B3","C1","C2","C3","D1","D2","D3")
+    
+def getTurnDirectionChoices():
+    a = [("",u"Select a Turn Direction")]
+    b = [(x, x) for x in getTurnDirectionList()]
+    return a + b
 
 def getLocalTimeAtEvent(tz,isDST=0):
     """

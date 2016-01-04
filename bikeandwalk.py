@@ -119,6 +119,8 @@ from views import persona
 app.register_blueprint(persona.mod)
 from views import location
 app.register_blueprint(location.mod)
+from views import trip
+app.register_blueprint(trip.mod)
 
 
 def startLogging():

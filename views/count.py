@@ -7,6 +7,7 @@ from models import CountEvent, Trip, Location, CountingLocation,\
     Traveler, EventTraveler, User
 from db import printException, getDatetimeFromString, getLocalTimeAtEvent
 import json
+from views.utils import getTurnDirectionList
 
 mod = Blueprint('count',__name__)
 
@@ -198,7 +199,7 @@ def isValidTrip(trip,startDate,endDate,localTime):
         
     #test that all the trip data elements are present and valid
     if trip['turnDirection'] == "" or \
-       trip['turnDirection'] not in ("A1","A2","A3","B1","B2","B3","C1","C2","C3","D1","D2","D3") :
+       trip['turnDirection'] not in getTurnDirectionList() :
         isValid = False
         #flash(trip['turnDirection'] + " is not a valid Turn Direction")
     
