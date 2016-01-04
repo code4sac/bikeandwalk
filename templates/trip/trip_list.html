@@ -2,17 +2,6 @@
 {% block title %}{{ g.title }} List{% endblock %}
 {% block body %}
 	<h2>{{ g.title }} List</h2>
-	
-	ID = db.Column(db.Integer, primary_key=True)
-    tripCount = db.Column(db.Integer)
-    tripDate = db.Column(db.Text)
-    turnDirection = db.Column(db.Text)
-    seqNo = db.Column(db.Text)
-    location_ID = db.Column(db.Integer, db.ForeignKey('location.ID'))
-    traveler_ID = db.Column(db.Integer, db.ForeignKey('traveler.ID'))
-    countEvent_ID = db.Column(db.Integer, db.ForeignKey('count_event.ID'))
-    
-
 	{%if recs %}
 		<table class="datatable">
 		<tr>
