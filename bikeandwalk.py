@@ -55,7 +55,7 @@ def login():
 @app.before_request
 def before_request():
     freeDirectories = ("login","count","static","ping","_auth",) #first directory of request URL
-    superUserDirectories = ("org","feature","trip","traveler",) #first directory of request URL
+    superUserDirectories = ("org","feature","trip","traveler","super",) #first directory of request URL
     rootURL = request.path.split("/")
     rootURL = rootURL[1]
     superRequired = rootURL in superUserDirectories

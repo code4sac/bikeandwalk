@@ -8,19 +8,18 @@ from models import CountEvent, Organization
 
 mod = Blueprint('count_event',__name__)
 
-
 def setExits():
-    g.listURL = url_for('.count_event_list')
-    g.editURL = url_for('.count_event_edit')
-    g.deleteURL = url_for('.count_event_delete')
-    g.title = 'Count Event' ## Always singular
+   g.listURL = url_for('.count_event_list')
+   g.editURL = url_for('.count_event_edit')
+   g.deleteURL = url_for('.count_event_delete')
+   g.title = 'Count Event' ## Always singular
 
 @mod.route('/event/')
 def count_event_list():
+    setExits()
     if db :
         theTime = getTimeDictionary()
         cur = CountEvent.query.filter(CountEvent.organization_ID == int(g.orgID)).order_by(CountEvent.startDate.desc())
-        setExits()
         if cur:
             ### need to loop through each record retireve an call getTimeDictionary
             ## then need to create a second level of the time dict : theTime[n][elementName]
@@ -36,9 +35,9 @@ def count_event_list():
 @mod.route('/event/edit/', methods=['POST', 'GET'])
 @mod.route('/event/edit/<id>/', methods=['POST', 'GET'])
 def count_event_edit(id=0):
+    setExits()
     if db:
         timeZones = getTimeZones()
-        setExits()
         if not request.form:
             """ if no form object, send the form page """
             #Set up a default time for the event
@@ -59,7 +58,7 @@ def count_event_edit(id=0):
                 if not cur:
                     mes = g.title +" Record could not be found." + " ID:" + str(id)
                     flash(printException(mes,"error"))
-                    return redirect(url_for("count_event_list"))
+                    return redirect(g.listURL)
                 
                 theTime = getTimeDictionary(cur.startDate,cur.endDate)
                 g.timeZone = None
@@ -89,7 +88,7 @@ def count_event_edit(id=0):
                     db.session.add(cur)
                 db.session.commit()
                 
-                return redirect(url_for('.count_event_list'))
+                return redirect(g.listURL)
 
             except Exception as e:
                 flash(printException('Error attempting to save '+g.title+' record.',"error",e))
@@ -111,7 +110,7 @@ def count_event_edit(id=0):
     else:
         flash('Could not open database')
 
-    return redirect(url_for('.count_event_list'))
+    return redirect(g.listURL)
 
 @mod.route('/event/delete', methods=['GET'])
 @mod.route('/event/delete/', methods=['GET'])
@@ -131,7 +130,7 @@ def count_event_delete(id=0):
         else:
             flash("Record could not be found.")
             
-    return redirect(url_for('.count_event_list'))
+    return redirect(g.listURL)
     
 def validForm():
     # Validate the form

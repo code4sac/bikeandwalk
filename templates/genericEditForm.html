@@ -1,0 +1,19 @@
+{% extends "layout.html" %}
+{% block title %}Edit {{ g.title }}{% endblock %}
+{% block body %}
+	<h2>Edit {{ g.title }}</h2>
+	{% if form %}
+    <form class="entry" action="{{ g.editURL }}{{rec.ID|default("0",true)}}/" method="POST" enctype="multipart/form-data">
+		{% include "editFormButtons.html" %}
+		{% from "_form_helpers.html" import render_field_in_table %}
+			{{ form.csrf_token }}
+      <table class="edit-form-table">
+			{% for f in form %}
+				{{ render_field_in_table(f) }}
+			{% endfor%}
+      </table>
+    </form>
+	{% else %}
+		<dt>No form found</dt>
+	{% endif %}
+{% endblock body %}

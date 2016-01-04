@@ -98,6 +98,7 @@ class CountingLocation(db.Model):
     
     # Get the Starting date of the related event
     eventStartDate = deferred(select([CountEvent.startDate]).where(CountEvent.ID == countEvent_ID))
+    organization_ID = deferred(select([CountEvent.organization_ID]).where(CountEvent.ID == countEvent_ID))
     counter = deferred(select([User.name]).where(User.ID == user_ID))
     locationName = deferred(select([Location.locationName]).where(Location.ID == location_ID))
     

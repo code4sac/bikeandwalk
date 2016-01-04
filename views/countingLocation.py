@@ -1,24 +1,26 @@
 from flask import request, session, g, redirect, url_for, \
      render_template, flash, Blueprint, abort
-from bikeandwalk import db
-from models import CountingLocation, Location, User
-from views.utils import printException, getDatetimeFromString
+from bikeandwalk import db, app
+from models import CountingLocation, Location, User, CountEvent
+from views.utils import printException, getDatetimeFromString, nowString
+from forms import CountingLocationForm
+import hmac
 
 mod = Blueprint('countingLocation',__name__)
 
 def setExits():
-    g.listURL = url_for('.countingLocation_list')
-    g.editURL = url_for('.countingLocation_edit')
-    g.deleteURL = url_for('.countingLocation_delete')
+    g.listURL = url_for('.display')
+    g.editURL = url_for('.edit')
+    g.deleteURL = url_for('.delete')
     g.title = 'Counting Location'
     
-@mod.route("/countingLocation/", methods=['GET'])
-@mod.route("/countingLocation", methods=['GET'])
-def countingLocation_list():
+@mod.route("/super/countingLocation/", methods=['GET'])
+@mod.route("/super/countingLocation", methods=['GET'])
+def display():
     setExits()
     if db :
         recs = None
-        cl = CountingLocation.query.order_by(CountingLocation.eventStartDate.desc())
+        cl = CountingLocation.query.filter(CountingLocation.organization_ID == g.orgID).order_by(CountingLocation.eventStartDate.desc())
         # collect additional data for each record
         if cl:
             recs = dict()
@@ -37,55 +39,46 @@ def countingLocation_list():
         flash(printException('Could not open Database',"info"))
         return redirect(url_for('home'))
         
-    
-@mod.route("/countingLocation/edit/", methods=['GET'])
-@mod.route("/countingLocation/edit/<id>", methods=['GET','POST'])
-@mod.route("/countingLocation/edit/<id>/", methods=['GET','POST'])
-def countingLocation_edit(id=0):
+
+@mod.route("/super/countingLocation/edit/", methods=['GET'])
+@mod.route("/super/countingLocation/edit/<id>", methods=['GET','POST'])
+@mod.route("/super/countingLocation/edit/<id>/", methods=['GET','POST'])
+def edit(id=0):
     setExits()
-    if db:
-        if not request.form:
-            """ if no form object, send the form page """
-            # get the Org record if you can
-            rec = None
-            if int(id) > 0:
-                rec = CountingLocation.query.get(id)
-                if not rec:
-                    flash(printException("Could not edit that "+g.title + " record. ID="+str(id)+")",'error'))
-                    return redirect(url_for("countingLocation_list"))
-                    
-            return render_template('countingLocation/countingLocation_edit.html', rec=rec)
+    id = int(id)
+    rec = None
+    if id > 0:
+        rec = CountingLocation.query.get(id)
+        if not rec:
+            flash(printException("Could not edit that "+g.title + " record. ID="+str(id)+")",'error'))
+            return redirect(g.listURL)
+    
+    form = CountingLocationForm(request.form, rec)
+        
+    ## choices need to be assigned before rendering the form
+    # AND before attempting to validate it
+    form.user_ID.choices = getUserChoices()
+    form.countEvent_ID.choices = getCountEventChoices()
+    form.location_ID.choices = getLocationChoices()
+    g.AssignedUserIDs = ()
+    if rec: 
+        g.AssignedUserIDs = getAssignedUsers(int(rec.countEvent_ID))
 
-        #have the request form
-        if validForm():
-            try:
-                if int(id) > 0:
-                    rec = CountingLocation.query.get(id)
-                else:
-                    ## create a new record stub
-                    rec = CountingLocation(request.form['featureClass'],request.form['featureValue'])
-                    db.session.add(rec)
-                #update the record
-                rec.featureClass = request.form['featureClass']
-                rec.featureValue = request.form['featureValue']
-                db.session.commit()
-                
-                return redirect(url_for('.countingLocation_list'))
-
-            except Exception as e:
-                flash(printException('Could not save record. Unknown Error',"error",e))
-
-        # form not valid - redisplay
-        return render_template('countingLocation/countingLocation_edit.html', rec=request.form)
-
-    else:
-        flash(printException('Could not open database'),"info")
-
-    return redirect(url_for('countingLocation_list'))
-
+    if request.method == 'POST' and form.validate():
+        if not rec:
+            rec = CountingLocation(hmac.new(nowString(),app.config["SECRET_KEY"]).hexdigest())
+            db.session.add(rec)
+        form.populate_obj(rec)
+        db.session.commit()
+        return redirect(g.listURL)
+        
+    return render_template('genericEditForm.html', rec=rec, form=form)
+    
+    
 @mod.route("/countingLocation/delete/", methods=['GET'])
 @mod.route("/countingLocation/delete/<id>", methods=['GET','POST'])
-def countingLocation_delete(id=0):
+@mod.route("/countingLocation/delete/<id>/", methods=['GET','POST'])
+def delete(id=0):
     setExits()
     if db:
         if int(id) > 0:
@@ -98,18 +91,27 @@ def countingLocation_delete(id=0):
     else:
         flash(printException("Could not open database","info"))
         
-    return redirect(url_for('.countingLocation_list'))
+    return redirect(g.listURL)
     
-def validForm():
-    # Validate the form
-    goodForm = True
-
-    if request.form['featureClass'] == '':
-        goodForm = False
-        flash('Feature Class may not be blank')
+def getUserChoices():
+    a = [(0,u"Select a User")]
+    b = [(x.ID, x.name) for x in User.query.filter(User.organization_ID == g.orgID).order_by('name')]
+    return a + b
     
-    if request.form['featureValue'] == '':
-        goodForm = False
-        flash('Feature Value may not be blank')
-
-    return goodForm
+def getAssignedUsers(id=0):
+    """ A list of the User IDs for those who are already
+    assigned to a location for this event
+    """
+    a = [x.user_ID for x in CountingLocation.query.filter(CountingLocation.countEvent_ID == id) ]
+    return a
+    
+def getCountEventChoices():
+    a = [(0,u"Select a Count Event")]
+    b = [(x.ID, getDatetimeFromString(x.startDate).strftime('%x')) for x in CountEvent.query.filter(CountEvent.organization_ID == g.orgID).order_by(CountEvent.startDate.desc())]
+    return a + b
+    
+def getLocationChoices():
+    a = [(0,u"Select a Location")]
+    b = [(x.ID, x.locationName) for x in Location.query.filter(Location.organization_ID == g.orgID).order_by(Location.locationName)]
+    return a + b
+    

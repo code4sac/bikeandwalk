@@ -208,3 +208,15 @@ img#travelerIcon {
     width:57px;
     background-image:url(//bikeandwalk.org/images/travelers/unknown.png);
 }
+
+table.edit-form-table, table.edit-form-table th, 
+table.edit-form-table td, table.edit-form-table tr{
+    border-width:0px;
+    border-collapse:collapse;
+}
+table.edit-form-table th {
+    text-align:right;
+}
+table.edit-form-table td {
+    text-align:left;
+}
