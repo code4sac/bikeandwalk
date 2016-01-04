@@ -9,13 +9,13 @@ mod = Blueprint('traveler',__name__)
 
 
 def setExits():
-    g.listURL = url_for('.traveler_list')
-    g.editURL = url_for('.traveler_edit')
-    g.deleteURL = url_for('.traveler_delete')
+    g.listURL = url_for('.display')
+    g.editURL = url_for('.edit')
+    g.deleteURL = url_for('.delete')
     g.title = 'Traveler'
 
 @mod.route('/traveler/')
-def traveler_list():
+def display():
     if db :
         cur = Traveler.query.all()
         setExits()
@@ -28,7 +28,7 @@ def traveler_list():
 @mod.route('/traveler/edit', methods=['POST', 'GET'])
 @mod.route('/traveler/edit/', methods=['POST', 'GET'])
 @mod.route('/traveler/edit/<id>/', methods=['POST', 'GET'])
-def traveler_edit(id=0):
+def edit(id=0):
     if db:
         setExits()
         if not request.form:
@@ -72,7 +72,7 @@ def traveler_edit(id=0):
                     db.session.add(tf)
                 db.session.commit()    
                     
-                return redirect(url_for('.traveler_list'))
+                return redirect(g.listURL)
 
             except Exception as e:
                 flash(printException('Could not Update '+g.title+' record.',"error",e))
@@ -86,11 +86,11 @@ def traveler_edit(id=0):
     else:
         flash('Could not open database')
 
-    return redirect(url_for('.traveler_list'))
+    return redirect(g.listURL)
 
 @mod.route('/traveler/delete/', methods=['GET'])
 @mod.route('/traveler/delete/<id>/', methods=['GET'])
-def traveler_delete(id=0):
+def delete(id=0):
     setExits()
     if int(id) > 0:
         try:
@@ -101,7 +101,7 @@ def traveler_delete(id=0):
                 if trip:
                     #can't delete
                     flash("You can't delete this Traveler because there are Trip records that use it")
-                    return redirect(url_for('.traveler_list'))
+                    return redirect(g.listURL)
                 
                 # Delete the related records
                 et = EventTraveler.query.filter_by(traveler_ID = str(id)).delete(synchronize_session='fetch')
@@ -114,9 +114,9 @@ def traveler_delete(id=0):
         except Exception as e:
             flash(printException('Error attempting to delete '+g.title+' record.',"error",e))
             db.session.rollback()
-            return traveler_edit(str(id))
+            return edit(str(id))
 
-    return redirect(url_for('.traveler_list'))
+    return redirect(g.listURL)
 
 
 @mod.route('/traveler/select/', methods=['GET'])

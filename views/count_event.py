@@ -9,13 +9,13 @@ from models import CountEvent, Organization
 mod = Blueprint('count_event',__name__)
 
 def setExits():
-   g.listURL = url_for('.count_event_list')
-   g.editURL = url_for('.count_event_edit')
-   g.deleteURL = url_for('.count_event_delete')
+   g.listURL = url_for('.display')
+   g.editURL = url_for('.edit')
+   g.deleteURL = url_for('.delete')
    g.title = 'Count Event' ## Always singular
 
 @mod.route('/event/')
-def count_event_list():
+def display():
     setExits()
     if db :
         theTime = getTimeDictionary()
@@ -34,7 +34,7 @@ def count_event_list():
 @mod.route('/event/edit', methods=['POST', 'GET'])
 @mod.route('/event/edit/', methods=['POST', 'GET'])
 @mod.route('/event/edit/<id>/', methods=['POST', 'GET'])
-def count_event_edit(id=0):
+def edit(id=0):
     setExits()
     if db:
         timeZones = getTimeZones()
@@ -115,7 +115,7 @@ def count_event_edit(id=0):
 @mod.route('/event/delete', methods=['GET'])
 @mod.route('/event/delete/', methods=['GET'])
 @mod.route('/event/delete/<id>/', methods=['GET'])
-def count_event_delete(id=0):
+def delete(id=0):
     setExits()
     if int(id) > 0:
         rec = CountEvent.query.get(id)

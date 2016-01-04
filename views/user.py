@@ -8,13 +8,13 @@ from models import User
 mod = Blueprint('user',__name__)
 
 def setExits():
-    g.listURL = url_for('.user_list')
-    g.editURL = url_for('.user_edit')
-    g.deleteURL = url_for('.user_delete')
+    g.listURL = url_for('.display')
+    g.editURL = url_for('.edit')
+    g.deleteURL = url_for('.delete')
     g.title = 'User'
 
 @mod.route('/user/')
-def user_list():
+def display():
     if db :
         setExits()
         recs = User.query.filter(User.organization_ID == int(g.orgID)).order_by(User.name)
@@ -27,7 +27,7 @@ def user_list():
 @mod.route('/user/edit', methods=['POST', 'GET'])
 @mod.route('/user/edit/', methods=['POST', 'GET'])
 @mod.route('/user/edit/<id>/', methods=['POST', 'GET'])
-def user_edit(id=0):
+def edit(id=0):
     if db:
         rec = None
         setExits()
@@ -79,7 +79,7 @@ def user_edit(id=0):
                 flash(printException('Error attempting to save '+g.title+' record.',"error",e))
                 db.session.rollback()
                 
-            return redirect(url_for('.user_list'))
+            return redirect(g.listURL)
 
         # form not valid - redisplay
         return render_template('user/user_edit.html', rec=request.form)
@@ -87,12 +87,12 @@ def user_edit(id=0):
     else:
         flash('Could not open database')
 
-    return redirect(url_for('.user_list'))
+    return redirect(g.listURL)
 
 @mod.route('/user/delete', methods=['GET'])
 @mod.route('/user/delete/', methods=['GET'])
 @mod.route('/user/delete/<id>/', methods=['GET'])
-def user_delete(id=0):
+def delete(id=0):
     setExits()
     if int(id) > 0:
         rec = User.query.get(id)
@@ -105,7 +105,7 @@ def user_delete(id=0):
         else:
             flash("Record could not be deleted.")
             
-    return redirect(url_for('.user_list'))
+    return redirect(g.listURL)
     
 def validForm():
     # Validate the form
