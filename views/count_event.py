@@ -36,6 +36,10 @@ def display():
 @mod.route('/event/edit/<id>/', methods=['POST', 'GET'])
 def edit(id=0):
     setExits()
+    if not id.isdigit() or int(id) < 0:
+        flash("That is not a valid ID")
+        return redirect(g.listURL)
+        
     if db:
         timeZones = getTimeZones()
         if not request.form:
@@ -117,6 +121,10 @@ def edit(id=0):
 @mod.route('/event/delete/<id>/', methods=['GET'])
 def delete(id=0):
     setExits()
+    if not id.isdigit() or int(id) < 0:
+        flash("That is not a valid ID")
+        return redirect(g.listURL)
+
     if int(id) > 0:
         rec = CountEvent.query.get(id)
         if rec:

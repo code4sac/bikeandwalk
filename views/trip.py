@@ -34,6 +34,10 @@ def display():
 @mod.route("/trip/edit/<id>/", methods=['GET','POST'])
 def edit(id=0):
     setExits()
+    if not id.isdigit() or int(id) < 0:
+        flash("That is not a valid ID")
+        return redirect(g.listURL)
+            
     id = int(id)
     rec = None
     if id > 0:
@@ -66,6 +70,10 @@ def edit(id=0):
 @mod.route("/trip/delete/<id>/", methods=['GET','POST'])
 def delete(id=0):
     setExits()
+    if not id.isdigit() or int(id) < 0:
+        flash("That is not a valid ID")
+        return redirect(g.listURL)
+        
     if db:
         if int(id) > 0:
             rec = Trip.query.get(id)

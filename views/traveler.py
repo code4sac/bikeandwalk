@@ -29,8 +29,12 @@ def display():
 @mod.route('/traveler/edit/', methods=['POST', 'GET'])
 @mod.route('/traveler/edit/<id>/', methods=['POST', 'GET'])
 def edit(id=0):
+    setExits()
+    if not id.isdigit() or int(id) < 0:
+        flash("That is not a valid ID")
+        return redirect(g.listURL)
+    
     if db:
-        setExits()
         if not request.form:
             """ if no form object, send the form page """
             # get the Org record if you can
@@ -92,6 +96,10 @@ def edit(id=0):
 @mod.route('/traveler/delete/<id>/', methods=['GET'])
 def delete(id=0):
     setExits()
+    if not id.isdigit() or int(id) < 0:
+        flash("That is not a valid ID")
+        return redirect(g.listURL)
+    
     if int(id) > 0:
         try:
             rec = Traveler.query.get(id)
@@ -122,6 +130,12 @@ def delete(id=0):
 @mod.route('/traveler/select/', methods=['GET'])
 @mod.route('/traveler/select/<id>/', methods=['GET'])
 def traveler_select(id=0):
+    if not id.isdigit() or int(id) < 0:
+        flash("That is not a valid ID")
+        return redirect(g.listURL)
+            
+    id = int(id)
+    
     return "Traveler Select goes here!"
 
     

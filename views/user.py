@@ -28,9 +28,13 @@ def display():
 @mod.route('/user/edit/', methods=['POST', 'GET'])
 @mod.route('/user/edit/<id>/', methods=['POST', 'GET'])
 def edit(id=0):
+    setExits()
+    if not id.isdigit() or int(id) < 0:
+        flash("That is not a valid ID")
+        return redirect(g.listURL)
+            
     if db:
         rec = None
-        setExits()
         
         if not request.form:
             """ if no form object, send the form page """
@@ -94,6 +98,10 @@ def edit(id=0):
 @mod.route('/user/delete/<id>/', methods=['GET'])
 def delete(id=0):
     setExits()
+    if not id.isdigit() or int(id) < 0:
+        flash("That is not a valid ID")
+        return redirect(g.listURL)
+    
     if int(id) > 0:
         rec = User.query.get(id)
         if rec:

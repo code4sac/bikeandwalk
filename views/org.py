@@ -27,8 +27,12 @@ def org_list():
 @mod.route('/org/edit/', methods=['POST', 'GET'])
 @mod.route('/org/edit/<id>/', methods=['POST', 'GET'])
 def org_edit(id=0):
+    setExits()
+    if not id.isdigit() or int(id) < 0:
+        flash("That is not a valid ID")
+        return redirect(g.listURL)
+     
     if db:
-        setExits()
         timeZones = getTimeZones()
         if not request.form:
             """ if no form object, send the form page """
@@ -73,6 +77,10 @@ def org_edit(id=0):
 @mod.route('/org/delete/<id>/', methods=['GET'])
 def org_delete(id=0):
     setExits()
+    if not id.isdigit() or int(id) < 0:
+        flash("That is not a valid ID")
+        return redirect(g.listURL)
+    
     if int(id) > 0:
         rec = Organization.query.get(id)
         if rec:
