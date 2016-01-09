@@ -30,12 +30,15 @@ from bikeandwalk import app as application
 #
 #     DocumentRoot "/Users/user/Sites/app.bikandwalk.org"
 #
-#     # Add static directory aliase
+#     # Add static directory alias
 #     AliasMatch ^/(static/.*)$ /Users/user/Sites/app.bikandwalk.org/$1 
 #
 #     # user should be non-priveliged, not a sudoer but with write privileges in the app directory 
 #     WSGIDaemonProcess bikeandwalk user=baw group=staff threads=5
 #     WSGIScriptAlias / /Users/user/Sites/app.bikeandwalk.org/apache/bikeandwalk.wsgi
+#     
+#     ## a directive like this must be in the MAIN http.confg file...
+#     ## WSGIPythonHome /usr/local/pythonenv/BASELINE_2.6
 #     
 #     <Directory /Users/user/Sites/app.bikeandwalk.org>
 #         WSGIProcessGroup bikeandwalk
