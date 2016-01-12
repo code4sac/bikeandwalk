@@ -29,7 +29,7 @@ def getDatetimeFromString(dateString):
     return theDate.replace(microsecond=0)
 
 def getUserChoices():
-    a = [(0,u"Select a User")]
+    a = [(0,u"Unassigned")]
     b = [(x.ID, x.name) for x in User.query.filter(User.organization_ID == g.orgID).order_by('name')]
     return a + b
 

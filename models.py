@@ -51,8 +51,7 @@ class Location(db.Model):
     latitude = db.Column(db.Text)
     longitude = db.Column(db.Text)
     organization_ID = db.Column(db.Integer, db.ForeignKey('organization.ID'), nullable=False)
-
-
+    
     def __init__(self, name, org):
         self.locationName = name
         self.organization_ID = org
@@ -82,7 +81,7 @@ class CountEvent(db.Model):
     
 
 class CountingLocation(db.Model):
-    #__tablename__ = 'countingLocation'
+    __tablename__ = 'counting_location'
     ID = db.Column(db.Integer, primary_key=True)
     countingLocationUID = db.Column(db.Text, unique=True)
     weather = db.Column(db.Text)
@@ -92,16 +91,17 @@ class CountingLocation(db.Model):
     user_ID = db.Column(db.Integer, db.ForeignKey('user.ID'))
 
     countevent = relationship(CountEvent)
-    location = relationship(Location)
+    locations = relationship(Location)
     user = relationship(User)
     
     # Get the Starting date of the related event
     eventStartDate = deferred(select([CountEvent.startDate]).where(CountEvent.ID == countEvent_ID))
     organization_ID = deferred(select([CountEvent.organization_ID]).where(CountEvent.ID == countEvent_ID))
-    counter = deferred(select([User.name]).where(User.ID == user_ID))
     locationName = deferred(select([Location.locationName]).where(Location.ID == location_ID))
-    
-    def __init__(self, UID):
+    userName = deferred(select([User.name]).where(User.ID == user_ID))
+
+    def __init__(self, eventID, UID):
+        self.countEvent_ID = eventID
         self.countingLocationUID = UID
 
     def __repr__(self):

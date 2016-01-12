@@ -2,6 +2,9 @@
 <html lang="en">
 <head>
 	<title>{% block title%}{% endblock %} - Bike and Walk</title> 
+	<link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}" >
+    <link rel="SHORTCUT ICON" type="image/vnd.microsoft.icon" href="{{ url_for('static', filename='favicon.ico') }}" >
+	
 	<link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
 	<meta http-equiv="X-UA-Compatible" content="IE=Edge">
 	<script src="{{ config.PERSONA_JS }}"></script>
@@ -18,6 +21,7 @@
 </head>
 <body>
 <div id="contain">
+	<div id="dialog"></div><div id="modal-form-contain"><div id="modal-form"></div></div>
 	<div>
 		<a id="header_home" href="{{ url_for('home')}}"> 
 			<img src="http://bikeandwalk.org/images/HeaderLogo128.png" id="headerlogo" />

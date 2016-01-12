@@ -5,9 +5,8 @@ from datetime import datetime, timedelta
 from bikeandwalk import db,app
 from models import CountEvent, Trip, Location, CountingLocation,\
     Traveler, EventTraveler, User
-from db import printException, getDatetimeFromString, getLocalTimeAtEvent
 import json
-from views.utils import getTurnDirectionList
+from views.utils import getTurnDirectionList, printException, getDatetimeFromString, getLocalTimeAtEvent
 
 mod = Blueprint('count',__name__)
 

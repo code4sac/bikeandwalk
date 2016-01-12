@@ -50,7 +50,7 @@ div, p, th, td, li, dd, dl, a
 strong {
     font-weight:800;
 }
-a, .script-link
+a, .script-link, .cancel-link
 {
 text-decoration:underline;
 cursor:pointer;
@@ -68,6 +68,11 @@ ol, li, dl, dt, dd
 	line-height: 1.5em; 
 }
 
+code {
+    font-family:Monaco, "Courier New", courier, monospace;
+    font-size:.8em;
+    line-height:.8;
+}
 input.num {text-align:right;}
 
 
@@ -113,6 +118,32 @@ img
     width:15em;
 }
 
+#dialog {
+    display:none;
+    background-color:#999;
+    opacity:.3;
+    z-index:1000;
+}
+
+#modal-form-contain {
+    display:none;
+    position:fixed;
+    top:3em;
+    left:30%;
+    z-index:1500;
+
+}
+#modal-form {
+    display:none;
+    position:fixed;
+    border:2pt solid #666;
+    z-index:2000;
+    background-color:white;
+    padding:1em;
+    margin:1em auto;
+    height:auto;
+}
+
 #contain {
     margin:2em 4em;
 }
@@ -129,15 +160,32 @@ div.authbar p {
     margin:.25em;
     padding-left:.5em;
 }
+
 div.signinprogress {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(255, 255, 255, 0.8) url(spinner.png) center center no-repeat;
-    font-size: 0;
+    position: absolute;
+    top: 30%;
+    left: 50%;
+    height: 128px;
+    width: 128px;
+
+    -webkit-mask-image: url(/static/bikeSpinner.png);
+    background-color:#3d1; /* this sets the color of the spinner */
+    background-opacity:.5;
+    -webkit-animation-name: spinnerRotate;
+    -webkit-animation-duration: 1s;
+    -webkit-animation-iteration-count: infinite;
+    -webkit-animation-timing-function: linear;  
 }
+
+@-webkit-keyframes spinnerRotate {
+        from {
+                -webkit-transform:rotate(0deg);
+        }
+        to {
+                -webkit-transform:rotate(360deg);
+        }
+}
+
 
 a#header_home, a:hover#header_home, a:visited#header_home {
     text-decoration:none;
@@ -192,16 +240,39 @@ div#travelerList {
     height:200pt;
 }
 
-div#locationForm {
+/*
+    countEvent edit form
+*/
+div#assignmentForm {
     margin-top:1em;
 }
-div#locationList {
+div#assignmentList {
     border:1pt solid black;
     overflow-y:scroll;
-    width:80%;
+    width:38em;
     min-height:20em;
     clear:both;
+    padding:0 1em;
 }
+div#assignmentList table, 
+div#assignmentList tr, 
+div#assignmentList th, 
+div#assignmentList td{
+    border:0pt;
+}
+div#assignmentList tbody{
+    border:1pt #666 solid;
+}
+p.assignmentActions{
+    text-align:right;
+    padding:.25em 0;
+    border-bottom:2pt solid #666;
+    width:100%;
+}
+.assignmentActionSpacer {
+    padding-left:2em;
+}
+
 
 img#travelerIcon {
     height:57px;
@@ -220,3 +291,17 @@ table.edit-form-table th {
 table.edit-form-table td {
     text-align:left;
 }
+
+#location-list {
+    width:200px;
+    padding:10px;
+    margin:10px auto;
+}
+.location-item-disable {
+    color:#666;
+}
+.location-item {
+    width:100%;
+    font-weight:bold;
+}
+

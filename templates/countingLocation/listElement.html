@@ -1,0 +1,43 @@
+{# A single element in the counting location list used in the count event form #}
+{% if rec %}
+{# the <table> tags are provided by the calling method #}
+<tbody class="assignmentTableRow" id="assignmentListItem_{{rec.ID}}" >
+		<tr>
+			<th>
+				Location:
+			</th>
+			<th>
+				Assignment UID:
+			</th>
+			<th>
+				Assigned To:
+			</th>
+		</tr>
+		<tr>
+			<td>
+				{{ rec.locationName }}
+			</td>
+			<td>
+				<code>{{ rec.countingLocationUID }}</code>
+			</td>
+			<td>
+				{{ rec.userName |default("Unassigned",true)}}
+			</td>
+		</tr>
+		<tr>
+			<td colspan="3" >
+				<p class="assignmentActions">
+				<span class="deleteAssignmentFromList script-link" onclick="$.get('{{ url_for('countingLocation.deleteFromList')}}/{{ rec.ID }}/', function(data){
+					if(data == 'success'){$('#assignmentListItem_{{rec.ID}}').text('').hide();}} ">Delete...</span>
+				<span class="assignmentActionSpacer">&nbsp;</span>
+				<span class="assignmentActionSpacer">&nbsp;</span>
+				<span class="assignmentActionSpacer">&nbsp;</span>
+				
+				<span class="editAssognmentFromList script-link" onclick="editAssignmentFromList('{{ url_for('countingLocation.editFromList')}}/{{rec.ID}}/')">Edit...</span>
+				<span class="assignmentActionSpacer">&nbsp;</span>
+				<span class="assignmentActions script-link" onclick="$.get({{ url_for('countingLocation.sendInvitationEmail')}}/{{ rec.ID }}/)">Send Invitation</span>
+				</p>
+			</td>
+		</tr>
+</tbody>
+{% endif %}

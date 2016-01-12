@@ -17,7 +17,7 @@
 			<td><a href="{{ g.editURL }}{{ recs[rec]["ID"] }}/">{{ recs[rec]["startDate"] }}</a></td>
 			<td>{{ recs[rec]["location"]}}</td>
 			<td>{{ recs[rec]["UID"] }}</td>
-			<td>{{ recs[rec]["counter"]|default("Unassigned",true)}}</td>
+			<td>{{ recs[rec]["userName"]|default("Unassigned",true)}}</td>
 		</tr>
 		{% endfor %}
 	  </table>

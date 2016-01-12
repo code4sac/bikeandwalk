@@ -3,7 +3,7 @@ from wtforms import Form, BooleanField, StringField, HiddenField, SelectField, I
     
 class CountingLocationForm(Form):
     #ID = HiddenField('ID')
-    #countingLocationUID = StringField('Counting Location ID', [validators.DataRequired(),], )
+    #countingLocationUID = StringField('Counting Location ID', )
     weather = SelectField("Weather",
         choices=[("","Select Weather Type"),("Fair", "Fair"),("Rainy","Rainy"),("Very Cold", "Very Cold")], )
     countType = SelectField("Count Type", 
@@ -11,12 +11,22 @@ class CountingLocationForm(Form):
     countEvent_ID = SelectField("Count Event",
         [validators.NumberRange(min=1, message="You must select a count event")], 
         coerce=int, choices=[], )
-    user_ID = SelectField("User Name",
-        [validators.NumberRange(min=1, message="You must select a someone to count")], 
-        coerce=int, choices=[], )
+    user_ID = SelectField("User Name", coerce=int, choices=[], )
     location_ID = SelectField("Location",
         [validators.NumberRange(min=1, message="You must select a location")], 
         coerce=int, choices=[], )
+    locationName = HiddenField("Location Name",)
+    userName = HiddenField("User Name",)
+
+class CountingLocationEditFromListForm(CountingLocationForm):
+    ID = HiddenField('ID')
+    countingLocationUID = HiddenField('Counting Location ID', )
+    countEvent_ID = HiddenField("Count Event ID")
+    user_ID = HiddenField("User Name", )
+    location_ID = HiddenField("Location ID")
+    locationName = HiddenField("Location Name",)
+    userName = HiddenField("User Name",)
+
 
   
 class LocationForm(Form):

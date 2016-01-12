@@ -1,0 +1,67 @@
+{# countingLocation form for response to AJAX request #}
+<div id="countingLocationElement">
+{% if locations %}
+<div id="location-list-contain">
+	<p id="location-list-head">Choose a Location</p>
+	<div id="location-list">
+		{% for loc in locations %}
+		<p class="location-item {% if loc.ID == 0 %} location-item-disable" {%else%}
+		onclick="locationItemClicked(this, {{ loc.ID }}" {%endif%}
+		>{{ loc.locationName }}</p>
+		{% endfor %}
+	</div>
+	<p>
+	<span class="cancel-link" onclick="cancelModalForm()">Cancel</span>
+	<input class="" type="button" name="Continue" value="Continue" onclick="$('#location-list-contain').hide();$('#countingLocationForm').show() // poke the loc.ID value into location_ID element";return false;/>
+	</p>
+</div>
+{% endif %} {# if locations #}
+<form id="assignmentFromListForm" {% if form.ID.data == None %}style="display:none;"{% endif %} action="" method="POST">
+	{{ form.ID }}
+	{{ form.countEvent_ID }}
+	{{ form.location_ID }}
+	{{ form.locationName }} {# input must be in form as input or name will be blank after validation errors #}
+	<div class="data-element">
+		<p><span class="field-label">{{ form.locationName.label }}: </span>{{ form.locationName.data }}</p>
+	</div>
+	<div class="data-element">
+		<p><span class="field-label">{{ form.countType.label }}: </span>{{ form.countType |safe }}</p>
+	</div>
+	<div class="data-element">
+		{# Disable users in select who are already assigned to this event #}
+		<p><span class="field-label">{{ form.user_ID.label }}: </span>
+			<br>{{assigned}}<br>
+			{% with users = form.user_ID.choices %}
+			<select id="user_ID" name="user_ID" >
+				{% for userid, label in users %}
+				<option value="{{ userid }}" {% if userid in assigned and userid != 0 and userid != form.user_ID.data %}disabled{% endif%} {% if userid == form.user_ID.data %}selected="selected"{% endif %} >{{ label }}</option>
+				{% endfor %}
+			</select>
+			{% endwith %}
+		</p>
+		{% with errors = form.user_ID.errors %}{% if  errors %}
+			<ul class=errors>
+			{% for error in errors %}
+				<li>{{ error }}</li>
+			{% endfor %}
+		</ul>
+		{% endif %} {# if errors #} {% endwith %}
+	</div>
+	<div class="data-element">
+		<p><span class="field-label">{{ form.weather.label }}: </span>{{ form.weather |safe }}</p>
+		{% with errors = form.weather.errors%}{% if  errors %}
+			<ul class=errors>
+			{% for error in errors %}
+				<li>{{ error }}</li>
+			{% endfor %}
+		</ul>
+		{% endif %} {# if errors #} {% endwith %}
+	</div>
+	<div class="countingLocation-buttons data-element">
+		<p>
+		<span class="cancel-link" onclick="cancelModalForm()">Cancel</span>
+		<input class="countingLocationSave" type="button" onclick="submitModalForm('assignmentFromListForm', '{{ url_for('countingLocation.editFromList')}}', 'assignmentList', '{{ url_for('countingLocation.getAssignmentList')}}/{{ form.countEvent_ID.data }}/')" name="Save" value="Save" />
+		</p>
+	</div>
+</form>
+</div>

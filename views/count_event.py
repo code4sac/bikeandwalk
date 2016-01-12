@@ -1,9 +1,9 @@
 from flask import request, session, g, redirect, url_for, \
      render_template, flash, Blueprint
 from datetime import datetime, timedelta
-
 from bikeandwalk import db,app
-from views.utils import nowString, printException, getTimeZones
+from views.utils import nowString, printException, getTimeZones, cleanRecordID
+from views.countingLocation import getAssignmentList
 from models import CountEvent, Organization
 
 mod = Blueprint('count_event',__name__)
@@ -14,33 +14,34 @@ def setExits():
    g.deleteURL = url_for('.delete')
    g.title = 'Count Event' ## Always singular
 
+
 @mod.route('/event/')
 def display():
     setExits()
-    if db :
-        theTime = getTimeDictionary()
-        cur = CountEvent.query.filter(CountEvent.organization_ID == int(g.orgID)).order_by(CountEvent.startDate.desc())
-        if cur:
-            ### need to loop through each record retireve an call getTimeDictionary
-            ## then need to create a second level of the time dict : theTime[n][elementName]
-            for row in cur:
-                theTime[row.ID] = getTimeDictionary(row.startDate,row.endDate)
-            
-        return render_template('count_event/count_event_list.html', recs=cur, theTime=theTime)
-
-    flash('Could not open Database')
-    return redirect(url_for('home'))
+    theTime = getTimeDictionary()
+    cur = CountEvent.query.filter(CountEvent.organization_ID == int(g.orgID)).order_by(CountEvent.startDate.desc())
+    if cur:
+        ### need to loop through each record retireve an call getTimeDictionary
+        ## then need to create a second level of the time dict : theTime[n][elementName]
+        for row in cur:
+            theTime[row.ID] = getTimeDictionary(row.startDate,row.endDate)
     
+    return render_template('count_event/count_event_list.html', recs=cur, theTime=theTime)
+
+
 @mod.route('/event/edit', methods=['POST', 'GET'])
 @mod.route('/event/edit/', methods=['POST', 'GET'])
 @mod.route('/event/edit/<id>/', methods=['POST', 'GET'])
 def edit(id=0):
     setExits()
-    if not id.isdigit() or int(id) < 0:
+    id = cleanRecordID(id)
+    if id < 0:
         flash("That is not a valid ID")
         return redirect(g.listURL)
         
     if db:
+        assignmentList = getAssignmentList(id) #fully rendered HTML
+        
         timeZones = getTimeZones()
         if not request.form:
             """ if no form object, send the form page """
@@ -57,7 +58,7 @@ def edit(id=0):
             if org:
                 g.timeZone = org.defaultTimeZone
                 
-            if int(id) > 0:
+            if id > 0:
                 cur = CountEvent.query.filter_by(ID=id).first()
                 if not cur:
                     mes = g.title +" Record could not be found." + " ID:" + str(id)
@@ -66,7 +67,9 @@ def edit(id=0):
                 
                 theTime = getTimeDictionary(cur.startDate,cur.endDate)
                 g.timeZone = None
-            return render_template('count_event/count_event_edit.html', rec=cur ,theTime=theTime, timeZones=timeZones)
+                
+            
+            return render_template('count_event/count_event_edit.html', rec=cur ,theTime=theTime, timeZones=timeZones, assignmentList=assignmentList)
 
         #have the request form
         # handle the checkbox for Daylite savings time
@@ -78,7 +81,7 @@ def edit(id=0):
             startingDate = startDateFromForm()
             endingDate = endDateFromForm()
             try:
-                if int(id) > 0:
+                if id > 0:
                     cur = CountEvent.query.get(id)
                     #update the record
                     cur.startDate = startingDate.isoformat()[:19]
@@ -109,7 +112,7 @@ def edit(id=0):
         theTime["year"] = request.form["year"]
         theTime["AMPM"] = request.form["AMPM"]
         
-        return render_template('count_event/count_event_edit.html', rec=request.form, theTime=theTime, timeZones=timeZones)
+        return render_template('count_event/count_event_edit.html', rec=request.form, theTime=theTime, timeZones=timeZones, assignmentList=assignmentList)
 
     else:
         flash('Could not open database')
@@ -121,11 +124,12 @@ def edit(id=0):
 @mod.route('/event/delete/<id>/', methods=['GET'])
 def delete(id=0):
     setExits()
-    if not id.isdigit() or int(id) < 0:
+    id = cleanRecordID(id)
+    if id < 0:
         flash("That is not a valid ID")
         return redirect(g.listURL)
 
-    if int(id) > 0:
+    if id > 0:
         rec = CountEvent.query.get(id)
         if rec:
             try:

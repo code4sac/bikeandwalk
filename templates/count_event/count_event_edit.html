@@ -59,10 +59,10 @@
 	</div>
 		<p><a href="{{url_for("traveler.traveler_select")}}">Select a Traveler...</a></p>
 </div>
-<div id="locationForm">
-	<h3>Locations</h3>
-<div id="locationList">
-	
+<div id="assignmentForm">
+	<h3>Assignments</h3>
+<div id="assignmentList">
+		{{ assignmentList | safe }}
 </div>
 </div>
 {% endblock body %}

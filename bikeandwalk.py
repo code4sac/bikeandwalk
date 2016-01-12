@@ -25,6 +25,8 @@ app = Flask(__name__, instance_relative_config=True)
 app.config.from_object(configuration.Config)
 app.config.from_pyfile('settings.conf', silent=True)
 
+app.debug = app.config["DEBUG"]
+
 # setup Flask-SQLAlchemy
 from flask.ext.sqlalchemy import SQLAlchemy
 app.config['SQLALCHEMY_DATABASE_URI'] = app.config["DATABASE_URI"]

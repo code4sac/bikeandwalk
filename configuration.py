@@ -6,7 +6,7 @@ class Config(object):
     SECRET_KEY = "somereallylongstringtouseasakey"
     
     DATABASE = "bikeandwalk.sqlite"
-    DATABASE_PATH_PREFIX = '/Users/bleddy/Sites/bikeandwalk.org/app/'
+    DATABASE_PATH_PREFIX = '/Users/bleddy/Sites/app.bikeandwalk.org/'
     DATABASE_URI = 'sqlite:///' + DATABASE_PATH_PREFIX + DATABASE
     
     # set session expiration in seconds
