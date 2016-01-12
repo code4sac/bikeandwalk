@@ -62,7 +62,7 @@ def getLocalTimeAtEvent(tz,isDST=0):
     """
     localTime = datetime.utcnow() + timedelta(hours=(getTimeZoneOffset(tz))) ## get local time at the event location
     if(isDST == 1):
-        localTime = localTime.timedelta(hours=1)
+        localTime = localTime + timedelta(hours=1)
     
     return localTime.replace(microsecond=0)
     
@@ -107,3 +107,19 @@ def printException(mes="An Unknown Error Occured",level="error",err=None):
         return mes
     else:
         return mes
+
+def cleanRecordID(id):
+    """ return the integer version of id or else -1 """
+    if id is None:
+        return -1
+    if type(id) is str or type(id) is unicode:
+        if id.isdigit():
+            # a minus number like "-1" will fail this test, which is what we want
+            return int(id)
+        else:
+            return -1
+            
+    #already a number 
+    return id
+    
+    
