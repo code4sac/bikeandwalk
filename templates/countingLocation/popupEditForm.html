@@ -5,7 +5,7 @@
 	<p id="location-list-head">Choose a Location</p>
 	<div id="location-list">
 		{% for loc in locations %}
-		<p class="location-item {% if loc.ID == 0 %} location-item-disable" {%else%}
+		<p class="location-item {% if loc.ID == 0 %} location-item-dissable" {%else%}
 		onclick="locationItemClicked(this, {{ loc.ID }}" {%endif%}
 		>{{ loc.locationName }}</p>
 		{% endfor %}

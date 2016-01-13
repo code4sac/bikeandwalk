@@ -7,6 +7,7 @@ from views.utils import printException, getDatetimeFromString, nowString, getUse
 from forms import CountingLocationForm, CountingLocationEditFromListForm
 import hmac
 from datetime import datetime
+from views.trip import getAssignmentTripTotal
 
 mod = Blueprint('countingLocation',__name__)
 
@@ -122,7 +123,8 @@ def getAssignmentList(countEventID=0):
         if recs:
             out = "<table>"
             for rec in recs:
-                out += render_template('countingLocation/listElement.html', rec=rec)
+                totalTrips = getAssignmentTripTotal(rec.countEvent_ID, rec.location_ID)
+                out += render_template('countingLocation/listElement.html', rec=rec, totalTrips=totalTrips)
             out +=  "</table>"
             
     return out
