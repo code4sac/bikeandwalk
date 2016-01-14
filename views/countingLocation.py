@@ -194,7 +194,6 @@ def editFromList(id="0"):
             % (g.orgID, ceID)
         
         locations = db.engine.execute(sql).fetchall()
-        print locations
         if len(locations) == 0:
             return "failure: There are no more Locations to use."
         
