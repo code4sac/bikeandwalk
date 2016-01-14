@@ -90,6 +90,7 @@ function loadAssignmentList(data, target, successURL){
 
 function cancelModalForm(){
 	setModal("dialog",false);
+	$("#modal-form").text("")
 	$("#modal-form, #modal-form-contain").hide();
 }
 
