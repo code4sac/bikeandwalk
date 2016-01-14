@@ -95,7 +95,7 @@ def before_request():
     
 @app.teardown_request
 def teardown_request(exception):
-    pass
+    db.session.close()
 
 
 @app.errorhandler(404)

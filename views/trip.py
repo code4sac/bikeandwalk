@@ -3,7 +3,7 @@ from flask import request, g, redirect, url_for, \
 from bikeandwalk import db
 from models import Trip
 from views.utils import printException, getCountEventChoices, \
-    getLocationChoices, getTravelerChoices, getTurnDirectionChoices
+    getLocationChoices, getTravelerChoices, getTurnDirectionChoices, cleanRecordID
 from forms import TripForm
 
 mod = Blueprint('trip',__name__)
@@ -89,6 +89,8 @@ def delete(id=0):
     
 def getAssignmentTripTotal(countEventID=0, locationID=0):
     result = 0
+    countEventID = cleanRecordID(countEventID)
+    locationID = cleanRecordID(locationID)
     sql =  "select sum(tripCount) as tripTotal from trip where countEvent_ID = %d and location_ID = %d;" % (int(countEventID), int(locationID))
     cur = db.engine.execute(sql).fetchone()
     if cur:

@@ -129,6 +129,17 @@ def getAssignmentList(countEventID=0):
             
     return out
     
+@mod.route("/countingLocation/createFromList", methods=['GET',"POST"])
+@mod.route("/countingLocation/createFromList/<countEventID>/", methods=['GET',"POST"])
+def createFromList(countEventID="0"):
+    """
+    Create a new Assignment record from the CountEvent edit form
+    """
+    #the template popupEditForm will substitue this for the missing countEvent_ID
+    g.countEventID = cleanRecordID(countEventID)
+    return editFromList(0)
+    
+    
 ## editing list called from within countEvent form
 @mod.route("/countingLocation/editFromList", methods=['GET',"POST"])
 @mod.route("/countingLocation/editFromList/<id>/", methods=['GET',"POST"])
@@ -138,6 +149,7 @@ def editFromList(id="0"):
         Intended for use with AJAX request
         There should always be POST data
     """
+    ## when creating a new record, g.countEventID will contain the ID of the countEvent record
     setExits()
     formTemplate = 'countingLocation/popupEditForm.html'
     successTemplate = 'countingLocation/listElement.html'
@@ -162,15 +174,25 @@ def editFromList(id="0"):
         
     locations = None
     if id == 0:
-        sql = 'select ID,locationName from location where organization_ID = %d \
-               and ID not in \
-               (select location_ID from counting_location where countEvent_ID  = %d);' \
-            % (g.orgID, int(data["countEvent_ID"]))
-
-        locations = db.engine.execute(sql)
+        if "countEvent_ID" in data:
+            g.countEventID = data["countEvent_ID"]
+            
+        ceID = cleanRecordID(g.countEventID)
+        g.orgID = cleanRecordID(g.orgID)
+        print "got to here..."
+        
+        #locations = [{"id" : 1, "locationName": "location one"}, {"id" : 2, "locationName": "location two"} ]
+        #sql = 'select ID,locationName from location where organization_ID = %d \
+        #       and ID not in \
+        #       (select location_ID from counting_location where countEvent_ID  = %d);' \
+        #    % (g.orgID, ceID)
+        
+        #locations = db.engine.execute(sql)
+        
+        locations = Location.query.filter(Location.organization_ID == g.orgID, )
         if locations == None:
-            flash("There are no more Locations to use.")
-            ## Just refresh the count Event form?
+            return "failure: There are no more Locations to use."
+        
         
     rec = None
     if id > 0:
@@ -184,29 +206,34 @@ def editFromList(id="0"):
     ## choices need to be assigned before rendering the form
     # AND before attempting to validate it
     form.user_ID.choices = getUserChoices()        
-    
+
     if request.method == "POST" and form.validate():
         print "Valid"
         if not rec:
             rec = createNewRecord(form.countEvent_ID.data)
-            if not rec:
-                flash("Unable to create a new Assignment record")
-                return redirect(g.listURL)
-        
+            if  not rec:
+                return "failure: Unable to create a new Assignment record"
+                
         rec.location_ID = form.location_ID.data
         rec.countEvent_ID = form.countEvent_ID.data
         rec.user_ID = form.user_ID.data
         rec.weather = form.weather.data
         rec.countType = form.countType.data
-    
-        db.session.commit()
+        try:
+            db.session.commit()
+        except Exception as e:
+            printException("Unable to save Assignment from list", "error", e)
+            return "failure: Sorry. Unable to save your changes."
+            
         return "success" # the success function looks for this...
         
             
     assignedUserIDs = ()
     if rec: 
-        assignedUserIDs = getAssignedUsers(int(rec.countEvent_ID))
-    
+        g.countEventID = int(rec.countEvent_ID)
+        
+    assignedUserIDs = getAssignedUsers(g.countEventID)
+    print "Ready to render..."
     return render_template(formTemplate, 
         form=form, locations=locations, 
         assigned=assignedUserIDs, 
@@ -236,10 +263,18 @@ def deleteFromList(id):
     if deleteRecordID(id):
         return "success"
     else:
-        return "failure"
+        return "failure: Unable to Delete that record."
 
 def getUID():
-    uid = hmac.new(datetime.now().isoformat(), app.config["SECRET_KEY"]).hexdigest()
+    i = 0
+    while i < 1000:
+        uid = hmac.new(datetime.now().isoformat(), app.config["SECRET_KEY"]).hexdigest()
+        cur = CountingLocation.query.filter(CountingLocation.countingLocationUID == uid)
+        if cur:
+            i += 1
+        else:
+            break
+            
     return uid
     
 def createNewRecord(eventID=None):
@@ -258,12 +293,18 @@ def createNewRecord(eventID=None):
     return rec
     
 def deleteRecordID(id):
+    id = cleanRecordID(id)
+    g.orgID = cleanRecordID(g.orgID)
     if id > 0:
-        rec = CountingLocation.query.get(id)
-        if rec:
-            db.session.delete(rec)
-            db.session.commit()
-            
-            return True
+        #rec = CountingLocation.query.get(id)
+        sql = 'DELETE FROM counting_location  \
+        WHERE counting_location."ID" = %d AND (SELECT count_event."organization_ID" \
+        FROM count_event \
+        WHERE count_event."organization_ID" = %d);' % (id,g.orgID)
+        try:
+            rec = db.engine.execute(sql)
+        except:
+            return False
+        return True
        
     return False

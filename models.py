@@ -90,9 +90,9 @@ class CountingLocation(db.Model):
     location_ID = db.Column(db.Integer, db.ForeignKey('location.ID'))
     user_ID = db.Column(db.Integer, db.ForeignKey('user.ID'))
 
-    countevent = relationship(CountEvent)
-    locations = relationship(Location)
-    user = relationship(User)
+    #countevent = relationship(CountEvent)
+    #locations = relationship(Location)
+    #user = relationship(User)
     
     # Get the Starting date of the related event
     eventStartDate = deferred(select([CountEvent.startDate]).where(CountEvent.ID == countEvent_ID))

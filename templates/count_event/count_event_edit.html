@@ -59,8 +59,11 @@
 	</div>
 		<p><a href="{{url_for("traveler.traveler_select")}}">Select a Traveler...</a></p>
 </div>
-<div id="assignmentForm">
+
+<div id="assignment-contain" class="clearer" >
 	<h3>Assignments</h3>
+	<span class="editAssognmentFromList script-link" onclick="editAssignmentFromList('{{ url_for('countingLocation.createFromList')}}/{{rec.ID|default("0",true)}}/')">Create New Assignment...</span>
+	
 <div id="assignmentList">
 		{{ assignmentList | safe }}
 </div>

@@ -209,7 +209,9 @@ p.flash {
     margin:0 0 0 1em;
     font-size:.8em;
 }
-
+.alert {
+    color:#3333ff;
+}
 #super_menu {
     width:20%;
     float:left;
@@ -229,6 +231,9 @@ div#eventRecordForm {
     padding-right:1em;
 }
 
+/*
+    countEvent Traveler List
+*/
 div#travelerForm {
     margin-left:34%;
     
@@ -241,15 +246,15 @@ div#travelerList {
 }
 
 /*
-    countEvent edit form
+    countEvent Assignment List
 */
-div#assignmentForm {
-    margin-top:1em;
+div#assignment-contain {
+    margin-top:2.5em;
 }
 div#assignmentList {
     border:1pt solid black;
     overflow-y:scroll;
-    width:38em;
+    width:42em;
     min-height:20em;
     clear:both;
     padding:0 1em;
@@ -265,8 +270,6 @@ div#assignmentList tbody{
 }
 p.assignmentActions{
     text-align:right;
-    padding:.25em 0;
-    border-bottom:2pt solid #666;
     width:100%;
 }
 .assignmentActionSpacer {

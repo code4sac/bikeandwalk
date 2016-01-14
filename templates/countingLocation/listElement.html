@@ -21,23 +21,28 @@
 				<code>{{ rec.countingLocationUID }}</code>
 			</td>
 			<td>
-				{{ rec.userName |default("Unassigned",true)}}
+				<span {% if rec.user_ID == 0 %}class="alert"{% endif %}>{{ rec.userName |default("Unassigned",true)}}</span>
 			</td>
 		</tr>
 		<tr>
 			<td colspan="3" >
 				<p class="assignmentActions">
-				{% if totalTrips == 0 %}
-				<span class="deleteAssignmentFromList script-link" onclick="$.get('{{ url_for('countingLocation.deleteFromList')}}/{{ rec.ID }}/', function(data){
-					if(data == 'success'){$('#assignmentListItem_{{rec.ID}}').text('').hide();}} ">Delete...</span>
+				<span class="deleteAssignmentFromList script-link" 
+					onclick="deleteAssignmentFromList('{{ url_for('countingLocation.deleteFromList')}}/{{ rec.ID }}/','assignmentListItem_{{rec.ID}}')"
+					>Delete...
+				</span>
 				<span class="assignmentActionSpacer">&nbsp;</span>
-				{% endif %}
 				<span class="totalTrips">Trips Recorded: {{totalTrips}}</span>
 				<span class="assignmentActionSpacer">&nbsp;</span>
-				
-				<span class="editAssognmentFromList script-link" onclick="editAssignmentFromList('{{ url_for('countingLocation.editFromList')}}/{{rec.ID}}/')">Edit...</span>
+				<span class="editAssognmentFromList script-link" 
+					onclick="editAssignmentFromList('{{ url_for('countingLocation.editFromList')}}/{{rec.ID}}/')"
+					>Edit...
+				</span>
 				<span class="assignmentActionSpacer">&nbsp;</span>
-				<span class="assignmentActions script-link" onclick="$.get({{ url_for('countingLocation.sendInvitationEmail')}}/{{ rec.ID }}/)">Send Invitation</span>
+				<span class="assignmentActions script-link" 
+					onclick="$.get({{ url_for('countingLocation.sendInvitationEmail')}}/{{ rec.ID }}/)"
+					>Send Invitation
+				</span>
 				</p>
 			</td>
 		</tr>

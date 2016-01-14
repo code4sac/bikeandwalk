@@ -25,9 +25,23 @@ function editAssignmentFromList(editFormURL) {
 	$('#modal-form').load(editFormURL)
 }
 
+function modalFormSuccess(data){
+	// return true if the update was successful
+	// also return true if the update failed for a reason
+	// other than a validation error
+	var result = true;
+	if ((data == "success") || (data.substr(0,9) == 'failure: ')){
+		if (data != "success"){ 
+			// display an error message
+			alert(data.substr(9)) 
+		}
+	} else { result = false; }
+	return result;
+}
+
 function submitModalForm(formID, postingURL, successTarget, successURL){
 	$("#modal-form").load(postingURL,formToJson(formID),function(data){
-		if (data == "success"){
+		if (modalFormSuccess(data)){
 			cancelModalForm();
 			$("#"+successTarget).load(successURL);
 		} else {
@@ -54,9 +68,19 @@ function formToJson(formID){
 	return obj;
 }
 
-
+function deleteAssignmentFromList(deleteActionURL, successTarget){
+	if (confirmRecordDelete()) {
+		$.get(deleteActionURL, function(data){
+		if(data == "success"){
+			$("#"+successTarget).text('').hide();
+		} else {
+			alert(data)
+		}
+	})
+	}
+}
 function loadAssignmentList(data, target, successURL){
-	if (data == "success"){
+	if (modalFormSuccess(data)){
 		cancelModalForm();
 		$(target).load(successURL);
 	}else {

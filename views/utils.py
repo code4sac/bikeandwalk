@@ -91,8 +91,11 @@ def printException(mes="An Unknown Error Occured",level="error",err=None):
         filename = f.f_code.co_filename
         linecache.checkcache(filename)
         line = linecache.getline(filename, lineno, f.f_globals)
-        debugMes = 'EXCEPTION IN ({}, LINE {} "{}"): {}'.format(filename, lineno, line.strip(), exc_obj)
-
+        try:
+            debugMes = 'EXCEPTION IN ({}, LINE {} "{}"): {}'.format(filename, lineno, line.strip(), exc_obj)
+        except ValueError:
+            debugMes = "Could not get error location info."
+            
     if level=="error" or app.config["DEBUG"]:
         #always log errors
         if debugMes:

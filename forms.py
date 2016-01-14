@@ -22,10 +22,7 @@ class CountingLocationEditFromListForm(CountingLocationForm):
     ID = HiddenField('ID')
     countingLocationUID = HiddenField('Counting Location ID', )
     countEvent_ID = HiddenField("Count Event ID")
-    user_ID = HiddenField("User Name", )
     location_ID = HiddenField("Location ID")
-    locationName = HiddenField("Location Name",)
-    userName = HiddenField("User Name",)
 
 
   
