@@ -4,6 +4,7 @@ from time import time
 import re
 from bikeandwalk import db,app
 from models import User
+from views.utils import printException
 
 mod = Blueprint('user',__name__)
 
