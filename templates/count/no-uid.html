@@ -27,15 +27,15 @@
 	<p>Contact your count administrator if you have count results to submit.</p>
 
 	{% else %}
-	<p>The "Counting Location ID" you provided could not be found in our system.</p>
-	<p>You must provide a valid "Counting Location ID" to begin a count.</p>
+	<p>The "Assignment UID" you provided could not be found in our system.</p>
+	<p>You must provide a valid "Assignment UID" to begin a count.</p>
 	<p>
 		You may have received an email from your count Administrator which included
 		a link with your location ID. If you did, click that link. If not, contact 
 		your count administrator for help.
 	</p>
 	<div >
-		<p>You can try entering a new Counting Location ID here:</p>
+		<p>You can try entering a new Assignment UID here:</p>
 		<form id="UID_Form" action="{{g.countBeginURL}}" method="post">
 			<p>
 				<strong>ID: </strong><input size="30" type="text" name="UID" value="{{g.UID}}" />

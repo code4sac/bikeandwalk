@@ -46,6 +46,7 @@ class Location(db.Model):
     locationName = db.Column(db.Text, nullable=False)
     NS_Street = db.Column(db.Text)
     EW_Street = db.Column(db.Text)
+    locationType = db.Column(db.Text)
     city = db.Column(db.Text)
     state = db.Column(db.Text)
     latitude = db.Column(db.Text)
@@ -80,12 +81,11 @@ class CountEvent(db.Model):
         return '<Start: %r, End: %r>' % (self.startDate, self.endDate)
     
 
-class CountingLocation(db.Model):
-    __tablename__ = 'counting_location'
+class Assignment(db.Model):
+    __tablename__ = 'assignment'
     ID = db.Column(db.Integer, primary_key=True)
-    countingLocationUID = db.Column(db.Text, unique=True)
+    assignmentUID = db.Column(db.Text, unique=True)
     weather = db.Column(db.Text)
-    countType = db.Column(db.Text, default='intersection')
     countEvent_ID = db.Column(db.Integer, db.ForeignKey('count_event.ID'))
     location_ID = db.Column(db.Integer, db.ForeignKey('location.ID'))
     user_ID = db.Column(db.Integer, db.ForeignKey('user.ID'))
@@ -102,10 +102,10 @@ class CountingLocation(db.Model):
 
     def __init__(self, eventID, UID):
         self.countEvent_ID = eventID
-        self.countingLocationUID = UID
+        self.assignmentUID = UID
 
     def __repr__(self):
-        return '<UID: %r>' % self.countingLocationUID
+        return '<UID: %r>' % self.assignmentUID
     
 class Traveler(db.Model):
     ID = db.Column(db.Integer, primary_key=True)

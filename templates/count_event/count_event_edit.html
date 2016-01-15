@@ -14,7 +14,7 @@
 		<dd><input type=num size=2 maxlength="2" name="day" value="{{theTime.day}}" />
         <dt>Year (YYYY): 
 		<dd><input type=num size=4 maxlength="4" name="year" value="{{theTime.year}}" />
-        <dt>Starting Time (HH:MM): Hour: {{theTime.hour}}
+        <dt>Starting Time:
 		<dd>
 			<select name="hour">
 				{% for i in range(1,13) %}
@@ -38,9 +38,9 @@
 			{% endfor %}
 			</select>
 		<dd>
-			Daylight Savings time? 
-			<input type="radio" name="isDST" value="0" {%if rec.isDST != 1 %}checked="checked"{%endif%} /> No
-			<input type="radio" name="isDST" value="1" {%if rec.isDST == 1 %}checked="checked"{%endif%} /> Yes
+			<span class="smallprint">Will it be Daylight Savings time? </span><br>
+			<input type="radio" name="isDST" value="0" {%if rec.isDST != 1 %}checked="checked"{%endif%} id="DSTno" /> <label class="smallprint" for="DSTno">No</label>
+			<input type="radio" name="isDST" value="1" {%if rec.isDST == 1 %}checked="checked"{%endif%} id="DSTyes" /> <label class="smallprint" for="DSTyes">Yes</label>
 			
         <dt>Duration: 
 		<dd><select name="duration" >
@@ -62,7 +62,7 @@
 
 <div id="assignment-contain" class="clearer" >
 	<h3>Assignments</h3>
-	<span class="editAssognmentFromList script-link" onclick="editAssignmentFromList('{{ url_for('countingLocation.createFromList')}}/{{rec.ID|default("0",true)}}/')">Create New Assignment...</span>
+	<span class="editAssognmentFromList script-link" onclick="editAssignmentFromList('{{ url_for('assignment.createFromList')}}/{{rec.ID|default("0",true)}}/')">Create New Assignment...</span>
 	
 <div id="assignmentList">
 		{{ assignmentList | safe }}

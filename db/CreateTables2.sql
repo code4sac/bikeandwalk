@@ -28,6 +28,7 @@ CREATE TABLE IF NOT EXISTS location (
    locationName TEXT NOT NULL,
    NS_Street TEXT,
    EW_Street TEXT,
+   locationType TEXT DEFAULT 'intersection', -- 'intersection' | 'mid block'
    city TEXT,
    state TEXT,
    latitude TEXT,
@@ -52,16 +53,16 @@ CREATE TABLE IF NOT EXISTS count_event (
    organization_ID INTEGER REFERENCES organization(ID) ON DELETE RESTRICT
 );
 
-DROP TABLE IF EXISTS counting_location;
-CREATE TABLE IF NOT EXISTS counting_location (
+DROP TABLE IF EXISTS assignment;
+CREATE TABLE IF NOT EXISTS assignment (
    ID INTEGER PRIMARY KEY AUTOINCREMENT,
-   countingLocationUID TEXT UNIQUE, --System generated, hard to guess code
+   assignmentUID TEXT UNIQUE, --System generated, hard to guess code
    weather TEXT, -- 1 = extreme, 2 = poor, 3 = acceptable
-   countType TEXT DEFAULT 'intersection', -- 'intersection' | 'screen line'
-   count_event_ID INTEGER REFERENCES count_event(ID) ON DELETE CASCADE,
+   countEvent_ID INTEGER REFERENCES count_event(ID) ON DELETE CASCADE,
    location_ID INTEGER REFERENCES location(ID) ON DELETE CASCADE,
    user_ID INTEGER REFERENCES user(ID) ON DELETE CASCADE
 );
+
 DROP TABLE IF EXISTS trip;
 CREATE TABLE IF NOT EXISTS trip (
    ID INTEGER PRIMARY KEY AUTOINCREMENT,

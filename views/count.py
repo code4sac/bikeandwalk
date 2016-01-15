@@ -3,7 +3,7 @@ from flask import request, session, g, redirect, url_for, \
      render_template, flash, Blueprint
 from datetime import datetime, timedelta
 from bikeandwalk import db,app
-from models import CountEvent, Trip, Location, CountingLocation,\
+from models import CountEvent, Trip, Location, Assignment,\
     Traveler, EventTraveler, User
 import json
 from views.utils import getTurnDirectionList, printException, getDatetimeFromString, getLocalTimeAtEvent
@@ -35,10 +35,10 @@ def count_begin(UID=""):
     
     ## UID not supplied
     if UID == "":
-        g.title = 'No Counting Location ID'
+        g.title = 'No Assignment ID'
         return render_template("count/no-uid.html")
     # lookup the UID
-    cntLoc = CountingLocation.query.filter_by(countingLocationUID= UID).first()
+    cntLoc = Assignment.query.filter_by(assignmentUID= UID).first()
     ## UID not valid
     if not cntLoc:
         g.title = "Count ID Not Found"
@@ -100,7 +100,7 @@ def count_begin(UID=""):
     return render_template("count/count.html", cntLoc=cntLoc, event=event, location=location, travelers=travelers, user=user)
     
 def isValidUID(UID=""):
-    return CountingLocation.query.filter_by(countingLocationUID= UID).exists()
+    return Assignment.query.filter_by(assignmentUID= UID).exists()
     
 
 @mod.route('/count/trip', methods=['POST', 'GET'])

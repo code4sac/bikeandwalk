@@ -1,30 +1,30 @@
 from flask import request, session, g, redirect, url_for, \
      render_template, flash, Blueprint, abort
 from bikeandwalk import db, app
-from models import CountingLocation, Location, User, CountEvent
+from models import Assignment, Location, User, CountEvent
 from views.utils import printException, getDatetimeFromString, nowString, getUserChoices, getCountEventChoices, \
     getLocationChoices, cleanRecordID
-from forms import CountingLocationForm, CountingLocationEditFromListForm
+from forms import AssignmentForm, AssignmentEditFromListForm
 import hmac
 from datetime import datetime
 from views.trip import getAssignmentTripTotal
 
-mod = Blueprint('countingLocation',__name__)
+mod = Blueprint('assignment',__name__)
 
 def setExits():
     g.listURL = url_for('.display')
     g.editURL = url_for('.edit')
     g.deleteURL = url_for('.delete')
-    g.title = 'Counting Location'
+    g.title = 'Assignment'
     
     
-@mod.route("/super/countingLocation/", methods=['GET'])
-@mod.route("/super/countingLocation", methods=['GET'])
+@mod.route("/super/assignment/", methods=['GET'])
+@mod.route("/super/assignment", methods=['GET'])
 def display():
     setExits()
     if db :
         recs = None
-        cl = CountingLocation.query.filter(CountingLocation.organization_ID == g.orgID).order_by(CountingLocation.eventStartDate.desc())
+        cl = Assignment.query.filter(Assignment.organization_ID == g.orgID).order_by(Assignment.eventStartDate.desc())
         # collect additional data for each record
         if cl:
             recs = dict()
@@ -32,21 +32,21 @@ def display():
                 base = str(row)
                 recs[base] = dict()
                 recs[base]["ID"] = row.ID
-                recs[base]['UID'] = row.countingLocationUID
+                recs[base]['UID'] = row.assignmentUID
                 recs[base]['startDate'] = getDatetimeFromString(row.eventStartDate).strftime('%x @ %I:%M %p')
                 recs[base]["location"] = row.locationName
                 recs[base]["userName"] = row.userName
                     
-        return render_template('countingLocation/countingLocation_list.html', recs=recs)
+        return render_template('assignment/assignment_list.html', recs=recs)
         
     else:
         flash(printException('Could not open Database',"info"))
         return redirect(url_for('home'))
         
 
-@mod.route("/super/countingLocation/edit/", methods=['GET'])
-@mod.route("/super/countingLocation/edit/<id>", methods=['GET','POST'])
-@mod.route("/super/countingLocation/edit/<id>/", methods=['GET','POST'])
+@mod.route("/super/assignment/edit/", methods=['GET'])
+@mod.route("/super/assignment/edit/<id>", methods=['GET','POST'])
+@mod.route("/super/assignment/edit/<id>/", methods=['GET','POST'])
 def edit(id="0"):
     setExits()
     if not id.isdigit() or int(id) < 0:
@@ -57,12 +57,12 @@ def edit(id="0"):
     
     rec = None
     if id > 0:
-        rec = CountingLocation.query.get(id)
+        rec = Assignment.query.get(id)
         if not rec:
             flash(printException("Could not edit that "+g.title + " record. ID="+str(id)+")",'error'))
             return redirect(g.listURL)
     
-    form = CountingLocationForm(request.form, rec)
+    form = AssignmentForm(request.form, rec)
         
     ## choices need to be assigned before rendering the form
     # AND before attempting to validate it
@@ -86,9 +86,9 @@ def edit(id="0"):
     return render_template('genericEditForm.html', rec=rec, form=form)
     
     
-@mod.route("/countingLocation/delete/", methods=['GET'])
-@mod.route("/countingLocation/delete/<id>", methods=['GET','POST'])
-@mod.route("/countingLocation/delete/<id>/", methods=['GET','POST'])
+@mod.route("/assignment/delete/", methods=['GET'])
+@mod.route("/assignment/delete/<id>", methods=['GET','POST'])
+@mod.route("/assignment/delete/<id>/", methods=['GET','POST'])
 def delete(id="0"):
     setExits()
     id = cleanRecordID(id)
@@ -108,29 +108,29 @@ def getAssignedUsers(id=0):
     """ A list of the User IDs for those who are already
     assigned to a location for this event
     """
-    a = [x.user_ID for x in CountingLocation.query.filter(CountingLocation.countEvent_ID == id) ]
+    a = [x.user_ID for x in Assignment.query.filter(Assignment.countEvent_ID == id) ]
     return a
 
 ## return an HTML code segment to include in the count_event edit form
-@mod.route("/countingLocation/getAssignmentList", methods=['GET'])
-@mod.route("/countingLocation/getAssignmentList/<countEventID>/", methods=['GET','POST'])
+@mod.route("/assignment/getAssignmentList", methods=['GET'])
+@mod.route("/assignment/getAssignmentList/<countEventID>/", methods=['GET','POST'])
 def getAssignmentList(countEventID=0):
     countEventID = cleanRecordID(countEventID)
     out = ""
     
     if countEventID > 0:
-        recs = CountingLocation.query.filter(CountingLocation.countEvent_ID==countEventID).order_by(CountingLocation.locationName)
+        recs = Assignment.query.filter(Assignment.countEvent_ID==countEventID).order_by(Assignment.locationName)
         if recs:
             out = "<table>"
             for rec in recs:
                 totalTrips = getAssignmentTripTotal(rec.countEvent_ID, rec.location_ID)
-                out += render_template('countingLocation/listElement.html', rec=rec, totalTrips=totalTrips)
+                out += render_template('assignment/listElement.html', rec=rec, totalTrips=totalTrips)
             out +=  "</table>"
             
     return out
     
-@mod.route("/countingLocation/createFromList", methods=['GET',"POST"])
-@mod.route("/countingLocation/createFromList/<countEventID>/", methods=['GET',"POST"])
+@mod.route("/assignment/createFromList", methods=['GET',"POST"])
+@mod.route("/assignment/createFromList/<countEventID>/", methods=['GET',"POST"])
 def createFromList(countEventID="0"):
     """
     Create a new Assignment record from the CountEvent edit form
@@ -141,8 +141,8 @@ def createFromList(countEventID="0"):
     
     
 ## editing list called from within countEvent form
-@mod.route("/countingLocation/editFromList", methods=['GET',"POST"])
-@mod.route("/countingLocation/editFromList/<id>/", methods=['GET',"POST"])
+@mod.route("/assignment/editFromList", methods=['GET',"POST"])
+@mod.route("/assignment/editFromList/<id>/", methods=['GET',"POST"])
 def editFromList(id="0"):
     """
         handle the editing from the count event form.
@@ -151,8 +151,8 @@ def editFromList(id="0"):
     """
     ## when creating a new record, g.countEventID will contain the ID of the countEvent record
     setExits()
-    formTemplate = 'countingLocation/popupEditForm.html'
-    successTemplate = 'countingLocation/listElement.html'
+    formTemplate = 'assignment/popupEditForm.html'
+    successTemplate = 'assignment/listElement.html'
     
     data = None
     if request.method.upper() == "post":
@@ -190,7 +190,7 @@ def editFromList(id="0"):
         
         sql = 'select ID,locationName from location where organization_ID = %d \
                and ID not in \
-               (select location_ID from counting_location where countEvent_ID  = %d);' \
+               (select location_ID from assignment where countEvent_ID  = %d);' \
             % (g.orgID, ceID)
         
         locations = db.engine.execute(sql).fetchall()
@@ -200,12 +200,12 @@ def editFromList(id="0"):
         
     rec = None
     if id > 0:
-        rec = CountingLocation.query.get(id)
+        rec = Assignment.query.get(id)
         if not rec:
             flash(printException("Could not edit that "+g.title + " record. (ID="+str(id)+")",'error'))
             return redirect(g.listURL)
     
-    form = CountingLocationEditFromListForm(data, rec)
+    form = AssignmentEditFromListForm(data, rec)
         
     ## choices need to be assigned before rendering the form
     # AND before attempting to validate it
@@ -222,7 +222,6 @@ def editFromList(id="0"):
         rec.countEvent_ID = form.countEvent_ID.data
         rec.user_ID = form.user_ID.data
         rec.weather = form.weather.data
-        rec.countType = form.countType.data
         try:
             db.session.commit()
         except Exception as e:
@@ -245,12 +244,12 @@ def editFromList(id="0"):
     
     
 
-@mod.route('/countingLocation/sendInvite', methods=["GET","POST"])
-@mod.route('/countingLocation/sendInvite/<id>/', methods=["GET","POST"])
+@mod.route('/assignment/sendInvite', methods=["GET","POST"])
+@mod.route('/assignment/sendInvite/<id>/', methods=["GET","POST"])
 def sendInvitationEmail(id):
     id=cleanRecordID(id)
     if id > 0:
-        rec = CountingLocation.query.get(id)
+        rec = Assignment.query.get(id)
         if rec and rec.user_ID > 0:
             ## send an email to the user
             pass
@@ -260,8 +259,8 @@ def sendInvitationEmail(id):
     printException("Unable to send email for ID ="+str(id),"error")
     return False
     
-@mod.route('/countingLocation/deletefromList', methods=["GET","POST"])
-@mod.route('/countingLocation/deletefromList/<id>/', methods=["GET","POST"])
+@mod.route('/assignment/deletefromList', methods=["GET","POST"])
+@mod.route('/assignment/deletefromList/<id>/', methods=["GET","POST"])
 def deleteFromList(id):
     id=cleanRecordID(id)
     if deleteRecordID(id):
@@ -273,7 +272,7 @@ def getUID():
     i = 0
     while i < 1000:
         uid = hmac.new(datetime.now().isoformat(), app.config["SECRET_KEY"]).hexdigest()
-        cur = CountingLocation.query.filter(CountingLocation.countingLocationUID == uid)
+        cur = Assignment.query.filter(Assignment.assignmentUID == uid)
         if cur:
             i += 1
         else:
@@ -289,10 +288,10 @@ def createNewRecord(eventID=None):
         #test that countEvent record exits
         cnt = CountEvent.query.filter(CountEvent.ID == eventID).count()
         if cnt > 0:
-            rec = CountingLocation(eventID,getUID())
+            rec = Assignment(eventID,getUID())
             db.session.add(rec)
         else:
-            flash(printException("Invalid countEvent ID during countingEvent creation.","error"))
+            flash(printException("Invalid countEvent ID during Count Event creation.","error"))
             
     return rec
     
@@ -300,9 +299,9 @@ def deleteRecordID(id):
     id = cleanRecordID(id)
     g.orgID = cleanRecordID(g.orgID)
     if id > 0:
-        #rec = CountingLocation.query.get(id)
-        sql = 'DELETE FROM counting_location  \
-        WHERE counting_location."ID" = %d AND (SELECT count_event."organization_ID" \
+        #rec = Assignment.query.get(id)
+        sql = 'DELETE FROM assignment  \
+        WHERE assignment."ID" = %d AND (SELECT count_event."organization_ID" \
         FROM count_event \
         WHERE count_event."organization_ID" = %d);' % (id,g.orgID)
         try:

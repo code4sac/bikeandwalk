@@ -1,0 +1,11 @@
+{# error for AJAX response #}
+{% with messages = get_flashed_messages() %} 
+<div id="popupErrors" class="clear" id="flasher_contain">
+{% if messages %}
+ 	{% for message in messages %} 
+	<p class="flash">
+		{{ message }}
+	</p>
+	{% endfor %} 
+{% endif %} {% endwith %}
+</div>

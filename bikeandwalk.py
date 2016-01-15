@@ -113,8 +113,8 @@ from views import count_event
 app.register_blueprint(count_event.mod)
 from views import traveler
 app.register_blueprint(traveler.mod)
-from views import countingLocation
-app.register_blueprint(countingLocation.mod)
+from views import assignment
+app.register_blueprint(assignment.mod)
 from views import count
 app.register_blueprint(count.mod)
 from views import persona
