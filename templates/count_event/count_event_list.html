@@ -6,6 +6,7 @@
 		<table class="datatable">
 		<tr>
 			<th>ID</th>
+			<th>Title</th>
 			<th>Date</th>
 			<th>Start Time</th>
 			<th>End Time</th>
@@ -13,7 +14,8 @@
 		{% for rec in recs %}
 	    <tr>
 			<td><a href="{{ g.editURL }}{{ rec.ID }}/">{{ rec.ID }}</a></td>
-			<td><a href="{{ g.editURL }}{{ rec.ID }}/">{{ theTime[rec.ID]["month"]}}/{{ theTime[rec.ID]["day"]}}/{{ theTime[rec.ID]["year"]}}</a></td>
+			<td><a href="{{ g.editURL }}{{ rec.ID }}/">{{ rec.title }}</a></td>
+			<td>{{ theTime[rec.ID]["month"]}}/{{ theTime[rec.ID]["day"]}}/{{ theTime[rec.ID]["year"]}}</td>
 			<td>{{ theTime[rec.ID]["hour"]}}:{{ theTime[rec.ID]["strMinute"]}} {{ theTime[rec.ID]["AMPM"]}}</td>
 			<td>{{ theTime[rec.ID]["hourEnd"]}}:{{ theTime[rec.ID]["strMinuteEnd"]}} {{ theTime[rec.ID]["AMPMEnd"]}}</td>
 		</tr>

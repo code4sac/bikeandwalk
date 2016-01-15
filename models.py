@@ -64,13 +64,15 @@ class Location(db.Model):
 class CountEvent(db.Model):
     #__tablename__ = 'countEvent'
     ID = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.Text)
     startDate = db.Column(db.Text, nullable=False)
     endDate = db.Column(db.Text, nullable=False)
     timeZone = db.Column(db.Text)
     isDST = db.Column(db.Integer, default=0)
     organization_ID = db.Column(db.Integer, db.ForeignKey('organization.ID'), nullable=False)
 
-    def __init__(self, start, end, timeZone, isDST, org):
+    def __init__(self, title, start, end, timeZone, isDST, org):
+        self.title = title
         self.startDate = start
         self.endDate = end
         self.timeZone = timeZone

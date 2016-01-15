@@ -84,6 +84,7 @@ def edit(id=0):
                 if id > 0:
                     cur = CountEvent.query.get(id)
                     #update the record
+                    cur.title = request.form["title"]
                     cur.startDate = startingDate.isoformat()[:19]
                     cur.endDate = endingDate.isoformat()[:19]
                     cur.isDST = isDST
@@ -91,7 +92,7 @@ def edit(id=0):
                     cur.organization_ID = request.form['organization_ID']
                 else:
                     ## create a new record
-                    cur = CountEvent(startingDate.isoformat()[:19],endingDate.isoformat()[:19],request.form["timeZone"],isDST,request.form['organization_ID'])
+                    cur = CountEvent(request.form["title"],startingDate.isoformat()[:19],endingDate.isoformat()[:19],request.form["timeZone"],isDST,request.form['organization_ID'])
                     db.session.add(cur)
                 db.session.commit()
                 

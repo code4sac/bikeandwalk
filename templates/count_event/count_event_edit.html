@@ -8,6 +8,8 @@
 		<input type=hidden name="organization_ID" value="{{rec.organization_ID|default(g.orgID,true)}}">
       <dl>
 		{% include "editFormButtons.html" %}
+        <dt>Title: 
+		<dd><input type=text size=30  name="title" value="{{rec.title}}" />
         <dt>Month (MM): 
 		<dd><input type=num size=2 maxlength="2" name="month" value="{{theTime.month}}" />
         <dt>Day (DD): 
