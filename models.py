@@ -156,15 +156,45 @@ class Trip(db.Model):
 
     def __repr__(self):
         return '<Date: %r>' % self.tripDate
+        
+## a place to stash trips that don't validate for some reason
+### SQLAlchemy is supposed to support inheritance so we wouldn't need
+###    to restate all this, but it looks hard. 8-(
+class ProvisionalTrip(db.Model):
+    ID = db.Column(db.Integer, primary_key=True)
+    tripCount = db.Column(db.Integer)
+    tripDate = db.Column(db.Text)
+    turnDirection = db.Column(db.Text)
+    seqNo = db.Column(db.Text)
+    location_ID = db.Column(db.Integer, db.ForeignKey('location.ID'))
+    traveler_ID = db.Column(db.Integer, db.ForeignKey('traveler.ID'))
+    countEvent_ID = db.Column(db.Integer, db.ForeignKey('count_event.ID'))
+    issue = db.Column(db.Text) #The reason trip was suspect
 
-"""
-CREATE TABLE IF NOT EXISTS eventTraveler (
-   ID INTEGER PRIMARY KEY AUTOINCREMENT,
-   sortOrder INTEGER,
-   countevent_ID INTEGER REFERENCES count_event(ID) ON DELETE CASCADE,
-   traveler_ID INTEGER REFERENCES traveler(ID) ON DELETE CASCADE
-);
-"""
+    countevent = relationship(CountEvent)
+    location = relationship(Location)
+    traveler = relationship(Traveler)
+
+    #from views.utils import getDatetimeFromString
+
+    # Get the Starting date of the related event
+    eventStartDate = deferred(select([CountEvent.startDate]).where(CountEvent.ID == countEvent_ID))
+    travelerName = deferred(select([Traveler.name]).where(Traveler.ID == traveler_ID))
+    locationName = deferred(select([Location.locationName]).where(Location.ID == location_ID))
+
+    def __init__(self, tripCnt,tripDate,turnDirection,seqNo,location_ID,traveler_ID,countEvent_ID):
+        self.tripCount = tripCnt
+        self.tripDate = tripDate
+        self.turnDirection = turnDirection
+        self.seqNo = seqNo
+        self.location_ID = location_ID
+        self.traveler_ID = traveler_ID
+        self.countEvent_ID = countEvent_ID
+
+    def __repr__(self):
+        return '<Date: %r>' % self.tripDate
+
+
 class EventTraveler(db.Model):
     ID = db.Column(db.Integer, primary_key=True)
     sortOrder = db.Column(db.Integer, default=0)
