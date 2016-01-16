@@ -12,6 +12,7 @@ function startUp(){
 	hideMenu();
 	showCountPage();
 	showData();
+	getTotalFromServer();
 	uploadData();
 	
 }
@@ -86,10 +87,17 @@ function laneClicked(which){
 				firstPass = false;
 				lastSaveSet = [];
 			}
-			if (seqNo > 0) lastSaveSet.push(seqNo); // we can't undo without a sequence number
+			//if (seqNo > 0) lastSaveSet.push(seqNo); // we can't undo without a sequence number
+			if (seqNo > 0) { // we can't undo without a sequence number
+				// push a data array into lastSaveSet
+				var undoSet = [seqNo, tripTime];
+				lastSaveSet.push(undoSet); 
+			}
+			
 			var y = cnt + "\t" + entryLane + "\t"+  tripTime + "\t" + $("#traveler_"+i).attr("name") + "\t" + seqNo;
 			// saveData writes data to localStorage
 			saveData(seqNo,y);
+			updateTotal(cnt);
 		}
 		setUndo();
 	})
@@ -189,24 +197,24 @@ function showData() {
 	var data = readAllData();
 	// display the session data in the data div
 	$("pre#data").text(data);
-	showTotal(data);
+	//showTotal(data);
 }
 
-function showTotal() {
-	var theTotal = 0
-	if (hasStorage()){
-		for (i=0; i<=localStorage.length-1; i++) {   
-	        key = localStorage.key(i); 
-			if (isTripDataKey(key)){
-				var s = JSON.parse(getJsonTripFrom(localStorage.getItem(key)));
-				if (s["count"]){ theTotal += s["count"]};
-			}
-	    }
-		$("#total").text(theTotal);
-	} else {
-		// get the count someother how...
-		$("#total").text("unknown");
-	}
+function showTotal(theTotal) {
+	var theTotal = theTotal || 0
+	$("#total").text(theTotal);
+}
+
+function updateTotal(increment){
+	var current = parseInt($("#total").text())
+	if (isNaN(current)) current = 0;
+	showTotal(current + parseInt(increment));
+}
+
+function getTotalFromServer(){
+	var dataString = getJsonHeader("total");
+	dataString += ']}' 
+	$.post("/count/trip/",dataString, function(data){getUploadResult(data);},'json');
 }
 
 function hasStorage() {
@@ -254,9 +262,14 @@ function undoTripsWithArray() {
 	if (lastSaveSet.length > 0) {
 		if(hasStorage){
 			for(var i=lastSaveSet.length-1; i >= 0; i--){
-				var temp = localStorage.getItem(getDataElementBaseKey() + lastSaveSet[i])
+				var recKey = getDataElementBaseKey() + lastSaveSet[i][0]
+				var temp = localStorage.getItem(recKey)
 				if ((temp != undefined) && (temp != null)) {
-					localStorage.removeItem(getDataElementBaseKey() + lastSaveSet[i])
+					// the trip is still in localStorage
+					var trip = getJsonTripFrom(temp);
+					trip = JSON.parse(trip);
+					updateTotal(parseInt(trip['count']) * -1)
+					localStorage.removeItem(recKey)
 					lastSaveSet = lastSaveSet.slice(0,-1); // remove the last item
 				}
 			}
@@ -270,12 +283,13 @@ function undoTripsWithArray() {
 			for (var i=0; i<=lastSaveSet.length-1; i++){
 				if (hasData) dataString += ",";
 				hasData = true;
-				dataString += '{"seqNo":"'+lastSaveSet[i]+'"}';
+				dataString += '{"seqNo":"'+lastSaveSet[i][0]+'", "tripDate": "'+lastSaveSet[i][1]+'"}';
 			}
 			
 			if (hasData){
 				dataString += "]}";
-				$.post("/count/trip/",dataString); // ignore the response from the server
+				$.post("/count/trip/",dataString, 
+				function(data){getUploadResult(data);},'json'); 
 			}
 			
 			lastSaveSet = []; // just ot be sure
@@ -312,10 +326,13 @@ function isTripDataKey(key) {
 
 function getUploadResult(data){
 	// do something about what happened with your data upload
-	var result = data['result']
+	var result = data['result'];
+	var total = parseInt(data['total']);
+	if (isNaN(total)) total = 0;
 	$("pre#data").text(result)
 	if (result.toUpperCase() == "SUCCESS"){
 		clearData();
+		showTotal(total);
 	} else {
 		// some error occured
 		$("pre#data").text(result);

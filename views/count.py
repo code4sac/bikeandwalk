@@ -4,9 +4,12 @@ from flask import request, session, g, redirect, url_for, \
 from datetime import datetime, timedelta
 from bikeandwalk import db,app
 from models import CountEvent, Trip, Location, Assignment,\
-    Traveler, EventTraveler, User
+    Traveler, EventTraveler, User, ProvisionalTrip
 import json
-from views.utils import getTurnDirectionList, printException, getDatetimeFromString, getLocalTimeAtEvent
+from views.utils import getTurnDirectionList, printException, getDatetimeFromString, \
+    getLocalTimeAtEvent, cleanRecordID
+    
+from views.trip import getAssignmentTripTotal
 
 mod = Blueprint('count',__name__)
 
@@ -106,75 +109,114 @@ def isValidUID(UID=""):
 @mod.route('/count/trip', methods=['POST', 'GET'])
 @mod.route('/count/trip/', methods=['POST', 'GET'])
 def count_trip():
-    theResult = "Unknown"
+    #theResult = "Unknown"
     try:
         # receive a json object containing the trips and other data
         data = request.get_json(force=True)
-       
-        # get the countEvent record because we need the timezone offset
-        rec = CountEvent.query.get(int(data['countEvent']))
-        try:
-            if rec:
-                startDate = getDatetimeFromString(rec.startDate)
-                endDate = getDatetimeFromString(rec.endDate)
-                localTime = getLocalTimeAtEvent(rec.timeZone,rec.isDST) # Get the current local time at the event location
-            else:
-                raise ValueError("CountEvent Record No Found")
-                
-        except ValueError as e:
-            printException("CountEvent Record No Found","error")
-            theResult = "CountEventError"
-            return '{"result":"'+theResult+'"}'
-            
-        #determine the start and end times of the event
         
-        for i in range(len(data['trips'])):
-            d = datetime.utcnow() + timedelta(hours=-7)
-            trip = dict()
-            trip['action'] = data['action']
-            trip['seqNo'] = data['trips'][i]['seqNo']
-            trip['location_ID'] = data['location']
-            trip['countEvent_ID'] = data['countEvent']
+    except Exception as e:
+        printException('Bad JSON data in post',"error",e)
+        printException("json = " + request.data,"info")
+        return '{"result":"success"}'
+        
+    # get the countEvent record because we need the timezone offset
+    rec = CountEvent.query.get(int(data['countEvent']))
+    try:
+        if rec:
+            startDate = getDatetimeFromString(rec.startDate)
+            endDate = getDatetimeFromString(rec.endDate)
+            localTime = getLocalTimeAtEvent(rec.timeZone,rec.isDST) # Get the current local time at the event location
+        else:
+            raise ValueError("CountEvent Record No Found")
             
-            if trip['action'] == "undo":
+    except Exception as e:
+        printException("CountEvent Record No Found","error")
+        #theResult = "CountEventError"
+        return '{"result":"success"}'
+        
+    trip = dict()
+    trip['action'] = data.get('action')
+    trip['location_ID'] = cleanRecordID(data.get('location'))
+    trip['countEvent_ID'] = cleanRecordID(data.get('countEvent'))
+    
+    ## There is an 'action' called as 'total' with no trips data.
+    ##  This loop will not execute and only the current total will be returned
+    
+    for i in range(len(data['trips'])):
+        #d = datetime.utcnow() + timedelta(hours=-7)
+        temp = data['trips'][i] # get the dict for the trip
+        trip['seqNo'] = cleanRecordID(temp.get('seqNo'))
+        trip['tripCount'] = cleanRecordID(temp.get("count"))
+        trip['tripDate'] = temp.get('tripDate', "").strip()
+        trip['turnDirection'] = temp.get('direction', "").strip()
+        trip['traveler_ID'] = cleanRecordID(temp.get('traveler'))
+        
+        tripDate = getDatetimeFromString(trip['tripDate'])
+        if not tripDate:
+            # bad date string, log it and go to the next record
+            printException("Bad trip date: " + temp, "error")
+            continue # do next loop
+           
+        if trip['action'] == "undo":
+            ## don't allow old trips to be undone
+            ### If the trip is more than 1 minute in the past, it can't be deleted
+            if tripDate + timedelta(minutes= 1) > localTime:
+                
                 try:
                     rec = Trip.query.filter(Trip.location_ID == trip['location_ID'], \
                         Trip.countEvent_ID == trip['countEvent_ID'], \
-                        Trip.seqNo == trip['seqNo']).first()
-                        
+                        Trip.seqNo == trip['seqNo'], \
+                        Trip.tripDate == trip["tripDate"]).first()
+                    
                     if rec:
                         db.session.delete(rec)
                         db.session.commit()
-                    
+                
                 except Exception as e:
                     printException('Could not undo Trip '+str(i),"error",e)
-
-            else: #Add
-                trip['tripCount'] = data['trips'][i]['count']
-                trip['tripDate'] = data['trips'][i]['tripDate'].strip()
-                trip['turnDirection'] = data['trips'][i]['direction'].strip()
-                trip['traveler_ID'] = data['trips'][i]['traveler']
-                
-                if isValidTrip(trip,startDate,endDate,localTime) or True: #### Always Valid for Now #####
-                    try:
-                        cur = Trip(trip['tripCount'],trip['tripDate'],trip['turnDirection'],trip['seqNo'],trip['location_ID'],trip['traveler_ID'],trip['countEvent_ID'])
-                        db.session.add(cur)
-                        #mark this trip as saved
-                        #db.session.commit()            
-                    except Exception as e:
-                        printException('Could not record Trip '+str(i),"error",e)
-                        # log the data collected?
-                        # mark this trip as failed?
             
-        db.session.commit()
-        theResult = "Success"
 
+        if trip["action"] == "add":
+            
+            validTrip, errorMess = isValidTrip(trip,startDate,endDate,localTime)
+            
+            if validTrip or True: #### Always Valid for Now #####
+                try:
+                    cur = Trip(trip['tripCount'],trip['tripDate'],trip['turnDirection'],trip['seqNo'],trip['location_ID'],trip['traveler_ID'],trip['countEvent_ID'])
+                    db.session.add(cur)
+                    db.session.commit()            
+                except Exception as e:
+                    printException('Could not record Trip '+str(i),"error",e)
+                    printException("trip data: " + str(data), "info" )
+                    
+            else:
+                #not a valid trip, so save in provisionalTrip table
+                try:
+                    cur = ProvisionalTrip(trip['tripCount'],trip['tripDate'],trip['turnDirection'],trip['seqNo'],trip['location_ID'],trip['traveler_ID'],trip['countEvent_ID'])
+                    db.session.add(cur)
+                    cur.issue = errorMess
+                    
+                    # inform the responsible parties
+                    #sendProvisionalTripEmail() #Sends an email no more than once a day
+                    
+                except Exception as e:
+                    printException('Could not record provisional Trip',"error",e)
+                    printException("trip data: " + str(data), "info" )
+                    
+        else:
+            #Bad action request
+            pass
+            
+    try:
+        db.session.commit()
     except Exception as e:
-        printException('Bad JSON data in post',"error",e)
-        theResult = request.data
-        printException("json = " + theResult,"info")
+        printException("Unable to commit to trip or provisionalTrip", "error", e)
+        printException("trip data: " + str(data), "info" )
         
-    return '{"result":"'+theResult+'"}'
+    #Get the total so far:
+    totalCnt = getAssignmentTripTotal(trip["countEvent_ID"], trip["location_ID"])
+    
+    return '{"result":"success", "total": %d}' % (totalCnt)
 
 def isValidTrip(trip,startDate,endDate,localTime):
     #trip is a dictionary of trip data
@@ -184,33 +226,55 @@ def isValidTrip(trip,startDate,endDate,localTime):
         #trip['location_ID']
         #trip['traveler_ID']
         #trip['countEvent_ID']
-        
+    
     isValid = True
+    errorMess = ""
     
     #test that the tripTime is in the time frame of the countEvent
     if getDatetimeFromString(trip['tripDate']) < localTime:
         isValid = False
-        #flash("That trip date is before the count event")
+        errorMess += "That trip date is before the count event. "
 
     if getDatetimeFromString(trip['tripDate']) > localTime:
         isValid = False
-        #flash("That trip date is after the count event")
+        errorMess += "That trip date is after the count event. "
         
     #test that all the trip data elements are present and valid
     if trip['turnDirection'] == "" or \
        trip['turnDirection'] not in getTurnDirectionList() :
         isValid = False
-        #flash(trip['turnDirection'] + " is not a valid Turn Direction")
+        errorMess += trip['turnDirection'] + " is not a valid Turn Direction. "
     
-    #test that location ID is valid
-    
-    #test that traveler ID is valid
-    
-    #test that the countEvent ID is valid
-    
-    if not isValid:
-        #record the errors to a log...
+    #test that location and count_event ID is valid
+    tempTest = False
+    try:
+        cur = Assignment.query.filter(Assignment.location_ID == cleanRecordID(trip["location_ID"]), Assignment.countEvent_ID == cleanRecordID(trip["countEvent_ID"]))
+        if cur:
+            tempTest = True
+    except:
         pass
+    
+    if not tempTest:
+        isValid = False
+        errorMess += str(trip["location_ID"]) + " is not a valid location ID. "
         
-    return isValid
+     #test that traveler ID is valid
+    tempTest = False
+    try:
+        cur = EventTraveler.query.filter(EventTraveler.countEvent_ID == cleanRecordID(trip["countEvent_ID"]), EventTraveler.traveler_ID == cleanRecordID(trip["traveler_ID"]))
+        if cur:
+            tempTest = True
+    except:
+        pass
+    
+    if not tempTest:
+        isValid = False
+        errorMess += str(trip["traveler_ID"]) + " is not a valid Traveler ID. "
+       
+    
+    # An error or testing
+    #isValid = False
+    #errorMess += "This should not have happened!"
+    
+    return isValid, errorMess
     

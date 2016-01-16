@@ -75,6 +75,20 @@ CREATE TABLE IF NOT EXISTS trip (
    traveler_ID INTEGER REFERENCES traveler(ID) ON DELETE RESTRICT,
    countEvent_ID INTEGER REFERENCES count_event(ID) ON DELETE RESTRICT
 );
+
+DROP TABLE IF EXISTS provisional_trip;
+CREATE TABLE IF NOT EXISTS provisional_trip (
+   ID INTEGER PRIMARY KEY AUTOINCREMENT,
+   tripCount INTEGER,
+   tripDate TEXT,
+   turnDirection TEXT,
+   seqNo TEXT,
+   location_ID INTEGER REFERENCES location(ID),
+   traveler_ID INTEGER REFERENCES traveler(ID),
+   countEvent_ID INTEGER REFERENCES count_event(ID),
+   issue TEXT
+);
+
 DROP TABLE IF EXISTS eventTraveler;
 CREATE TABLE IF NOT EXISTS eventTraveler (
    ID INTEGER PRIMARY KEY AUTOINCREMENT,
