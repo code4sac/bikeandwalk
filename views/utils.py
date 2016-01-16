@@ -14,6 +14,11 @@ def nowString():
     return datetime.now().isoformat()[:19]
     
 def getDatetimeFromString(dateString):
+    if type(dateString) is str or type(dateString) is unicode:
+        pass
+    else:
+        return None
+        
     dateString = dateString[:19]
     timeDelimiter = " "
     if "T" in dateString:
@@ -25,6 +30,9 @@ def getDatetimeFromString(dateString):
     except Exception as e:
         printException("Bad Date String","error",e)
         theDate = None
+        
+    if theDate == None:
+        return None
         
     return theDate.replace(microsecond=0)
 
