@@ -76,7 +76,7 @@ def clean_data(dbfile=FILE_TO_BACKUP, backupdir=BACKUP_DIRECTORY):
             if os.path.isfile(backup_file):
                 if os.stat(backup_file).st_ctime < (time.time() - NO_OF_DAYS * 86400):
                     os.remove(backup_file)
-                    print ("Deleting {}...".format(ibackup_file))
+                    print ("Deleting {}...".format(backup_file))
     else:
         print('No Backup files to delete')
         
