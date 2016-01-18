@@ -181,12 +181,8 @@ def editFromList(id="0"):
         g.orgID = cleanRecordID(g.orgID)
         print "got to here..."
         
-        #locations = [{"id" : 1, "locationName": "location one"}, {"id" : 2, "locationName": "location two"} ]
-        
-        ## using this locks the database and it is still locked for the next request, so
-        ## can't actually save the new record when the user submits the form.
-        ## As a mater of fact, it stops everything because the next request can't even
-        ## get the user record to see if they are logged in.
+        ## It's important to call fetchAll() or fetchOne() after executing sql this way or the
+        ##  database will be left in a locked state.
         
         sql = 'select ID,locationName from location where organization_ID = %d \
                and ID not in \
