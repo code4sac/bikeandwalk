@@ -59,7 +59,7 @@ def init_apache_wsgi(force=False):
     else:
         print "The default wsgi file, '"+ DEFAULT_WSGI_FILE +"' could not be found"
             
-DEFAULT_SQLITE_FILE = 'bikeandwalk.sql'
+DEFAULT_SQLITE_FILE = 'bikeandwalk.sqlite'
 
 def init_sqlite_file(force=False):
     #just create an empty file
