@@ -232,7 +232,7 @@ p.flash {
 }
 
 div#eventRecordForm {
-    width:30%;
+    width:17em;
     float:left;
     padding-right:1em;
 }
@@ -241,7 +241,7 @@ div#eventRecordForm {
     countEvent Traveler List
 */
 div#travelerListContain {
-    margin-left:34%;
+    margin-left:20em;
     
 }
 div#travelerList {
