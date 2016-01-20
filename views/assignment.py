@@ -288,7 +288,7 @@ def deleteRecordID(id):
     rec = Assignment.query.get(id)
     if rec:
         if getAssignmentTripTotal(rec.countEvent_ID, rec.location_ID) > 0:
-            return false
+            return False
             
     if id > 0:
         #rec = Assignment.query.get(id)
