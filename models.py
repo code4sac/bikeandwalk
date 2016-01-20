@@ -201,6 +201,8 @@ class EventTraveler(db.Model):
     countEvent_ID = db.Column(db.Integer, db.ForeignKey('count_event.ID'))
     traveler_ID = db.Column(db.Integer, db.ForeignKey('traveler.ID'))
     
+    travelerName = deferred(select([Traveler.name]).where(Traveler.ID == traveler_ID))
+    
     def __init__(self, event, traveler):
         self.countEvent_ID = event
         self.traveler_ID = traveler

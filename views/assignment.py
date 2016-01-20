@@ -151,15 +151,8 @@ def editFromList(id="0"):
     """
     ## when creating a new record, g.countEventID will contain the ID of the countEvent record
     setExits()
-    formTemplate = 'assignment/popupEditForm.html'
-    successTemplate = 'assignment/listElement.html'
     
     data = None
-    if request.method.upper() == "post":
-        # receive a json object containing the trips and other data
-        data = request.get_json(force=True)
-        print "Data: " + data
-        
     if not data:
         data = request.form
         
@@ -167,7 +160,6 @@ def editFromList(id="0"):
         id = data["ID"]
     
     id = cleanRecordID(id)
-    print "Assignment ID=" + str(id)
     if id < 0:
         flash("Invalid Record ID")
         return redirect(g.listURL)
@@ -179,7 +171,6 @@ def editFromList(id="0"):
             
         ceID = cleanRecordID(g.countEventID)
         g.orgID = cleanRecordID(g.orgID)
-        print "got to here..."
         
         ## It's important to call fetchAll() or fetchOne() after executing sql this way or the
         ##  database will be left in a locked state.
@@ -208,7 +199,6 @@ def editFromList(id="0"):
     form.user_ID.choices = getUserChoices()        
 
     if request.method == "POST" and form.validate():
-        print "Valid"
         if not rec:
             rec = createNewRecord(form.countEvent_ID.data)
             if  not rec:
@@ -232,9 +222,9 @@ def editFromList(id="0"):
         g.countEventID = int(rec.countEvent_ID)
         
     assignedUserIDs = getAssignedUsers(g.countEventID)
-    print "Ready to render..."
-    return render_template(formTemplate, 
-        form=form, locations=locations, 
+    return render_template('assignment/popupEditForm.html', 
+        form=form, 
+        locations=locations, 
         assigned=assignedUserIDs, 
         )
     
@@ -294,6 +284,12 @@ def createNewRecord(eventID=None):
 def deleteRecordID(id):
     id = cleanRecordID(id)
     g.orgID = cleanRecordID(g.orgID)
+    # Can't delete an assignment with trips
+    rec = Assignment.query.get(id)
+    if rec:
+        if getAssignmentTripTotal(rec.countEvent_ID, rec.location_ID) > 0:
+            return false
+            
     if id > 0:
         #rec = Assignment.query.get(id)
         sql = 'DELETE FROM assignment  \

@@ -10,6 +10,7 @@ from views.utils import getTurnDirectionList, printException, getDatetimeFromStr
     getLocalTimeAtEvent, cleanRecordID
     
 from views.trip import getAssignmentTripTotal
+from views.traveler import getEventTravelers
 
 mod = Blueprint('count',__name__)
 
@@ -79,7 +80,7 @@ def count_begin(UID=""):
         
     ## Valid UID
     #Get the travelers
-    et = EventTraveler.query.filter_by(countEvent_ID=cntLoc.countEvent_ID).order_by(EventTraveler.sortOrder).all()
+    et = getEventTravelers(cntLoc.countEvent_ID)
     g.travelerCnt = EventTraveler.query.filter_by(countEvent_ID=cntLoc.countEvent_ID).count()
     if not et:
         g.UIDStatus = "noTravelers"

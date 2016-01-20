@@ -12,37 +12,35 @@ function updateImage(imageSource,imageID) {
 	$(imageID).attr("src",imageSource);
 }
 
-function locationItemClicked(target, loc){
-	$('.location-item').css('background-color','white');
-	$('#location_ID').attr('value',loc);
-	$(target).css('background-color','#333');
-}
-
-function editAssignmentFromList(editFormURL) {
+function editFromList(editFormURL) {
 	setModal('dialog',true);
 	$('#modal-form-contain').show();
 	$('#modal-form').show();
-	$('#modal-form').load(editFormURL)
-}
+	$('#modal-form').load(editFormURL,function(data){modalFormSuccess(data);})
+	}
 
 function modalFormSuccess(data){
 	// return true if the update was successful
 	// also return true if the update failed for a reason
 	// other than a validation error
 	var result = true;
-	if ((data == "success") || (data.substr(0,9) == 'failure: ')){
-		if (data != "success"){ 
-			// display an error message
-			alert(data.substr(9)) 
-		}
+	if (data.toLowerCase() == "success"){
+		result = true;
+	}
+	else if (data.substr(0,9).toLowerCase() == 'failure: '){
+		cancelModalForm();
+		// display an error message
+		alert(data.substr(9)) 
+		result = true;
 	} else { result = false; }
+	if(result == true){ cancelModalForm(); }
 	return result;
 }
+
 
 function submitModalForm(formID, postingURL, successTarget, successURL){
 	$("#modal-form").load(postingURL,formToJson(formID),function(data){
 		if (modalFormSuccess(data)){
-			cancelModalForm();
 			$("#"+successTarget).load(successURL);
 		} else {
 			// there were errors, so the form will redisplay
@@ -68,7 +66,7 @@ function formToJson(formID){
 	return obj;
 }
 
-function deleteAssignmentFromList(deleteActionURL, successTarget){
+function deleteFromList(deleteActionURL, successTarget){
 	if (confirmRecordDelete()) {
 		$.get(deleteActionURL, function(data){
 		if(data == "success"){

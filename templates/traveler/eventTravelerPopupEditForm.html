@@ -1,0 +1,32 @@
+{# EventTraveler form for response to AJAX request #}
+<form id="eventTravelerFromListForm"  action="" method="POST">
+	<input type="hidden" name="ID" value="{{ form.ID.data | default(0,True)}}">
+	<input type="hidden" name="countEvent_ID" value="{{ form.countEvent_ID.data | default(g.countEventID,True)}}">
+	{% if availableTravelers %}
+	<p><span class="field-label">Travelers: </span></p>
+	<select name="traveler_ID">
+		{% for trav in availableTravelers %}
+		<option value="{{trav.ID}}" >{{ trav.name }}</option>
+		{% endfor %}
+	</select>
+	{% endif %}
+	{% if travelerOrder %}
+	{% if travelerName != "" %}
+	<p>Change the display order of <br>{{ travelerName }}:</p>
+	{% else %}
+	<p>Set the display Order:</p>
+	{% endif %}
+	<select name="sortOrder">
+		{% for ord in travelerOrder %}
+		<option value="{{ord["sortOrder"]}}" >{{ ord["travelerName"] }}</option>
+		{% endfor %}
+	</select>
+	{% endif %}
+	<div class="travelerEvent-buttons data-element">
+		<p>
+		<span class="cancel-link" onclick="cancelModalForm()">Cancel</span>
+		<input class="assignmentSave" type="button" onclick="submitModalForm('eventTravelerFromListForm', '{{ url_for('traveler.editEventTraveler')}}', 'travelerList', '{{ url_for('traveler.getTravelerList')}}/{{ form.countEvent_ID.data | default(g.countEventID,True)}}/')" name="Save" value="Save" />
+		</p>
+	</div>
+</form>
+</div>

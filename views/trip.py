@@ -99,3 +99,17 @@ def getAssignmentTripTotal(countEventID=0, locationID=0):
             result = 0
             
     return result
+    
+def getEventTravelerTripTotal(countEventID = 0, travelerID =0):
+    result = 0
+    countEventID = cleanRecordID(countEventID)
+    travelerID = cleanRecordID(travelerID)
+    sql =  "select sum(tripCount) as tripTotal from trip where countEvent_ID = %d and traveler_ID = %d;" % (countEventID, travelerID)
+    cur = db.engine.execute(sql).fetchone()
+    if cur:
+        result = cur[0]
+        if result == None:
+            result = 0
+            
+    return result
+    

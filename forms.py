@@ -1,4 +1,4 @@
-from wtforms import Form, BooleanField, StringField, HiddenField, SelectField, IntegerField, validators
+from wtforms import Form, BooleanField, StringField, HiddenField, SelectField, IntegerField, validators, TextAreaField
 
     
 class AssignmentForm(Form):
@@ -54,4 +54,17 @@ class TripForm(Form):
     countEvent_ID = SelectField("Count Event",
         [validators.NumberRange(min=1, message="You must select a Count Event")], 
         coerce=int, choices=[], )
+
+class TravelerListEditForm(Form):
+    ID = IntegerField("ID", [validators.DataRequired()])
+    name = StringField("Name", [validators.DataRequired()])
+    description = TextAreaField("Description", [validators.DataRequired()])
+    iconURL = StringField("Icon URL")
+    travelerCode = IntegerField("Traveler Code Name", [validators.DataRequired()])
+    
+class EventTravelerForm(Form):
+    ID = IntegerField("ID", [validators.DataRequired()])
+    countEvent_ID = HiddenField("Count Event ID", [validators.DataRequired()])
+    traveler_ID = HiddenField("Traveler ID", [validators.DataRequired()])
+    sortOrder = IntegerField("Sort Order")
     

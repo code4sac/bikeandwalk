@@ -24,8 +24,9 @@ table, caption, tbody, tfoot, thead, tr, th, td {
 
 /* End Resets */
 /* IE Hacks*/
+/*
 div {zoom:1;height:1%;}
-
+*/
 
 html {
 	background-color: white;
@@ -60,6 +61,11 @@ color:rgb(65,ff,65);
 	text-decoration:none;
 }
 a:hover {}
+
+hr {
+    border-top:1pt #999 solid;
+    margin:.25em 0;
+}
 
 dt { font-weight: bold; }
 
@@ -136,8 +142,8 @@ img
 #modal-form {
     display:none;
     position:fixed;
-    border:2pt solid #666;
     z-index:2000;
+    border:2pt solid #666;
     background-color:white;
     padding:1em;
     margin:1em auto;
@@ -234,17 +240,38 @@ div#eventRecordForm {
 /*
     countEvent Traveler List
 */
-div#travelerForm {
+div#travelerListContain {
     margin-left:34%;
     
 }
 div#travelerList {
     border:1pt solid black;
     overflow-y:scroll;
-    width:240pt;
-    height:200pt;
+    width:340pt;
+    height:250pt;
+    margin-bottom:.5em;
+    font-size:90%;
+}
+div.eventTraveler {
+    padding:6px;
+}
+div.eventTravelereDetails p  {
+    margin: 0 3pt 0 63px;
+}
+p.eventTravelerIcon {
+    float:left;
+    width:57px;
 }
 
+p.eventTravlerActions {
+    clear:both;
+    text-align:right;
+    width:90%;
+    padding-top:.25em;
+}
+.eventTravelerActionSpacer {
+    padding-left:2em;
+}
 /*
     countEvent Assignment List
 */
@@ -277,7 +304,7 @@ p.assignmentActions{
 }
 
 
-img#travelerIcon {
+img.travelerIcon {
     height:57px;
     width:57px;
     background-image:url(//bikeandwalk.org/images/travelers/unknown.png);

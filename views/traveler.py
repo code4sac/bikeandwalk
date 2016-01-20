@@ -3,7 +3,9 @@ from flask import request, session, g, redirect, url_for, \
 from bikeandwalk import db, app
 from views.utils import nowString
 from models import Traveler, EventTraveler, TravelerFeature, Feature, Trip
-from views.utils import printException
+from views.utils import printException, cleanRecordID
+from views.trip import getEventTravelerTripTotal
+from forms import EventTravelerForm
 
 mod = Blueprint('traveler',__name__)
 
@@ -96,33 +98,31 @@ def edit(id=0):
 @mod.route('/traveler/delete/<id>/', methods=['GET'])
 def delete(id=0):
     setExits()
-    if not id.isdigit() or int(id) < 0:
+    id = cleanRecordID(id)
+    if id < 0:
         flash("That is not a valid ID")
         return redirect(g.listURL)
-    
-    if int(id) > 0:
+ 
+        rec = Traveler.query.get(id)
+        if rec:
+            ## Can't delete Traveler that has been used in a trip
+            trip = Trip.query.filter_by(traveler_ID = str(id)).all()
+            if trip:
+                #can't delete
+                flash("You can't delete this Traveler because there are Trip records that use it")
+                return redirect(g.listURL)
+            
+            # Delete the related records
+            et = EventTraveler.query.filter_by(traveler_ID = str(id)).delete(synchronize_session='fetch')
+            tf = TravelerFeature.query.filter_by(traveler_ID = str(id)).delete(synchronize_session='fetch')
+            ## delete the traveler
         try:
-            rec = Traveler.query.get(id)
-            if rec:
-                ## Can't delete Traveler that has been used in a trip
-                trip = Trip.query.filter_by(traveler_ID = str(id)).all()
-                if trip:
-                    #can't delete
-                    flash("You can't delete this Traveler because there are Trip records that use it")
-                    return redirect(g.listURL)
-                
-                # Delete the related records
-                et = EventTraveler.query.filter_by(traveler_ID = str(id)).delete(synchronize_session='fetch')
-                tf = TravelerFeature.query.filter_by(traveler_ID = str(id)).delete(synchronize_session='fetch')
-                ## delete the traveler
-                db.session.delete(rec)
-                db.session.commit()
-            else:
-                flash("Record could not be deleted.")
+            db.session.delete(rec)
+            db.session.commit()
+        
         except Exception as e:
             flash(printException('Error attempting to delete '+g.title+' record.',"error",e))
             db.session.rollback()
-            return edit(str(id))
 
     return redirect(g.listURL)
 
@@ -176,3 +176,141 @@ def getFeatureSet(id=0):
                 feature['featureSelected'] = True
         records[elem] = feature
     return records
+
+## return an HTML code segment to include in the count_event edit form
+@mod.route("/traveler/getTravelerList", methods=['GET'])
+@mod.route("/traveler/getTravelerList/<countEventID>/", methods=['GET','POST'])
+def getTravelerList(countEventID = 0):
+    countEventID = cleanRecordID(countEventID)
+    out = ""
+
+    if countEventID > 0:
+        recs = getEventTravelers(countEventID)
+        if recs:
+            for eventTraveler in recs:
+                traveler = Traveler.query.get(eventTraveler.traveler_ID)
+                if traveler:
+                    totalTrips = getEventTravelerTripTotal(countEventID, traveler.ID)
+                    out += render_template('traveler/travelerListElement.html', eventTraveler=eventTraveler, traveler=traveler, totalTrips=totalTrips)
+
+    return out
+
+@mod.route('/eventtraveler/removeFromList', methods=["GET","POST"])
+@mod.route('/eventtraveler/removeFromList/<eventTravelerID>/', methods=["GET","POST"])
+def removeFromList(eventTravelerID):
+    eventTravelerID=cleanRecordID(eventTravelerID)
+    if eventTravelerID > 0:
+        # remove the event_traveler record only if there are no trips for this traveler / event
+        rec = EventTraveler.query.get(eventTravelerID)
+        if rec:
+            tripCnt = getEventTravelerTripTotal(eventTravelerID, rec.traveler_ID)
+            if tripCnt == 0:
+                db.session.delete(rec)
+                db.session.commit()
+                return "success"
+
+    return "failure: Unable to Remove that record."
+    
+    
+@mod.route("/eventTraveler/selectNew/", methods=['GET'])
+@mod.route("/eventTraveler/selectNew/<countEventID>/", methods=['GET'])
+def newEventTraveler(countEventID=0):
+    g.countEventID =cleanRecordID(countEventID)
+    return editEventTraveler(0)
+    
+## editing list called from within countEvent form
+@mod.route("/eventTraveler/editFromList", methods=['GET',"POST"])
+@mod.route("/eventTraveler/editFromList/<eventTravelerID>/", methods=['GET',"POST"])
+def editEventTraveler(eventTravelerID=0):
+    setExits()
+    data = None
+    rec = None
+    traveler = None
+
+    if request.form:
+        eventTravelerID = cleanRecordID(request.form["ID"])
+        g.countEventID = cleanRecordID(request.form["countEvent_ID"])
+    else:
+        eventTravelerID = cleanRecordID(eventTravelerID)
+        
+    travelerName = ""
+    if eventTravelerID > 0:
+        rec = EventTraveler.query.get(eventTravelerID)
+        if rec:
+            g.countEventID = rec.countEvent_ID
+            traveler = Traveler.query.get(rec.traveler_ID)
+            travelerName = traveler.name
+            
+#    print eventTravelerID
+#    print g.countEventID
+        
+    if g.countEventID <= 0:
+        return "failure: No Count Event ID was found."
+
+    availableTravelers = None 
+    if eventTravelerID == 0:
+        #If creating a new record, get a list of unused travelers
+
+        ## It's important to call fetchcll() or fetchone() after executing sql this way or the
+        ##  database will be left in a locked state.
+
+        sql = 'select ID,name from traveler \
+            where  \
+            ID not in \
+               (select traveler_ID from event_traveler where countEvent_ID  = %d);' \
+            % (g.countEventID)
+
+        availableTravelers = db.engine.execute(sql).fetchall()
+        if len(availableTravelers) == 0:
+            return "failure: There are no more Travelers to use."
+    
+    travelerOrder = None
+    #get a list of all the sort orders for the current set of travelers for this event
+    et = getEventTravelers(g.countEventID)
+    travelerOrder = []
+    elem = {"travelerName" : "1st in list", "sortOrder": 0}
+    lastSortOrder = 0
+    travelerOrder.append(elem)
+    for t in et:
+        elem = {"travelerName": ("Before " + t.travelerName),"sortOrder": int((lastSortOrder + t.sortOrder) / 2)}
+        lastSortOrder = t.sortOrder
+        if eventTravelerID > 0 and t.traveler_ID != traveler.ID:
+            travelerOrder.append(elem)
+            
+    elem = {"travelerName": "End of List","sortOrder": lastSortOrder + 100}
+    travelerOrder.append(elem)
+    
+    form = EventTravelerForm(request.form, rec)
+     
+     
+    if request.method == "POST" :
+        #There is only one select element on the form so it always validates
+        if not rec:
+            rec = EventTraveler(form.countEvent_ID.data, form.traveler_ID.data)
+            if  not rec:
+                return "failure: Unable to create a new EventTraveler record"
+                
+            db.session.add(rec)
+            
+        rec.sortOrder = form.sortOrder.data
+        try:
+            db.session.commit()
+            # "Normalize the sortOrders"
+            
+        except Exception as e:
+            printException("Unable to save Assignment from list", "error", e)
+            return "failure: Sorry. Unable to save your changes."
+        
+        return "success" # the success function looks for this...
+    
+    return render_template('traveler/eventTravelerPopupEditForm.html', 
+        form=form, 
+        availableTravelers=availableTravelers,
+        travelerOrder=travelerOrder, 
+        travelerName=travelerName,
+        )
+
+    
+def getEventTravelers(countEventID):
+    countEventID = cleanRecordID(countEventID)
+    return EventTraveler.query.filter(EventTraveler.countEvent_ID==countEventID).order_by(EventTraveler.sortOrder)

@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from bikeandwalk import db,app
 from views.utils import nowString, printException, getTimeZones, cleanRecordID
 from views.assignment import getAssignmentList
+from views.traveler import getTravelerList
 from models import CountEvent, Organization
 
 mod = Blueprint('count_event',__name__)
@@ -41,7 +42,7 @@ def edit(id=0):
         
     if db:
         assignmentList = getAssignmentList(id) #fully rendered HTML
-        
+        travelerList = getTravelerList(id)
         timeZones = getTimeZones()
         if not request.form:
             """ if no form object, send the form page """
@@ -69,7 +70,12 @@ def edit(id=0):
                 g.timeZone = None
                 
             
-            return render_template('count_event/count_event_edit.html', rec=cur ,theTime=theTime, timeZones=timeZones, assignmentList=assignmentList)
+            return render_template('count_event/count_event_edit.html', 
+                rec=cur ,theTime=theTime, 
+                timeZones=timeZones, 
+                assignmentList=assignmentList, 
+                travelerList=travelerList,
+                )
 
         #have the request form
         # handle the checkbox for Daylite savings time

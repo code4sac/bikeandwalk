@@ -14,7 +14,7 @@
 		<dd><textarea type=text cols="30" rows="5" name="description" >{{rec.description|default("",true)}}</textarea>
 		<dt>Icon URL:
 		<dd><input type=text size=60 name="iconURL" value="{{rec.iconURL|default("",true)}}" onchange="updateImage(this.value,'#travelerIcon')"/>
-			<br><img src="{{rec.iconURL|default("//bikeandwalk.org/images/travelers/unknown.png",true)}}" id="travelerIcon" />
+			<br><img class="travelerIcon" src="{{rec.iconURL|default("//bikeandwalk.org/images/travelers/unknown.png",true)}}" />
 		
 		<dt>Features:</dt>
 		<dd>

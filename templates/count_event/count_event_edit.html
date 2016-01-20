@@ -54,17 +54,20 @@
 		</dl>
     </form>
 </div> <!--Event record form -->
-<div id="travelerForm">
+<div id="travelerListContain">
 	<h3>Traveler List</h3>
 	<div id="travelerList">
-		
+		{{travelerList | safe }}
 	</div>
-		<p><a href="{{url_for("traveler.traveler_select")}}">Select a Traveler...</a></p>
+	<p class="script-link" 
+		onclick="editFromList('{{url_for("traveler.newEventTraveler")}}{{rec.ID|default("0",true)}}')"
+		>Select a new Traveler...
+	</p>
 </div>
 
 <div id="assignment-contain" class="clearer" >
 	<h3>Assignments</h3>
-	<span class="editAssognmentFromList script-link" onclick="editAssignmentFromList('{{ url_for('assignment.createFromList')}}/{{rec.ID|default("0",true)}}/')">Create New Assignment...</span>
+	<p class="editAssignmentFromList script-link" onclick="editFromList('{{ url_for('assignment.createFromList')}}/{{rec.ID|default("0",true)}}/')">Create New Assignment...</p>
 	
 <div id="assignmentList">
 		{{ assignmentList | safe }}

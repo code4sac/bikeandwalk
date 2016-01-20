@@ -1,0 +1,26 @@
+{# A single element in the Traveler list used in the count event form #}
+{% if eventTraveler %}
+<div class="eventTraveler" id="eventTravelerListItem_{{eventTraveler.ID}}" >
+	<p class="eventTravelerIcon"><img class="travelerIcon" src="{{traveler.iconURL|default("//bikeandwalk.org/images/travelers/unknown.png",true)}}" /></p>
+	<div class="eventTravelereDetails">
+		<p><strong>Name: </strong>{{ traveler.name }}</p>
+		<p><strong>Desc: </strong>{{ traveler.description}}</p>
+	</div>
+	<p class="eventTravlerActions">
+	<span class="totalTrips fintprint">Trips Recorded: {{totalTrips}}</span>
+	<span class="eventTravelerActionSpacer">&nbsp;</span>
+	{% if totalTrips == 0 %}
+	<span class="removeEventTravelerFromList script-link" 
+		onclick="deleteFromList('{{ url_for('traveler.removeFromList')}}/{{ eventTraveler.ID }}/','eventTravelerListItem_{{eventTraveler.ID}}')"
+		>Remove...
+	</span>
+	<span class="eventTravelerActionSpacer">&nbsp;</span>
+	{% endif %}
+	<span class="script-link" 
+		onclick="editFromList('{{ url_for('traveler.editEventTraveler')}}/{{eventTraveler.ID}}/')"
+		>Reorder...
+	</span>
+	</p>
+	<hr>
+</div>
+{% endif %}
