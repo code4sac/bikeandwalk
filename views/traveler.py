@@ -274,7 +274,12 @@ def editEventTraveler(eventTravelerID=0):
     for t in et:
         elem = {"travelerName": ("Before " + t.travelerName),"sortOrder": int((lastSortOrder + t.sortOrder) / 2)}
         lastSortOrder = t.sortOrder
-        if eventTravelerID > 0 and t.traveler_ID != traveler.ID:
+        if traveler:
+            currentID = traveler.ID
+        else:
+            currentID = 0
+            
+        if t.traveler_ID != currentID:
             travelerOrder.append(elem)
             
     elem = {"travelerName": "End of List","sortOrder": lastSortOrder + 100}
