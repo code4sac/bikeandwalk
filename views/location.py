@@ -2,7 +2,7 @@ from flask import request, g, redirect, url_for, \
      render_template, flash, Blueprint, abort
 from bikeandwalk import db
 from models import Location
-from views.utils import printException, getDatetimeFromString, nowString
+from views.utils import printException, getDatetimeFromString, nowString, cleanRecordID
 from forms import LocationForm
 
 mod = Blueprint('location',__name__)
@@ -17,27 +17,22 @@ def setExits():
 @mod.route("/location", methods=['GET'])
 def display():
     setExits()
-    if db :
-        recs = None
-        recs = Location.query.filter(Location.organization_ID == g.orgID).order_by(Location.locationName)
+    recs = Location.query.filter(Location.organization_ID == g.orgID).order_by(Location.locationName)
+
+    return render_template('location/location_List.html', recs=recs)
         
-        return render_template('location/location_List.html', recs=recs)
-        
-    else:
-        flash(printException('Could not open Database',"info"))
-        return redirect(url_for('home'))
-        
+
 
 @mod.route("/location/edit/", methods=['GET'])
 @mod.route("/location/edit/<id>", methods=['GET','POST'])
 @mod.route("/location/edit/<id>/", methods=['GET','POST'])
 def edit(id=0):
     setExits()
-    if not id.isdigit() or int(id) < 0:
+    id = cleanRecordID(id)
+    if id < 0:
         flash("That is not a valid ID")
         return redirect(g.listURL)
             
-    id = int(id)
     rec = None
     if id > 0:
         rec = Location.query.get(id)
@@ -63,16 +58,17 @@ def edit(id=0):
 @mod.route("/location/delete/<id>/", methods=['GET','POST'])
 def delete(id=0):
     setExits()
-    if db:
-        if int(id) > 0:
-            rec = Location.query.get(id)
-            if rec:
-                db.session.delete(rec)
-                db.session.commit()
-            else:
-                flash(printException("Could not delete that "+g.title + " record ID="+str(id)+" could not be found.","error"))
-    else:
-        flash(printException("Could not open database","info"))
-        
+    id = cleanRecordID(id)
+    if id < 0:
+        flash("That is not a valid record ID")
+        return redirect(g.listURL)
+
+    if id > 0:
+        rec = Location.query.filter(Location.ID == id, Location.organization_ID == g.orgID).first()
+        if rec:
+            db.session.delete(rec)
+            db.session.commit()
+        else:
+            flash(printException("Could not delete that "+g.title + " record ID="+str(id)+" could not be found or was wrong org.","error"))
+
     return redirect(g.listURL)
-    
