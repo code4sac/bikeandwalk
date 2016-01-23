@@ -5,7 +5,7 @@ from bikeandwalk import db,app
 from views.utils import nowString, printException, getTimeZones, cleanRecordID
 from views.assignment import getAssignmentList
 from views.traveler import getTravelerList
-from models import CountEvent, Organization
+from models import CountEvent, Organization, Assignment, EventTraveler
 
 mod = Blueprint('count_event',__name__)
 
@@ -137,10 +137,13 @@ def delete(id=0):
         return redirect(g.listURL)
 
     if id > 0:
-        rec = CountEvent.query.get(id)
+        rec = CountEvent.query.filter(CountEvent.ID == id, CountEvent.organization_ID == g.orgID)
         if rec:
             try:
-                db.session.delete(rec)
+                #delete related records
+                assigned = Assignment.query.filter(Assignment.countEvent_ID == id).delete()
+                trav = EventTraveler.query.filter(EventTraveler.countEvent_ID == id).delete()
+                rec.delete()
                 db.session.commit()
                 app.logger.info(g.title+' record (id='+str(id)+') Deleted by: ' + g.user + " on "+ datetime.now().isoformat())
             except Exception as e:
