@@ -57,7 +57,7 @@ def login():
 @app.before_request
 def before_request():
     freeDirectories = ("login","count","static","ping","_auth",) #first directory of request URL
-    superUserDirectories = ("org","feature","trip","traveler","super",) #first directory of request URL
+    superUserDirectories = ("org","feature","trip","traveler","super","map",) #first directory of request URL
     rootURL = request.path.split("/")
     rootURL = rootURL[1]
     superRequired = rootURL in superUserDirectories
@@ -123,6 +123,8 @@ from views import location
 app.register_blueprint(location.mod)
 from views import trip
 app.register_blueprint(trip.mod)
+from views import map
+app.register_blueprint(map.mod)
 
 
 def startLogging():

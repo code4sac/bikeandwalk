@@ -1,0 +1,21 @@
+{% extends "layout.html" %}
+{% block title %}{{ g.title }} List{% endblock %}
+{% block head %}
+    <script type="text/javascript" src="{{ url_for('static', filename='map/map.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='map/map.css') }}" type="text/css" media="all" >
+    <script type="text/javascript" src="{{ url_for('static', filename='map/leaflet/leaflet-src.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='map/leaflet/leaflet.css') }}" type="text/css" media="all" >
+{% endblock head %}
+{% block body %}
+	<h2>{{ g.title }}</h2>
+	{%if recs %}
+		{#{% for rec in recs %}
+	        <p>{{ rec.locationName }}, {{ rec.locationLatitude }}, {{ rec.locationLongitude }}, {{ rec.tripCount }}</p>
+		{% endfor %}#}
+
+        <div id="map"></div>
+        <script type="text/javascript">createMap();</script>
+  	{% else %}
+    	<p><em>No Trips to map</em></p>
+	{% endif %}
+{% endblock body %}
