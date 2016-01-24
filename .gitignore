@@ -10,7 +10,7 @@ instance/
 *.sqlite
 db/
 *.log
-venv/
+.idea/
 
 # Distribution / packaging
 .Python
