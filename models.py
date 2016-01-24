@@ -144,6 +144,8 @@ class Trip(db.Model):
     eventStartDate = deferred(select([CountEvent.startDate]).where(CountEvent.ID == countEvent_ID))
     travelerName = deferred(select([Traveler.name]).where(Traveler.ID == traveler_ID))
     locationName = deferred(select([Location.locationName]).where(Location.ID == location_ID))
+    locationLatitude = deferred(select([Location.latitude]).where(Location.ID == location_ID))
+    locationLongitude = deferred(select([Location.longitude]).where(Location.ID == location_ID))
 
     def __init__(self, tripCnt,tripDate,turnDirection,seqNo,location_ID,traveler_ID,countEvent_ID):
         self.tripCount = tripCnt
