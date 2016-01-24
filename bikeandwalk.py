@@ -33,6 +33,9 @@ app.config['SQLALCHEMY_DATABASE_URI'] = app.config["DATABASE_URI"]
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
+# Create a mailer obj
+from flask_mail import Mail
+mail = Mail(app)
 
 ## views modules need db from above
 #import models #### don't import models here, do it in views
@@ -52,7 +55,7 @@ def ping():
 @app.route('/login', methods=['GET'])
 def login():
     return views.index.login()
-        
+
 
 @app.before_request
 def before_request():

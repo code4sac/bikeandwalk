@@ -86,6 +86,10 @@ function loadAssignmentList(data, target, successURL){
 	}
 }
 
+function sendAssignmentEmail(actionURL){
+	$.get(actionURL,function(data){alert(data);})
+}
+
 function cancelModalForm(){
 	setModal("dialog",false);
 	$("#modal-form").text("")

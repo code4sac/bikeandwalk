@@ -18,10 +18,12 @@ DATABASE = "bikeandwalk.sqlite"
 DATABASE_URI = 'sqlite:///' + DATABASE_PATH_PREFIX + DATABASE
 
 ## Email Sending...
-#SMTP_HOST = ""
-#SMTP_PORT = ""
-#SMTP_USER = ""
-#SMTP_PASSWORD = ""
+#MAIL_SERVER = 'localhost'
+#MAIL_PORT = 25
+#MAIL_USE_SSL = False
+#MAIL_USERNAME = None
+#MAIL_PASSWORD = None
+#MAIL_DEFAULT_SENDER = None
 
 # Uploads ...
 #MAX_CONTENT_LENGTH = 300000
