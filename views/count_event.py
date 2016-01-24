@@ -5,7 +5,7 @@ from bikeandwalk import db,app
 from views.utils import nowString, printException, getTimeZones, cleanRecordID
 from views.assignment import getAssignmentList
 from views.traveler import getTravelerList
-from models import CountEvent, Organization, Assignment, EventTraveler
+from models import CountEvent, Organization, Assignment, EventTraveler, User
 
 mod = Blueprint('count_event',__name__)
 
@@ -153,7 +153,36 @@ def delete(id=0):
             flash("Record could not be found.")
             
     return redirect(g.listURL)
+
+@mod.route('/event/sendAssignment', methods=['GET'])
+@mod.route('/event/sendAssignment/<assignmentID>/', methods=['GET'])
+def sendAssignmentEmail(assignmentID):
+    import mailer
+    setExits()
+    resultString = ""
     
+    assignment = Assignment.query.get(cleanRecordID(assignmentID))
+    if not assignment:
+        resultString = "Invitaton Could not be sent. The Assignment Record could not be found"
+        return resultString
+
+    user = User.query.get(assignment.user_ID)
+    if not user:
+        resultString = "Invitaton Could not be sent. The User Record could not be found"
+        return resultString
+
+    countEvent = CountEvent.query.get(assignment.countEvent_ID)
+    if not countEvent:
+        resultString = "Invitaton Could not be sent. The Count Event record could not be found"
+        return resultString
+
+    countEventDict = getTimeDictionary(countEvent.startDate,countEvent.endDate)
+
+    sendResult, resultString = mailer.sendInvite(assignment,user,countEventDict)
+
+    return resultString
+
+
 def validForm():
     # Validate the form
     goodForm = True
@@ -239,6 +268,11 @@ def getTimeDictionary(start=datetime.now().isoformat(),end=(datetime.now() + tim
         formatString = '%Y-%m-%d'+timeDelimiter+'%H:%M:%S'
         et = datetime.strptime(end, formatString) ## convert string to datetime
         
+        theTime["longStartDate"] = datetime.strftime(st, '%A, %B %d, %Y')
+        theTime["startTime"] = datetime.strftime(st, '%I:%M %p')
+        theTime["longEndDate"] = datetime.strftime(et, '%A, %B %d, %Y')
+        theTime["endTime"] = datetime.strftime(et, '%I:%M %p')
+        
         theTime['year'] = st.year
         theTime['strYear'] = ("20" + str(st.year))[-4:]
         theTime['month'] = st.month
@@ -258,6 +292,7 @@ def getTimeDictionary(start=datetime.now().isoformat(),end=(datetime.now() + tim
         theTime['strHour'] = ("00" + str(theHour))[-2:]
         theTime['minute'] = st.minute
         theTime['strMinute'] = ("00" + str(st.minute))[-2:]
+        
         ## end time
         theTime['duration'] = et.hour - st.hour
         AMPM = "AM"

@@ -229,22 +229,6 @@ def editFromList(id="0"):
         )
     
     
-
-@mod.route('/assignment/sendInvite', methods=["GET","POST"])
-@mod.route('/assignment/sendInvite/<id>/', methods=["GET","POST"])
-def sendInvitationEmail(id):
-    id=cleanRecordID(id)
-    if id > 0:
-        rec = Assignment.query.get(id)
-        if rec and rec.user_ID > 0:
-            ## send an email to the user
-            pass
-
-            return True
-    #else
-    printException("Unable to send email for ID ="+str(id),"error")
-    return False
-    
 @mod.route('/assignment/deletefromList', methods=["GET","POST"])
 @mod.route('/assignment/deletefromList/<id>/', methods=["GET","POST"])
 def deleteFromList(id):

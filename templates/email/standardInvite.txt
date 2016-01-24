@@ -1,0 +1,17 @@
+Hello {{ user.name }},
+
+Thank you for helping with the {{ countEventDict["title"] }} traffic count.
+
+The count will take place on {{ countEventDict["longStartDate"] }} at {{ countEventDict["startTime"] }} 
+and will last for {{ countEventDict["duration"] }} hours until {{ countEventDict["endTime"]}}.
+
+You will be counting at {{ assignment.locationName }}
+
+If you will be using our on-line counting tool, click the link below or copy and paste it into your browser:
+http://app.bikeandwalk.org/count/{{ assignment.assignmentUID }}/
+
+For more information on the on-line tool, see the help files here:
+http://bikeandwalk.org/help/counting/
+
+If you will be counting with pencil and paper, and haven't done so already, you can get the paper forms here:
+http://bikeandwalk.org/docs/forms/NBPD_Forms_March_2010.pdf
