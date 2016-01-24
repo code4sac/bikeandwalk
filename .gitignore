@@ -11,6 +11,9 @@ instance/
 db/
 *.log
 .idea/
+apache/
+db_backups/
+*\ copy
 
 # Distribution / packaging
 .Python
