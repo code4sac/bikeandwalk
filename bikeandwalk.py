@@ -126,8 +126,8 @@ from views import location
 app.register_blueprint(location.mod)
 from views import trip
 app.register_blueprint(trip.mod)
-from views import map
-app.register_blueprint(map.mod)
+from views import mapping
+app.register_blueprint(mapping.mod)
 
 
 def startLogging():
