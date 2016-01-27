@@ -19,6 +19,10 @@ to the central data bank. (For the technically inclined, we're using localStorag
 The instructions on [using the system for counting](http://bikeandwalk.org/help/counting/) may give you a
 better idea of how it works from the stand point of the people in the field.
 
+If you'd like to try it out yourself, the link that follows will let you play around with it. 
+Still not quite the final appearance
+but functional: [app.bikeandwalk.org/count/10fe1c1603416a0d9ee6d958026acd57/](http://app.bikeandwalk.org/count/10fe1c1603416a0d9ee6d958026acd57/)
+
 ## Administration
 Administration of the system and its data is divided into two components. System administration is handled by the
 core team. Count Administration is handled by the local organizations.
