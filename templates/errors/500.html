@@ -1,0 +1,10 @@
+{% extends "layout.html" %}
+{% block title %}Something Wrong{% endblock %}
+{% block body %}
+  <h2>Sorry! Something is terribly wrong!</h2>
+  <p>
+	It looks like something has gone wrong with the plumbing. 
+</p>
+<p>Our cracker jack crew has been alerted and will try to get things working again as soon as possible.</p>
+<p>Maybe you can <a href="{{ url_for('home') }}">try again</a> just to see.</p>
+{% endblock %}

@@ -19,6 +19,7 @@ from datetime import datetime
 import logging
 import configuration
 import requests
+import sys
 
 # create our little application :)
 app = Flask(__name__, instance_relative_config=True)
@@ -40,7 +41,7 @@ mail = Mail(app)
 ## views modules need db from above
 #import models #### don't import models here, do it in views
 import views.index
-from views.utils import db_init
+from views.utils import db_init, printException
      
 ### Base Routes #########
  
@@ -59,15 +60,21 @@ def login():
 
 @app.before_request
 def before_request():
+    # layout.html looks for g.user so declare it early
+    g.user = session.get('email')
+    g.orgID = None
+    
+    if not db:
+        # really can't do anything with out a database, so just bail
+        printException("Database not Available", "error")
+        return render_template('errors/500.html'), 500
+        
     freeDirectories = ("login","count","static","ping","_auth",) #first directory of request URL
     superUserDirectories = ("org","feature","trip","traveler","super","map",) #first directory of request URL
     rootURL = request.path.split("/")
     rootURL = rootURL[1]
     superRequired = rootURL in superUserDirectories
     noLoginRequired = rootURL in freeDirectories
-    g.role = None
-    g.orgID = None
-    g.user = session.get('email')
     
     if rootURL == "login" and g.user != None:
         # usually this is the refresh after the persona validation
@@ -98,13 +105,24 @@ def before_request():
     
 @app.teardown_request
 def teardown_request(exception):
-    db.session.close()
+    if db:
+        db.session.close()
 
 
 @app.errorhandler(404)
 def page_not_found(e):
-    return render_template('404.html'), 404
+    if not hasattr(g, 'user'):
+        g.user = None # layout .html looks for g.user
+        
+    return render_template('errors/404.html'), 404
 
+@app.errorhandler(500)
+def db_error():
+    if not hasattr(g, 'user'):
+        g.user = None # layout .html looks for g.user
+        
+    return render_template('errors/500.html'), 404
+    
 ### Blueprinted views ####
 from views import user
 app.register_blueprint(user.mod)
@@ -148,11 +166,13 @@ if __name__ == '__main__':
         try:
             init_db()
         except Exception as e:
-            print "Not able to create database file."
-            print "Error: " + str(e)
-            import sys
+            printException("Not able to create database file.","error",e)
             sys.exit(0)
-
+            
+    if not db:
+        printException("Database did not startup","error")
+        sys.exit(0)
+        
     print "Web Server Running"
     app.run()
     ##app.run('10.0.1.9',5000)
