@@ -27,3 +27,7 @@ DATABASE_URI = 'sqlite:///' + DATABASE_PATH_PREFIX + DATABASE
 
 # Uploads ...
 #MAX_CONTENT_LENGTH = 300000
+
+#Map Box Settings...
+#MAPBOX_PROJECT_ID = ""
+#MAPBOX_ACCESS_TOKEN = ""

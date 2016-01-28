@@ -32,6 +32,9 @@ class Config(object):
     PERSONA_JS='https://login.persona.org/include.js'
     PERSONA_VERIFIER='https://verifier.login.persona.org/verify'
     
+    MAPBOX_PROJECT_ID = ""
+    MAPBOX_ACCESS_TOKEN = ""
+    
 class ProductionConfig(Config):
     pass
     
