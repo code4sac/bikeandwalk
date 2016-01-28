@@ -1,5 +1,22 @@
 {% extends "layout.html" %}
 {% block title %}Edit {{ g.title }}{% endblock %}
+{% block head %}
+<script src="{{ url_for('static', filename='jquery-ui-1.11.4/jquery-ui.min.js') }}"></script>
+<link rel=stylesheet type=text/css href="{{ url_for('static', filename='jquery-ui-1.11.4/jquery-ui.min.css') }}">
+<link rel=stylesheet type=text/css href="{{ url_for('static', filename='jquery-ui-1.11.4/jquery-ui.structure.min.css') }}">
+<link rel=stylesheet type=text/css href="{{ url_for('static', filename='jquery-ui-1.11.4/themes/smoothness/theme.css') }}">
+<script type="text/javascript">
+	$(document).ready(function(){
+		$('#datepicker').datepicker({inline:true,
+			dateFormat: "yy-mm-dd",
+			onSelect: function(dateText) {
+			    //display("Selected date: " + dateText + "; input's current value: " + this.value);
+				$("#eventDate").val(dateText);
+			  },
+		});
+	})
+</script>
+{% endblock head %}
 {% block body %}
 <h2>Edit {{ g.title }}</h2>	
 <div id="eventRecordForm">
@@ -9,13 +26,18 @@
       <dl>
 		{% include "editFormButtons.html" %}
         <dt>Title: 
-		<dd><input type=text size=30  name="title" value="{{rec.title}}" />
+		<dd><input type=text size=30  name="title" value="{{rec.title}}" /></dd>
+
+		<div id="datepicker" style="font-size:10pt;"></div>
+		<dt>Date:</dt>
+		<dd><input type="text" value="{{theTime.eventDate }}" id="eventDate" name="eventDate" readonly="readonly"/></dd>
+		
         <dt>Month (MM): 
 		<dd><input type=num size=2 maxlength="2" name="month" value="{{theTime.month}}" />
         <dt>Day (DD): 
 		<dd><input type=num size=2 maxlength="2" name="day" value="{{theTime.day}}" />
         <dt>Year (YYYY): 
-		<dd><input type=num size=4 maxlength="4" name="year" value="{{theTime.year}}" />
+		<dd><input type=num size=4 maxlength="4" id="year" name="year" value="{{theTime.year}}" />
         <dt>Starting Time:
 		<dd>
 			<select name="hour">

@@ -187,15 +187,15 @@ def validForm():
     # Validate the form
     goodForm = True
     
-    if not request.form['year'].isdigit() or len(request.form['year']) != 4:
-        goodForm = False
-        flash('The Year must be 4 digits')        
-    if not request.form['month'].isdigit() or int(request.form['month']) < 1 or int(request.form['month']) > 12:
-        goodForm = False
-        flash('The Month must be between 1 and 12')        
-    if not request.form['day'].isdigit() or int(request.form['day']) < 1 or int(request.form['day']) > 31:
-        goodForm = False
-        flash('The Day number must be between 1 and 31')        
+#    if not request.form['year'].isdigit() or len(request.form['year']) != 4:
+#        goodForm = False
+#        flash('The Year must be 4 digits')        
+#    if not request.form['month'].isdigit() or int(request.form['month']) < 1 or int(request.form['month']) > 12:
+#        goodForm = False
+#        flash('The Month must be between 1 and 12')        
+#    if not request.form['day'].isdigit() or int(request.form['day']) < 1 or int(request.form['day']) > 31:
+#        goodForm = False
+#        flash('The Day number must be between 1 and 31')        
        
     try:
         startingDate = startDateFromForm()
@@ -216,8 +216,10 @@ def startDateFromForm():
     if request.form['AMPM'] == 'PM' and (int(hour) < 12):
         hour = str(int(hour) + 12)
     if request.form['AMPM'] == 'AM' and (int(hour) == 12):
-        hour = "0"
-
+        hour = "00"
+#    dateString = request.form["eventDate"] + "T" + request.form['hour'] +":"+hour+":"+minute
+#    print dateString
+#    d = datetime.strptime(dateString)
     d = datetime(int(('20'+request.form['year'])[-4:]),\
         int(request.form['month']),\
         int(request.form['day']),\
@@ -268,11 +270,11 @@ def getTimeDictionary(start=datetime.now().isoformat(),end=(datetime.now() + tim
         formatString = '%Y-%m-%d'+timeDelimiter+'%H:%M:%S'
         et = datetime.strptime(end, formatString) ## convert string to datetime
         
+        theTime["eventDate"] = datetime.strftime(st, '%Y-%m-%d')
         theTime["longStartDate"] = datetime.strftime(st, '%A, %B %d, %Y')
         theTime["startTime"] = datetime.strftime(st, '%I:%M %p')
         theTime["longEndDate"] = datetime.strftime(et, '%A, %B %d, %Y')
         theTime["endTime"] = datetime.strftime(et, '%I:%M %p')
-        
         theTime['year'] = st.year
         theTime['strYear'] = ("20" + str(st.year))[-4:]
         theTime['month'] = st.month

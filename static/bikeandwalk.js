@@ -113,3 +113,14 @@ function setModal(objectID,modalState) {
 		$(objectID).css("height",docHeight).css("width",docWidth).hide();
 	}
 }
+
+function getDateString(d) {
+	// format the LOCAL time string into the ISO formatted string that the db expects
+    var d = d || new Date();
+    //var n = d.toISOString(); // toISOString always returns UTC time, not ISO formatted local time
+	var dateString = (d.getFullYear() + "-");
+	dateString += ("0" + (d.getMonth()+1)).substr(-2)+"-"
+	dateString += ("0" + d.getDate()).substr(-2)
+    //return dateString;
+	$("#eventDate").val(dateString);
+}
