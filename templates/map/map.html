@@ -1,20 +1,29 @@
 {% extends "layout.html" %}
+
 {% block title %}{{ g.title }} List{% endblock %}
+
 {% block head %}
     <script type="text/javascript" src="{{ url_for('static', filename='map/map.js') }}"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='map/map.css') }}" type="text/css" media="all" >
     <script type="text/javascript" src="{{ url_for('static', filename='map/leaflet/leaflet-src.js') }}"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='map/leaflet/leaflet.css') }}" type="text/css" media="all" >
 {% endblock head %}
+
 {% block body %}
 	<h2>{{ g.title }}</h2>
 	{%if recs %}
-		{#{% for rec in recs %}
-	        <p>{{ rec.locationName }}, {{ rec.locationLatitude }}, {{ rec.locationLongitude }}, {{ rec.tripCount }}</p>
-		{% endfor %}#}
+		<div id="tripsMap"></div>
 
-        <div id="map"></div>
-        <script type="text/javascript">createMap();</script>
+        <script type="text/javascript">
+            // Initialize the map
+            var map = new BAWAMap("tripsMap", 14);
+            // Add trip locations
+            {% for rec in recs %}
+                map.addTripLocation('{{ rec.locationName }}', {{ rec.locationLatitude }}, {{ rec.locationLongitude }}, {{ rec.tripCount }});
+            {% endfor %}
+            // Add markers for locations to map
+            map.setLocationMarkers(true);
+        </script>
   	{% else %}
     	<p><em>No Trips to map</em></p>
 	{% endif %}

@@ -1,2 +1,9 @@
 
-#map { height: 800px; }
+#tripsMap {
+    height: 800px;
+}
+
+#locationMap {
+    height: 300px;
+    width: 300px;
+}

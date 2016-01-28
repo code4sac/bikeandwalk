@@ -1,5 +1,14 @@
 {% extends "layout.html" %}
+
 {% block title %}Edit {{ g.title }}{% endblock %}
+
+{% block head %}
+    <script type="text/javascript" src="{{ url_for('static', filename='map/map.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='map/map.css') }}" type="text/css" media="all" >
+    <script type="text/javascript" src="{{ url_for('static', filename='map/leaflet/leaflet-src.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='map/leaflet/leaflet.css') }}" type="text/css" media="all" >
+{% endblock head %}
+
 {% block body %}
 	<h2>Edit {{ g.title }}</h2>
 	{% if form %}
@@ -15,9 +24,15 @@
       </table>
     </form>
 	</div>
-	<div id="map">
-		A map will go here...
-	</div>
+	<div id="locationMap"></div>
+    <script type="text/javascript">
+        // Initialize the map
+        var map = new BAWAMap("locationMap", 15);
+        // Add the location
+        map.addSimpleLocation('{{rec.locationName}}', {{rec.latitude}}, {{rec.longitude}});
+        // Add markers for location to map
+        map.setLocationMarkers(true);
+    </script>
 	{% else %}
 		<dt>No form found</dt>
 	{% endif %}
