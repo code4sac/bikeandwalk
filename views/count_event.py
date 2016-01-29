@@ -40,91 +40,84 @@ def edit(id=0):
         flash("That is not a valid ID")
         return redirect(g.listURL)
         
-    if db:
-        assignmentList = getAssignmentList(id) #fully rendered HTML
-        travelerList = getTravelerList(id)
-        timeZones = getTimeZones()
-        if not request.form:
-            """ if no form object, send the form page """
-            #Set up a default time for the event
-            # Today with time set to something reasonable
-            start = datetime.now().replace(hour=16, minute=0, second=0)
-            end = start + timedelta(hours=2)
-            
-            theTime = getTimeDictionary(start.isoformat(),end.isoformat())
-            cur = None
-            #Get the default timeZone for this Organization
-            g.timeZone = "PST"
-            org = Organization.query.get(g.orgID)
-            if org:
-                g.timeZone = org.defaultTimeZone
-                
-            if id > 0:
-                cur = CountEvent.query.filter_by(ID=id).first()
-                if not cur:
-                    mes = g.title +" Record could not be found." + " ID:" + str(id)
-                    flash(printException(mes,"error"))
-                    return redirect(g.listURL)
-                
-                theTime = getTimeDictionary(cur.startDate,cur.endDate)
-                g.timeZone = None
-                
-            
-            return render_template('count_event/count_event_edit.html', 
-                rec=cur ,theTime=theTime, 
-                timeZones=timeZones, 
-                assignmentList=assignmentList, 
-                travelerList=travelerList,
-                )
-
-        #have the request form
-        # handle the checkbox for Daylite savings time
-        isDST = 0
-        if request.form["isDST"]:
-            isDST = request.form["isDST"]
-            
-        if validForm():
-            startingDate = startDateFromForm()
-            endingDate = endDateFromForm()
-            try:
-                if id > 0:
-                    cur = CountEvent.query.get(id)
-                    #update the record
-                    cur.title = request.form["title"]
-                    cur.startDate = startingDate.isoformat()[:19]
-                    cur.endDate = endingDate.isoformat()[:19]
-                    cur.isDST = isDST
-                    cur.timeZone = request.form["timeZone"]
-                    cur.organization_ID = request.form['organization_ID']
-                else:
-                    ## create a new record
-                    cur = CountEvent(request.form["title"],startingDate.isoformat()[:19],endingDate.isoformat()[:19],request.form["timeZone"],isDST,request.form['organization_ID'])
-                    db.session.add(cur)
-                db.session.commit()
-                
-                return redirect(g.listURL)
-
-            except Exception as e:
-                flash(printException('Error attempting to save '+g.title+' record.',"error",e))
-                db.session.rollback()
-
-        # form not valid - redisplay
-        #restore theTime to the values as entered
-        theTime = dict()
-        theTime["hour"] = int(request.form["hour"])
-        theTime["minute"] = int(request.form["minute"])
-        theTime["duration"] = int(request.form["duration"])
-        theTime["month"] = request.form["month"]
-        theTime["day"] = request.form["day"]
-        theTime["year"] = request.form["year"]
-        theTime["AMPM"] = request.form["AMPM"]
+    assignmentList = getAssignmentList(id) #fully rendered HTML
+    travelerList = getTravelerList(id)
+    timeZones = getTimeZones()
+    if not request.form:
+        """ if no form object, send the form page """
+        #Set up a default time for the event
+        # Today with time set to something reasonable
+        start = datetime.now().replace(hour=16, minute=0, second=0)
+        end = start + timedelta(hours=2)
         
-        return render_template('count_event/count_event_edit.html', rec=request.form, theTime=theTime, timeZones=timeZones, assignmentList=assignmentList)
+        theTime = getTimeDictionary(start.isoformat(),end.isoformat())
+        cur = None
+        #Get the default timeZone for this Organization
+        g.timeZone = "PST"
+        org = Organization.query.get(g.orgID)
+        if org:
+            g.timeZone = org.defaultTimeZone
+            
+        if id > 0:
+            cur = CountEvent.query.filter_by(ID=id).first()
+            if not cur:
+                mes = g.title +" Record could not be found." + " ID:" + str(id)
+                flash(printException(mes,"error"))
+                return redirect(g.listURL)
+            
+            theTime = getTimeDictionary(cur.startDate,cur.endDate)
+            g.timeZone = None
+            
+        
+        return render_template('count_event/count_event_edit.html', 
+            rec=cur ,theTime=theTime, 
+            timeZones=timeZones, 
+            assignmentList=assignmentList, 
+            travelerList=travelerList,
+            )
 
-    else:
-        flash('Could not open database')
+    #have the request form
+    # handle the checkbox for Daylite savings time
+    isDST = 0
+    if request.form["isDST"]:
+        isDST = request.form["isDST"]
+        
+    if validForm():
+        startingDate = startDateFromForm()
+        endingDate = endDateFromForm()
+        try:
+            if id > 0:
+                cur = CountEvent.query.get(id)
+                #update the record
+                cur.title = request.form["title"]
+                cur.startDate = startingDate.isoformat()[:19]
+                cur.endDate = endingDate.isoformat()[:19]
+                cur.isDST = isDST
+                cur.timeZone = request.form["timeZone"]
+                cur.organization_ID = request.form['organization_ID']
+            else:
+                ## create a new record
+                cur = CountEvent(request.form["title"],startingDate.isoformat()[:19],endingDate.isoformat()[:19],request.form["timeZone"],isDST,request.form['organization_ID'])
+                db.session.add(cur)
+            db.session.commit()
+            
+            return redirect(g.listURL)
 
-    return redirect(g.listURL)
+        except Exception as e:
+            flash(printException('Error attempting to save '+g.title+' record.',"error",e))
+            db.session.rollback()
+
+    # form not valid - redisplay
+    #restore theTime to the values as entered
+    theTime = dict()
+    theTime["hour"] = int(request.form["hour"])
+    theTime["minute"] = int(request.form["minute"])
+    theTime["duration"] = int(request.form["duration"])
+    theTime["AMPM"] = request.form["AMPM"]
+    theTime["eventDate"] = request.form["eventDate"]
+    
+    return render_template('count_event/count_event_edit.html', rec=request.form, theTime=theTime, timeZones=timeZones, assignmentList=assignmentList)
+
 
 @mod.route('/event/delete', methods=['GET'])
 @mod.route('/event/delete/', methods=['GET'])
@@ -199,6 +192,7 @@ def validForm():
        
     try:
         startingDate = startDateFromForm()
+        print startingDate
     except:
         goodForm = False
         flash('There is a problem with your Starting Date')
@@ -211,38 +205,21 @@ def validForm():
 
 def startDateFromForm():
     ## 12 hour does not match the select item
-    hour = '00' + request.form['hour'][-2:]
-    minute = '00' + request.form['minute'][-2:]
+    hour = ('00' + request.form['hour'])[-2:]
+    minute = ('00' + request.form['minute'])[-2:]
     if request.form['AMPM'] == 'PM' and (int(hour) < 12):
         hour = str(int(hour) + 12)
     if request.form['AMPM'] == 'AM' and (int(hour) == 12):
         hour = "00"
-#    dateString = request.form["eventDate"] + "T" + request.form['hour'] +":"+hour+":"+minute
-#    print dateString
-#    d = datetime.strptime(dateString)
-    d = datetime(int(('20'+request.form['year'])[-4:]),\
-        int(request.form['month']),\
-        int(request.form['day']),\
-        int(hour), \
-        int(minute)
-        )
+    dateString = request.form["eventDate"] + "T" + hour + ":" + minute +":00"
+    d = datetime.strptime(dateString,'%Y-%m-%dT%H:%M:%S')
+
     return d ## returns a datetime
 
 
 def endDateFromForm():
-    hour = '00' + request.form['hour'][-2:]
-    minute = '00' + request.form['minute'][-2:]
-    if request.form['AMPM'] == 'PM' and (int(hour) < 12):
-        hour = str(int(hour) + 12)
-    if request.form['AMPM'] == 'AM' and (int(hour) == 12):
-        hour = "0"
-        
-    d = datetime(int(('20'+request.form['year'])[-4:]),\
-        int(request.form['month']),\
-        int(request.form['day']),\
-        (int(hour)+int(request.form['duration'])), \
-        int(minute)
-        )
+    d = startDateFromForm()
+    d = d + timedelta(hours=int(request.form['duration']))
     return d ## returns a datetime
 
 def getTimeDictionary(start=datetime.now().isoformat(),end=(datetime.now() + timedelta(hours=2)).isoformat()):
@@ -275,12 +252,7 @@ def getTimeDictionary(start=datetime.now().isoformat(),end=(datetime.now() + tim
         theTime["startTime"] = datetime.strftime(st, '%I:%M %p')
         theTime["longEndDate"] = datetime.strftime(et, '%A, %B %d, %Y')
         theTime["endTime"] = datetime.strftime(et, '%I:%M %p')
-        theTime['year'] = st.year
-        theTime['strYear'] = ("20" + str(st.year))[-4:]
-        theTime['month'] = st.month
-        theTime['strMonth'] = ("00" + str(st.month))[-2:]
-        theTime['day'] = st.day
-        theTime['strDay'] = ("00" + str(st.day))[-2:]
+
         AMPM = "PM"
         theHour = st.hour
         if st.hour < 12:
