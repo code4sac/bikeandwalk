@@ -277,20 +277,13 @@ div#assignmentList {
     width:42em;
     min-height:20em;
     clear:both;
-    padding:0 1em;
+    padding: 1em;
 }
-div#assignmentList table, 
-div#assignmentList tr, 
-div#assignmentList th, 
-div#assignmentList td{
-    border:0pt;
-}
-div#assignmentList tbody{
-    border:1pt #666 solid;
-}
+
 p.assignmentActions{
     text-align:right;
     width:100%;
+    border-bottom:1pt #666 solid;
 }
 .assignmentActionSpacer {
     padding-left:2em;

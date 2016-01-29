@@ -1,58 +1,37 @@
 {# A single element in the Assignment list used in the count event form #}
 {% if rec %}
-{# the <table> tags are provided by the calling method #}
-<tbody class="assignmentTableRow" id="assignmentListItem_{{rec.ID}}" >
-		<tr>
-			<th>
-				Location:
-			</th>
-			<th>
-				Assignment UID:
-			</th>
-			<th>
-				Assigned To:
-			</th>
-		</tr>
-		<tr>
-			<td>
-				{{ rec.locationName }}
-			</td>
-			<td>
-				<code>{{ rec.assignmentUID }}</code>
-			</td>
-			<td>
-				<span {% if rec.user_ID == 0 %}class="alert"{% endif %}>{{ rec.userName |default("Unassigned",true)}}</span>
-			</td>
-		</tr>
-		<tr>
-			<td colspan="3" >
-				<p class="assignmentActions">
-					{% if totalTrips == 0 %}
-				<span class="deleteAssignmentFromList script-link" 
-					onclick="deleteFromList('{{ url_for('assignment.deleteFromList')}}/{{ rec.ID }}/','assignmentListItem_{{rec.ID}}')"
-					>Delete...
-				</span>
-				<span class="assignmentActionSpacer">&nbsp;</span>
-				{% endif %}
-				<span class="totalTrips">Trips Recorded: {{totalTrips}}</span>
-				<span class="assignmentActionSpacer">&nbsp;</span>
-				<span class="editAssignmentFromList script-link" 
-					onclick="editFromList('{{ url_for('assignment.editFromList')}}/{{rec.ID}}/')"
-					>Edit...
-				</span>
-				<span class="assignmentActionSpacer">&nbsp;</span>
-				<span class="assignmentActions script-link"
-					{% if not rec.userName %}
-					onclick="if(confirm('No one assiged. Would you like to do that now?')){
-						editFromList('{{ url_for('assignment.editFromList')}}/{{rec.ID}}/');
-					}"
-					{% else %}
-					onclick="sendAssignmentEmail('{{ url_for('count_event.sendAssignmentEmail') }}/{{ rec.ID }}/')"
-					{% endif %}
-					>Send Invitation
-				</span>
-				</p>
-			</td>
-		</tr>
-</tbody>
+<div class="assignmentListRow" id="assignmentListItem_{{rec.ID}}" >
+	<p><strong>Location:</strong> {{ rec.locationName }}</p>
+	<p><strong>Assignment UID:</strong> <code>{{ rec.assignmentUID }}</code></p>
+	<p><strong>Assigned To:</strong> 
+		<span {% if rec.user_ID == 0 %}class="alert"{% endif %}>{{ rec.userName |default("Unassigned",true)}}</span>
+		<span class="assignmentActionSpacer">&nbsp;</span>
+		<span class="assignmentActions script-link"
+			{% if not rec.userName %}
+			onclick="if(confirm('No one assiged. Would you like to do that now?')){
+				editFromList('{{ url_for('assignment.editFromList')}}/{{rec.ID}}/');
+			}"
+			{% else %}
+			onclick="if(confirm('Send Invitation Email to {{ rec.userName }}?')){
+				sendAssignmentEmail('{{ url_for('count_event.sendAssignmentEmail') }}/{{ rec.ID }}/');}"
+			{% endif %}
+			>Send Invitation
+		</span>
+	</p>
+	<p class="assignmentActions">
+		<span class="totalTrips">Trips Recorded: {{totalTrips}}</span>
+		<span class="assignmentActionSpacer">&nbsp;</span>
+		{% if totalTrips == 0 %}
+		<span class="deleteAssignmentFromList script-link" 
+		onclick="deleteFromList('{{ url_for('assignment.deleteFromList')}}/{{ rec.ID }}/','assignmentListItem_{{rec.ID}}')"
+		>Delete Assignment...
+	</span>
+	<span class="assignmentActionSpacer">&nbsp;</span>
+	{% endif %}
+	<span class="editAssignmentFromList script-link" 
+		onclick="editFromList('{{ url_for('assignment.editFromList')}}/{{rec.ID}}/')"
+		>Edit Assignment...
+	</span>
+	</p>
+</div>
 {% endif %}

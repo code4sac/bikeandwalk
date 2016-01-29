@@ -121,11 +121,10 @@ def getAssignmentList(countEventID=0):
     if countEventID > 0:
         recs = Assignment.query.filter(Assignment.countEvent_ID==countEventID).order_by(Assignment.locationName)
         if recs:
-            out = "<table>"
+            out = ""
             for rec in recs:
                 totalTrips = getAssignmentTripTotal(rec.countEvent_ID, rec.location_ID)
                 out += render_template('assignment/listElement.html', rec=rec, totalTrips=totalTrips)
-            out +=  "</table>"
             
     return out
     
