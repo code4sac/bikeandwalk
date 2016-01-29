@@ -4,7 +4,7 @@ from time import time
 import re
 from bikeandwalk import db,app
 from models import User
-from views.utils import printException
+from views.utils import printException, cleanRecordID
 
 mod = Blueprint('user',__name__)
 
@@ -42,12 +42,8 @@ def edit(id=0):
         # get the user record if you can
         if id > 0:
             rec = User.query.get(id)
-            if rec:
-                return render_template('user/user_edit.html', rec=rec)
-                
-            flash("Invalid User ID")
-            return redirect(g.listURL)
-
+        return render_template('user/user_edit.html', rec=rec)
+            
     #have the request form
     #ensure a value for the check box
     inactive = request.form.get('inactive')
