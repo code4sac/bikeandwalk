@@ -13,7 +13,7 @@
 	    <tr>
 			<td><a href="{{ g.editURL }}{{ rec.ID }}/">{{ rec.ID }}</a></td>
 			<td>{{ rec.featureClass }}</td>
-			<td><a href="{{ g.editURL }}{{ rec.ID }}/">{{ rec.featureValue|default("",true) }}</a></td>
+			<td><a href="{{ g.editURL }}{{ rec.ID }}/">{{ rec.featureValue|default("---",true) }}</a></td>
 		</tr>
 		{% endfor %}
 	  </table>
