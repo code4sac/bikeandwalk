@@ -49,12 +49,11 @@ def display():
 @mod.route("/super/assignment/edit/<id>/", methods=['GET','POST'])
 def edit(id="0"):
     setExits()
-    if not id.isdigit() or int(id) < 0:
+    id = cleanRecordID(id)
+    if id < 0:
         flash("That is not a valid ID")
         return redirect(g.listURL)
-            
-    id = int(id)
-    
+        
     rec = None
     if id > 0:
         rec = Assignment.query.get(id)

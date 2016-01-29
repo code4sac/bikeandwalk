@@ -15,9 +15,9 @@ def setExits():
 @mod.route('/org')
 def org_list():
     if db :
-        cur = Organization.query.all()
+        rec = Organization.query.all()
         setExits()
-        return render_template('org/org_list.html', recs=cur)
+        return render_template('org/org_list.html', recs=rec)
 
     flash('Could not open Database')
     return redirect(url_for('home'))
@@ -28,60 +28,57 @@ def org_list():
 @mod.route('/org/edit/<id>/', methods=['POST', 'GET'])
 def org_edit(id=0):
     setExits()
-    if not id.isdigit() or int(id) < 0:
+    id = cleanRecordID(id)
+    if id < 0:
         flash("That is not a valid ID")
         return redirect(g.listURL)
      
-    if db:
-        timeZones = getTimeZones()
-        if not request.form:
-            """ if no form object, send the form page """
-            # get the Org record if you can
-            cur = None
-            if int(id) > 0:
-                cur = Organization.query.filter_by(ID=id).first_or_404()
-                
-            return render_template('org/org_edit.html', rec=cur, timeZones=timeZones)
-
-        #have the request form
-        if validForm():
-            try:
-                if int(id) > 0:
-                    cur = Organization.query.get(id)
-                else:
-                    ## create a new record stub
-                    cur = Organization(request.form['name'],request.form['email'],request.form["defaultTimeZone"])
-                    db.session.add(cur)
-                #update the record
-                cur.name = request.form['name']
-                cur.email = request.form['email']
-                cur.defaultTimeZone = request.form["defaultTimeZone"]
-                db.session.commit()
-            except Exception as e:
-                flash(printException('Error attempting to create '+g.title+' record.',"error",e))
-                db.session.rollback()
-                
-            return redirect(url_for('.org_list'))
+    timeZones = getTimeZones()
+    if not request.form:
+        """ if no form object, send the form page """
+        # get the Org record if you can
+        rec = None
+        if int(id) > 0:
+            rec = Organization.query.get(id)
             
+        return render_template('org/org_edit.html', rec=rec, timeZones=timeZones)
+            
+            
+    #have the request form
+    if validForm():
+        if id > 0:
+            rec = Organization.query.get(id)
+        else:
+            ## create a new record stub
+            rec = Organization(request.form['name'],request.form['email'],request.form["defaultTimeZone"])
+            db.session.add(rec)
+        #update the record
+        rec.name = request.form['name']
+        rec.email = request.form['email']
+        rec.defaultTimeZone = request.form["defaultTimeZone"]
+        try:
+            db.session.commit()
+        except Exception as e:
+            flash(printException('Error attempting to create '+g.title+' record.',"error",e))
+            db.session.rollback()
+            
+        return redirect(url_for('.org_list'))
+        
+    # form not valid - redisplay
+    return render_template('org/org_edit.html', rec=request.form, timeZones=timeZones)
 
-        # form not valid - redisplay
-        return render_template('org/org_edit.html', rec=request.form, timeZones=timeZones)
-
-    else:
-        flash('Could not open database')
-
-    return redirect(url_for('.org_list'))
 
 @mod.route('/org/delete', methods=['GET'])
 @mod.route('/org/delete/', methods=['GET'])
 @mod.route('/org/delete/<id>/', methods=['GET'])
 def org_delete(id=0):
     setExits()
-    if not id.isdigit() or int(id) < 0:
+    id = cleanRecordID(id)
+    if id < 0:
         flash("That is not a valid ID")
         return redirect(g.listURL)
     
-    if int(id) > 0:
+    if id > 0:
         rec = Organization.query.get(id)
         if rec:
             db.session.delete(rec)
@@ -99,8 +96,8 @@ def validForm():
         goodForm = False
         flash('Name may not be blank')
     if request.form['name'] != '':
-        cur = Organization.query.filter(Organization.name == request.form['name'], Organization.ID != request.form['ID']).count()
-        if cur > 0 :
+        rec = Organization.query.filter(Organization.name == request.form['name'], Organization.ID != request.form['ID']).count()
+        if rec > 0 :
             goodForm = False
             flash('That name is already in use')
 
@@ -108,8 +105,8 @@ def validForm():
         goodForm = False
         flash('Email may not be blank')
     if request.form['email'] != '':
-        cur = Organization.query.filter(Organization.email == request.form['email'], Organization.ID != request.form['ID']).count()
-        if cur > 0 :
+        rec = Organization.query.filter(Organization.email == request.form['email'], Organization.ID != request.form['ID']).count()
+        if rec > 0 :
             goodForm = False
             flash('That email address is already in use for another Organization')
 

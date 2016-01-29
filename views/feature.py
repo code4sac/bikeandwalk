@@ -29,7 +29,8 @@ def display():
 @mod.route('/feature/edit/<id>/', methods=['POST', 'GET'])
 def edit(id=0):
     setExits()
-    if not id.isdigit() or int(id) < 0:
+    id = cleanRecordID(id)
+    if id < 0:
         flash("That is not a valid ID")
         return redirect(g.listURL)
         
@@ -38,7 +39,7 @@ def edit(id=0):
             """ if no form object, send the form page """
             # get the Org record if you can
             rec = None
-            if int(id) > 0:
+            if id > 0:
                 rec = Feature.query.filter_by(ID=id).first_or_404()
                 
             return render_template('feature/feature_edit.html', rec=rec)
@@ -74,12 +75,13 @@ def edit(id=0):
 @mod.route('/feature/delete/<id>/', methods=['GET'])
 def delete(id=0):
     setExits()
-    if not id.isdigit() or int(id) < 0:
+    id = cleanRecordID(id)
+    if id < 0:
         flash("That is not a valid ID")
         return redirect(g.listURL)
             
     if db:
-        if int(id) > 0:
+        if id > 0:
             rec = Feature.query.get(id)
             if rec:
                 db.session.delete(rec)

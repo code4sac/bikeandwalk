@@ -30,80 +30,78 @@ def display():
 @mod.route('/user/edit/<id>/', methods=['POST', 'GET'])
 def edit(id=0):
     setExits()
-    if not id.isdigit() or int(id) < 0:
+    id = cleanRecordID(id)
+    if id < 0:
         flash("That is not a valid ID")
         return redirect(g.listURL)
             
-    if db:
-        rec = None
-        
-        if not request.form:
-            """ if no form object, send the form page """
-            # get the user record if you can
-            if int(id) > 0:
-                rec = User.query.filter_by(ID=id).first_or_404()
+    rec = None
+    
+    if not request.form:
+        """ if no form object, send the form page """
+        # get the user record if you can
+        if id > 0:
+            rec = User.query.get(id)
+            if rec:
+                return render_template('user/user_edit.html', rec=rec)
                 
-            return render_template('user/user_edit.html', rec=rec)
-
-        #have the request form
-        #ensure a value for the check box
-        inactive = request.form.get('inactive')
-        if not inactive: 
-            inactive = "0"
-
-        if validForm():
-            try:
-                if int(id) > 0:
-                    rec = User.query.get(id)
-                else:
-                    ## create a new record stub
-                    rec = User(request.form['name'],request.form['email'],request.form['organization_ID'])
-                    db.session.add(rec)
-                    
-                #update the record
-                rec.name = request.form['name']
-                rec.email = request.form['email']
-                rec.role = request.form['role']
-                rec.inactive = str(inactive)
-                rec.organization_ID = request.form['organization_ID']
-                
-                ### for now the username and password are not used
-                rec.userName = db.null()
-                rec.password = db.null()
-                #if str(uName) !='':
-                #    rec.userName = str(uName)
-                #    rec.password = request.form['password']
-                #else:
-                #    rec.userName = db.null()
-                #    rec.password = db.null()
-                
-                
-                db.session.commit()
-                
-            except:
-                flash(printException('Error attempting to save '+g.title+' record.',"error",e))
-                db.session.rollback()
-                
+            flash("Invalid User ID")
             return redirect(g.listURL)
 
-        # form not valid - redisplay
-        return render_template('user/user_edit.html', rec=request.form)
+    #have the request form
+    #ensure a value for the check box
+    inactive = request.form.get('inactive')
+    if not inactive: 
+        inactive = "0"
 
-    else:
-        flash('Could not open database')
+    if validForm():
+        if id > 0:
+            rec = User.query.get(id)
+        else:
+            ## create a new record stub
+            rec = User(request.form['name'],request.form['email'],request.form['organization_ID'])
+            db.session.add(rec)
+            
+        #update the record
+        rec.name = request.form['name']
+        rec.email = request.form['email']
+        rec.role = request.form['role']
+        rec.inactive = str(inactive)
+        rec.organization_ID = request.form['organization_ID']
+        
+        ### for now the username and password are not used
+        rec.userName = db.null()
+        rec.password = db.null()
+        #if str(uName) !='':
+        #    rec.userName = str(uName)
+        #    rec.password = request.form['password']
+        #else:
+        #    rec.userName = db.null()
+        #    rec.password = db.null()
+         
+        try:
+            db.session.commit()
+        except:
+            db.session.rollback()
+            flash(printException('Error attempting to save '+g.title+' record.',"error",e))
+            
+        return redirect(g.listURL)
 
-    return redirect(g.listURL)
+    # form not valid - redisplay
+    return render_template('user/user_edit.html', rec=request.form)
+
 
 @mod.route('/user/delete', methods=['GET'])
 @mod.route('/user/delete/', methods=['GET'])
 @mod.route('/user/delete/<id>/', methods=['GET'])
 def delete(id=0):
     setExits()
-    if not id.isdigit() or int(id) < 0:
+    id = cleanRecordID(id)
+    if id < 0:
         flash("That is not a valid ID")
         return redirect(g.listURL)
     
-    if int(id) > 0:
+    if id > 0:
         rec = User.query.get(id)
         if rec:
             try:

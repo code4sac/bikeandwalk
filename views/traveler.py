@@ -19,9 +19,9 @@ def setExits():
 @mod.route('/traveler/')
 def display():
     if db :
-        cur = Traveler.query.all()
+        rec = Traveler.query.all()
         setExits()
-        return render_template('traveler/traveler_list.html', recs=cur)
+        return render_template('traveler/traveler_list.html', recs=rec)
 
     flash('Could not open Database')
     return redirect(url_for('home'))
@@ -32,67 +32,81 @@ def display():
 @mod.route('/traveler/edit/<id>/', methods=['POST', 'GET'])
 def edit(id=0):
     setExits()
-    if not id.isdigit() or int(id) < 0:
+    id = cleanRecordID(id)
+    if id < 0:
         flash("That is not a valid ID")
         return redirect(g.listURL)
     
-    if db:
-        if not request.form:
-            """ if no form object, send the form page """
-            # get the Org record if you can
-            cur = None
-            if int(id) > 0:
-                cur = Traveler.query.filter_by(ID=id).first_or_404()
-            #get a cursor of all features
-            features = getFeatureSet(int(id))
-            #app.logger.info("Feature set len = " +str(len(features)))
-            return render_template('traveler/traveler_edit.html', rec=cur, features=features, lastFeature=len(features))
-
-        #have the request form
-        if validForm():
-            try:
-                if int(id) > 0:
-                    cur = Traveler.query.get(id)
-                else:
-                    ## create a new record stub
-                    cur = Traveler(request.form['name'],request.form['travelerCode'])
-                    db.session.add(cur)
-                    db.session.commit() ## ID now has a value
-                #update the record
-                cur.name = request.form['name']
-                cur.travelerCode = request.form['travelerCode']
-                cur.description = request.form['description']
-                cur.iconURL = request.form['iconURL']
-                db.session.commit()
-                id = cur.ID
-                
-                # now update the features
-                #delete the old ones first
-                tf = TravelerFeature.query.filter_by(traveler_ID = str(id)).delete(synchronize_session='fetch')
-                db.session.commit()
-                
-                #create new ones
-                featureSet = request.form.getlist('featureSet')
-                for feat in featureSet:
-                    tf = TravelerFeature(id,int(feat))
-                    db.session.add(tf)
-                db.session.commit()    
-                    
-                return redirect(g.listURL)
-
-            except Exception as e:
-                flash(printException('Could not Update '+g.title+' record.',"error",e))
-                db.session.rollback()
-
-        # form not valid - redisplay
+    if not request.form:
+        """ if no form object, send the form page """
+        # get the Org record if you can
+        rec = None
+        if id > 0:
+            rec = Traveler.query.get(id)
+        #get a cursor of all features
         features = getFeatureSet(id)
-        app.logger.info("Feature set len = " +str(features))
-        return render_template('traveler/traveler_edit.html', rec=request.form, features=features, lastFeature=len(features))
 
-    else:
-        flash('Could not open database')
+        return render_template('traveler/traveler_edit.html', rec=rec, features=features, lastFeature=len(features))
 
-    return redirect(g.listURL)
+    #have the request form
+    if validForm():
+        if id > 0:
+            rec = Traveler.query.get(id)
+        else:
+            ## create a new record stub
+            rec = Traveler(request.form['name'],request.form['travelerCode'])
+            db.session.add(rec)
+        try:
+            db.session.commit() ## ID now has a value
+        except Exception as e:
+            db.session.rollback()
+            flash(printException('Could not '+g.title+' record.',"error",e))
+            return redirect(g.listURL)
+            
+        #update the record
+        rec.name = request.form['name']
+        rec.travelerCode = request.form['travelerCode']
+        rec.description = request.form['description']
+        rec.iconURL = request.form['iconURL']
+        try:
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            flash(printException('Could not Update '+g.title+' record (ID ='+str(id)+').',"error",e))
+            return redirect(g.listURL)
+            
+        id = rec.ID
+        
+        # now update the features
+        #delete the old ones first
+        tf = TravelerFeature.query.filter_by(traveler_ID = str(id)).delete(synchronize_session='fetch')
+        try:
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            flash(printException('Could not Delete Feature records for '+g.title+' record (ID ='+str(id)+').',"error",e))
+            return redirect(g.listURL)
+           
+        #create new ones
+        featureSet = request.form.getlist('featureSet')
+        for feat in featureSet:
+            tf = TravelerFeature(id,int(feat))
+            db.session.add(tf)
+            
+        try:
+            db.session.commit()    
+        except Exception as e:
+            db.session.rollback()
+            flash(printException('Could not Create Feature records for '+g.title+' record (ID ='+str(id)+').',"error",e))
+            return redirect(g.listURL)
+                 
+        return redirect(g.listURL)
+
+    # form not valid - redisplay
+    features = getFeatureSet(id)
+    app.logger.info("Feature set len = " +str(features))
+    return render_template('traveler/traveler_edit.html', rec=request.form, features=features, lastFeature=len(features))
+
 
 @mod.route('/traveler/delete/', methods=['GET'])
 @mod.route('/traveler/delete/<id>/', methods=['GET'])
@@ -103,40 +117,27 @@ def delete(id=0):
         flash("That is not a valid ID")
         return redirect(g.listURL)
  
-        rec = Traveler.query.get(id)
-        if rec:
-            ## Can't delete Traveler that has been used in a trip
-            trip = Trip.query.filter_by(traveler_ID = str(id)).all()
-            if trip:
-                #can't delete
-                flash("You can't delete this Traveler because there are Trip records that use it")
-                return redirect(g.listURL)
-            
-            # Delete the related records
-            et = EventTraveler.query.filter_by(traveler_ID = str(id)).delete(synchronize_session='fetch')
-            tf = TravelerFeature.query.filter_by(traveler_ID = str(id)).delete(synchronize_session='fetch')
-            ## delete the traveler
-        try:
-            db.session.delete(rec)
-            db.session.commit()
+    rec = Traveler.query.get(id)
+    if rec:
+        ## Can't delete Traveler that has been used in a trip
+        trip = Trip.query.filter_by(traveler_ID = str(id)).all()
+        if trip:
+            #can't delete
+            flash("You can't delete this Traveler because there are Trip records that use it")
+            return redirect(g.listURL)
         
-        except Exception as e:
-            flash(printException('Error attempting to delete '+g.title+' record.',"error",e))
-            db.session.rollback()
+        # Delete the related records
+        et = EventTraveler.query.filter_by(traveler_ID = str(id)).delete(synchronize_session='fetch')
+        tf = TravelerFeature.query.filter_by(traveler_ID = str(id)).delete(synchronize_session='fetch')
+        ## delete the traveler
+    try:
+        db.session.delete(rec)
+        db.session.commit()
+    except Exception as e:
+        flash(printException('Error attempting to delete '+g.title+' record.',"error",e))
+        db.session.rollback()
 
     return redirect(g.listURL)
-
-
-@mod.route('/traveler/select/', methods=['GET'])
-@mod.route('/traveler/select/<id>/', methods=['GET'])
-def traveler_select(id=0):
-    if not id.isdigit() or int(id) < 0:
-        flash("That is not a valid ID")
-        return redirect(g.listURL)
-            
-    id = int(id)
-    
-    return "Traveler Select goes here!"
 
     
 def validForm():
