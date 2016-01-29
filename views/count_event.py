@@ -5,7 +5,8 @@ from bikeandwalk import db,app
 from views.utils import nowString, printException, getTimeZones, cleanRecordID
 from views.assignment import getAssignmentList
 from views.traveler import getTravelerList
-from models import CountEvent, Organization, Assignment, EventTraveler, User
+from views.org import getOrgDefaultTimeZone
+from models import CountEvent, Assignment, EventTraveler, User
 
 mod = Blueprint('count_event',__name__)
 
@@ -14,7 +15,7 @@ def setExits():
    g.editURL = url_for('.edit')
    g.deleteURL = url_for('.delete')
    g.title = 'Count Event' ## Always singular
-
+   g.createURL = url_for('.create')
 
 @mod.route('/event/')
 def display():
@@ -29,7 +30,32 @@ def display():
     
     return render_template('count_event/count_event_list.html', recs=cur, theTime=theTime)
 
-
+@mod.route('/event/create', methods=['GET'])
+@mod.route('/event/create/', methods=['GET'])
+def create():
+    setExits()
+    cur = createEventRecord()
+    if cur:
+        return redirect(g.editURL + str(cur.ID) + "/")
+        
+    flash("Event Record Creation Failed")
+    return redirect(g.listURL)
+  
+  
+def createEventRecord():
+    """ Create a stub record """
+    startingDate = datetime.now()
+    endingDate = startingDate + timedelta(hours=2)
+    cur = CountEvent("Untitled",startingDate.isoformat()[:19],endingDate.isoformat()[:19],getDefaultTimeZone(),0,g.orgID)
+    db.session.add(cur)
+    try:
+        db.session.commit()
+    except Exception as e:
+        printException("Unable to create event record", "error", e)
+        db.session.rollback()
+        
+    return cur
+    
 @mod.route('/event/edit', methods=['POST', 'GET'])
 @mod.route('/event/edit/', methods=['POST', 'GET'])
 @mod.route('/event/edit/<id>/', methods=['POST', 'GET'])
@@ -53,10 +79,7 @@ def edit(id=0):
         theTime = getTimeDictionary(start.isoformat(),end.isoformat())
         cur = None
         #Get the default timeZone for this Organization
-        g.timeZone = "PST"
-        org = Organization.query.get(g.orgID)
-        if org:
-            g.timeZone = org.defaultTimeZone
+        g.timeZone = getDefaultTimeZone()
             
         if id > 0:
             cur = CountEvent.query.filter_by(ID=id).first()
@@ -180,26 +203,15 @@ def validForm():
     # Validate the form
     goodForm = True
     
-#    if not request.form['year'].isdigit() or len(request.form['year']) != 4:
-#        goodForm = False
-#        flash('The Year must be 4 digits')        
-#    if not request.form['month'].isdigit() or int(request.form['month']) < 1 or int(request.form['month']) > 12:
-#        goodForm = False
-#        flash('The Month must be between 1 and 12')        
-#    if not request.form['day'].isdigit() or int(request.form['day']) < 1 or int(request.form['day']) > 31:
-#        goodForm = False
-#        flash('The Day number must be between 1 and 31')        
-       
     try:
         startingDate = startDateFromForm()
-        print startingDate
     except:
         goodForm = False
         flash('There is a problem with your Starting Date')
     
     if request.form['organization_ID'] <= "0":
         goodForm = False
-        flash('You must select an Organization')
+        flash('An Organization must be specified')
 
     return goodForm
 
@@ -285,3 +297,9 @@ def getTimeDictionary(start=datetime.now().isoformat(),end=(datetime.now() + tim
         theTime['endTimeStamp'] = end
     return theTime
 
+def getDefaultTimeZone():
+    tz = getOrgDefaultTimeZone(g.orgID)
+    if tz == "":
+        tz = "PST"
+        
+    return tz

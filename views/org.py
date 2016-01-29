@@ -2,7 +2,7 @@ from flask import request, session, g, redirect, url_for, \
      render_template, flash, Blueprint
 from bikeandwalk import db
 from models import Organization
-from views.utils import getTimeZones, printException
+from views.utils import getTimeZones, printException, cleanRecordID
 
 mod = Blueprint('org',__name__)
 
@@ -117,6 +117,7 @@ def validForm():
     return goodForm
 
 def getName(orgID):
+    orgID = cleanRecordID(orgID)
     if orgID > 0:
         org = Organization.query.get(orgID)
         if org:
@@ -124,4 +125,11 @@ def getName(orgID):
         
     return ''
     
-    
+def getOrgDefaultTimeZone(orgID):
+    orgID = cleanRecordID(orgID)
+    if orgID > 0:
+        org = Organization.query.get(orgID)
+        if org:
+            return org.defaultTimeZone
+
+    return ""
