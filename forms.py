@@ -29,8 +29,8 @@ class LocationForm(Form):
     locationName = StringField("Location Name", [validators.DataRequired(),], )
     NS_Street = StringField("North South St.", [validators.DataRequired(),], )
     EW_Street = StringField("East West St.", [validators.DataRequired(),], )
-    locationType = SelectField("Count Type", 
-        choices=[("Intersection", "Intersection"),("Mid Block","Mid Block")], )
+    locationType = SelectField("Count Type", default="intersection",
+        choices=[("intersection", "Intersection"),("screenline","Screen Line")], )
     city = StringField("City", [validators.DataRequired(),], )
     state = StringField("State", [validators.DataRequired(),], )
     latitude = StringField("Latitude",  )
