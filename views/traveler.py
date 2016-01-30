@@ -316,6 +316,7 @@ def editEventTraveler(eventTravelerID=0):
                 db.session.commit()
             except Exception as e:
                 # this is not critical to the current operation, advise only
+                db.session.rollback()
                 printException("Unable to Normalize EventTraveler recs", "error", e)
                 
         return "success" # the success function looks for this...
