@@ -18,7 +18,7 @@
 	{% endif %}
 	<select name="sortOrder">
 		{% for ord in travelerOrder %}
-		<option value="{{ord["sortOrder"]}}" >{{ ord["travelerName"] }}</option>
+		<option value="{{ord["sortOrder"]}}" {% if ord["travelerName"] == "End of List"%}selected="selected"{% endif %}>{{ ord["travelerName"] }}</option>
 		{% endfor %}
 	</select>
 	{% endif %}
