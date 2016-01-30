@@ -19,7 +19,7 @@ function startUp(){
 
 function setUndo(){
 	$("#undoCounts").click(function(){undoCounts();}).text("Clear")
-	if (lastSaveSet.length > 0){
+	if (lastTravelerSet.length > 0){
 		$('#undoCounts').text("Undo")
 	}
 	
@@ -63,12 +63,13 @@ function travelerClicked(which){
 	cnt++;
 	$(y).text(cnt).show();
 	// user can no longer undo the last post
-	lastSaveSet = [];
+	lastTravelerSet = [];
 	setUndo();
 }
 
 // end Traveler and Lanes UI
-var lastSaveSet = []; // will hold the last set of trips for undo-ing
+var lastTravelerSet = []; // will hold the last set of trips for undo-ing
+var lastUploadSet = []; // will hold the sequence numbers of the last set of trips uploaded to the server
 
 function laneClicked(which){
 	var entryLane = which.id;
@@ -85,13 +86,13 @@ function laneClicked(which){
 			seqNo = getNextSequenceNumber(); // returns zero if no localStorage
 			if (firstPass) {
 				firstPass = false;
-				lastSaveSet = [];
+				lastTravelerSet = [];
 			}
-			//if (seqNo > 0) lastSaveSet.push(seqNo); // we can't undo without a sequence number
+			//if (seqNo > 0) lastTravelerSet.push(seqNo); // we can't undo without a sequence number
 			if (seqNo > 0) { // we can't undo without a sequence number
-				// push a data array into lastSaveSet
+				// push a data array into lastTravelerSet
 				var undoSet = [seqNo, tripTime];
-				lastSaveSet.push(undoSet); 
+				lastTravelerSet.push(undoSet); 
 			}
 			
 			var y = cnt + "\t" + entryLane + "\t"+  tripTime + "\t" + $("#traveler_"+i).attr("name") + "\t" + seqNo;
@@ -162,15 +163,26 @@ function clearData() {
 		// order of localStorage items is not defined so,
 		// create an array of the keys you want to delete, then delete items
 		var trips = new Array();
+		var pending = 0
 		for (i=0; i<=localStorage.length-1; i++) {
 			key = localStorage.key(i); 
 			if (isTripDataKey(key)){
-				trips.push(key);  
+				var isinarray = lastUploadSet.indexOf(key.substr(key.indexOf("_data_") + 6));
+				if( isinarray >= 0 ){
+					// the seqNo of the key must be in the lastUploadSet array
+					// this is to avoid deleting a trip that happened between the start of upload and now
+					trips.push(key);  
+				} else {
+					// this trip was not uploaded, it's still pending
+					pendingData = JSON.parse(getJsonTripFrom(localStorage.getItem(key)));
+					pending += pendingData["count"];
+				}
 			}
 		}
 		for(var i=0; i<trips.length; i++){
 			localStorage.removeItem(trips[i])
 		}
+		showPending(pending);
 	} else {
 		// just clear the data stored in the page
 		$("pre#data").text("");
@@ -205,16 +217,24 @@ function showTotal(theTotal) {
 	$("#total").text(theTotal);
 }
 
+function showPending(pendingUpload) {
+	var pendingUpload = pendingUpload || 0
+	$("#pending").text(pendingUpload);
+}
+
 function updateTotal(increment){
 	var current = parseInt($("#total").text())
 	if (isNaN(current)) current = 0;
+	var pending = parseInt($("#pending").text())
+	if (isNaN(pending)) pending = 0;
 	showTotal(current + parseInt(increment));
+	showPending(pending + parseInt(increment));
 }
 
 function getTotalFromServer(){
 	var dataString = getJsonHeader("total");
 	dataString += ']}' 
-	$.post("/count/trip/",dataString, function(data){getUploadResult(data);},'json');
+	$.post("/count/trip/",dataString, function(data){handleTotalFromServer(data);},'json');
 }
 
 function hasStorage() {
@@ -230,6 +250,9 @@ function uploadData() {
 	var delayTime = 30000;
 	var data = readAllData().trim();
 	if (data != ""){
+		// so we can delete successfully uploaded records
+		lastUploadSet = [];
+		
 		// the upload object header
 		var dataString = getJsonHeader("add");
 		// get each trip data
@@ -240,14 +263,18 @@ function uploadData() {
 			if (hasData) { dataString += ","};
 			if (trips[i] != "") {
 				hasData = true;
-				dataString += getJsonTripFrom(trips[i]);
+				tripString = getJsonTripFrom(trips[i]);
+				tripData = JSON.parse(tripString)
+				lastUploadSet.push(tripData["seqNo"])
+				dataString += tripString
+				//alert(lastUploadSet)
 			}
 		}
 
 		if (hasData){
 			dataString += "]}";
 			$("pre#data").text('Uploading...')
-			$.post("/count/trip/",dataString, function(data){getUploadResult(data);},'json');
+			$.post("/count/trip/",dataString, function(data){handleUploadResult(data);},'json');
 		} else {
 			// there was no trip data to post
 		}
@@ -259,10 +286,10 @@ function uploadData() {
 } // uploadData()
 
 function undoTripsWithArray() {
-	if (lastSaveSet.length > 0) {
+	if (lastTravelerSet.length > 0) {
 		if(hasStorage){
-			for(var i=lastSaveSet.length-1; i >= 0; i--){
-				var recKey = getDataElementBaseKey() + lastSaveSet[i][0]
+			for(var i=lastTravelerSet.length-1; i >= 0; i--){
+				var recKey = getDataElementBaseKey() + lastTravelerSet[i][0]
 				var temp = localStorage.getItem(recKey)
 				if ((temp != undefined) && (temp != null)) {
 					// the trip is still in localStorage
@@ -270,29 +297,29 @@ function undoTripsWithArray() {
 					trip = JSON.parse(trip);
 					updateTotal(parseInt(trip['count']) * -1)
 					localStorage.removeItem(recKey)
-					lastSaveSet = lastSaveSet.slice(0,-1); // remove the last item
+					lastTravelerSet = lastTravelerSet.slice(0,-1); // remove the last item
 				}
 			}
 		} // delete from local storage
-		if (lastSaveSet.length > 0) {
+		if (lastTravelerSet.length > 0) {
 			// some elements were already written to the server or there is no local storage
 			// the upload object header
 			var dataString = getJsonHeader("undo");
-			// create the json string with lastSaveSet array
+			// create the json string with lastTravelerSet array
 			var hasData = false;
-			for (var i=0; i<=lastSaveSet.length-1; i++){
+			for (var i=0; i<=lastTravelerSet.length-1; i++){
 				if (hasData) dataString += ",";
 				hasData = true;
-				dataString += '{"seqNo":"'+lastSaveSet[i][0]+'", "tripDate": "'+lastSaveSet[i][1]+'"}';
+				dataString += '{"seqNo":"'+lastTravelerSet[i][0]+'", "tripDate": "'+lastTravelerSet[i][1]+'"}';
 			}
 			
 			if (hasData){
 				dataString += "]}";
 				$.post("/count/trip/",dataString, 
-				function(data){getUploadResult(data);},'json'); 
+				function(data){handleUploadResult(data);},'json'); 
 			}
 			
-			lastSaveSet = []; // just ot be sure
+			lastTravelerSet = []; // just ot be sure
 		} // delete from server
 	} // array not empty
 }  // undoTripsWithArray()
@@ -324,15 +351,18 @@ function isTripDataKey(key) {
 	return false;
 }
 
-function getUploadResult(data){
+function handleTotalFromServer(data){
+	var total = parseInt(data['total']);
+	if(total != undefined ) showTotal(total);
+}
+
+function handleUploadResult(data){
 	// do something about what happened with your data upload
 	var result = data['result'];
-	var total = parseInt(data['total']);
-	if (isNaN(total)) total = 0;
 	$("pre#data").text(result)
 	if (result.toUpperCase() == "SUCCESS"){
 		clearData();
-		showTotal(total);
+		handleTotalFromServer(data)
 	} else {
 		// some error occured
 		$("pre#data").text(result);

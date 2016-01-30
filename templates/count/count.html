@@ -13,32 +13,46 @@
 			</ul>
 		</div>
 	</div>
-	<div id="countContain">
+	<div id="countContain" >
 		<p id="countName"><strong>{{ location.locationName }}</strong></p>
-		<p id="eastWestStreetName"><img class="arrows" src="{{ url_for('static', filename='count/images/arrows/EastToWest.png') }}" />&nbsp;{{ location.EW_Street }}&nbsp;<img class="arrows" src="{{ url_for('static', filename='count/images/arrows/WestToEast.png') }}" /></p>
-		<p id="northSouthStreetName"><img class="arrows" src="{{ url_for('static', filename='count/images/arrows/EastToWest.png') }}" />&nbsp;{{ location.NS_Street}}&nbsp;<img class="arrows" src="{{ url_for('static', filename='count/images/arrows/WestToEast.png') }}" /></p>
-		<div id="streetPattern">
-		<!-- The traffic counting layout -->
-			<p id="northWay" >
-				<span id="A3" name="AD" class="entry N_Entry">A3</span><img class="shoulder" src="{{ url_for('static', filename='count/images/spacer.png') }}" />
-				<span id="A2" name="AC" class="entry N_Entry">A2</span><img class="shoulder" src="{{ url_for('static', filename='count/images/spacer.png') }}" />
-				<span id="A1" name="AB" class="entry N_Entry">A1</span>
-			</p>
-			<p class="eastWestWay" >
-				<span id="D1" name="DA" class="entry W_Entry">D1</span><img class="intersection" src="{{ url_for('static', filename='count/images/spacer.png') }}" /><span id="B3" name="BA" class="entry E_Entry">B3</span>
-			</p>                                                                                                                                                 
-			<p class="eastWestWay" >                                                                                                                             
-				<span id="D2" name="DB" class="entry W_Entry">D2</span><img class="intersection" src="{{ url_for('static', filename='count/images/spacer.png') }}" /><span id="B2" name="BD" class="entry E_Entry">B2</span>
-			</p>                                                                                                                                                 
-			<p class="eastWestWay" >                                                                                                                             
-				<span id="D3" name="DC" class="entry W_Entry">D3</span><img class="intersection" src="{{ url_for('static', filename='count/images/spacer.png') }}" /><span id="B1" name="BC" class="entry E_Entry">B1</span>
-			</p>
-			<p id="southWay" >
-				<span id="C1" name="CD" class="entry S_Entry">C1</span><img class="shoulder" src="{{ url_for('static', filename='count/images/spacer.png') }}" />
-				<span id="C2" name="CA" class="entry S_Entry">C2</span><img class="shoulder" src="{{ url_for('static', filename='count/images/spacer.png') }}" />
-				<span id="C3" name="CB" class="entry S_Entry">C3</span>
-			</p>
-		</div>
+		{% if location.locationType == "intersection" %}
+			<p id="eastWestStreetName"><img class="arrows" src="{{ url_for('static', filename='count/images/arrows/EastToWest.png') }}" />&nbsp;{{ location.EW_Street }}&nbsp;<img class="arrows" src="{{ url_for('static', filename='count/images/arrows/WestToEast.png') }}" /></p>
+			<p id="northSouthStreetName"><img class="arrows" src="{{ url_for('static', filename='count/images/arrows/EastToWest.png') }}" />&nbsp;{{ location.NS_Street}}&nbsp;<img class="arrows" src="{{ url_for('static', filename='count/images/arrows/WestToEast.png') }}" /></p>
+			<div id="streetPattern">
+			<!-- The traffic counting layout -->
+				<p id="northWay" >
+					<span id="A3" name="AD" class="entry N_Entry">A3</span><img class="shoulder" src="{{ url_for('static', filename='count/images/spacer.png') }}" />
+					<span id="A2" name="AC" class="entry N_Entry">A2</span><img class="shoulder" src="{{ url_for('static', filename='count/images/spacer.png') }}" />
+					<span id="A1" name="AB" class="entry N_Entry">A1</span>
+				</p>
+				<p class="eastWestWay" >
+					<span id="D1" name="DA" class="entry W_Entry">D1</span><img class="intersection" src="{{ url_for('static', filename='count/images/spacer.png') }}" /><span id="B3" name="BA" class="entry E_Entry">B3</span>
+				</p>                                                                                                                                                 
+				<p class="eastWestWay" >                                                                                                                             
+					<span id="D2" name="DB" class="entry W_Entry">D2</span><img class="intersection" src="{{ url_for('static', filename='count/images/spacer.png') }}" /><span id="B2" name="BD" class="entry E_Entry">B2</span>
+				</p>                                                                                                                                                 
+				<p class="eastWestWay" >                                                                                                                             
+					<span id="D3" name="DC" class="entry W_Entry">D3</span><img class="intersection" src="{{ url_for('static', filename='count/images/spacer.png') }}" /><span id="B1" name="BC" class="entry E_Entry">B1</span>
+				</p>
+				<p id="southWay" >
+					<span id="C1" name="CD" class="entry S_Entry">C1</span><img class="shoulder" src="{{ url_for('static', filename='count/images/spacer.png') }}" />
+					<span id="C2" name="CA" class="entry S_Entry">C2</span><img class="shoulder" src="{{ url_for('static', filename='count/images/spacer.png') }}" />
+					<span id="C3" name="CB" class="entry S_Entry">C3</span>
+				</p>
+			</div>
+		{% elif location.locationType == "screenline" %}
+		<!-- rudimentary for now.. -->
+			<div id="screenlineTraffic">
+				<p id="eastWestStreetName">
+					<img class="arrows" src="{{ url_for('static', filename='count/images/arrows/EastToWest.png') }}" />&nbsp;
+						{{ location.EW_Street }}&nbsp;
+					<img class="arrows" src="{{ url_for('static', filename='count/images/arrows/WestToEast.png') }}" />
+				</p>
+				<p class="eastWestWay" style="border: 1pt black solid;border-left:0pt;border-right:0pt;width:90%; margin:auto">                                                                                                                             
+					<span id="D2" name="DB" class="entry W_Entry">D2</span><img class="intersection" src="{{ url_for('static', filename='count/images/spacer.png') }}" /><span id="B2" name="BD" class="entry E_Entry">B2</span>
+				</p>
+			</div>
+		{% endif %}
 		<div id="travelerList">
 			{% for elem in range(g.travelerCnt) %}
 				<p id="traveler_{{travelers[elem].row}}" class="traveler" name="{{travelers[elem].ID}}"
@@ -50,6 +64,14 @@
 		</div>
 		<p class="clear"></p>
 		<p id="undoCounts" >Clear</p>
+	</div>
+	<div id="countTotals">
+		<p class="smallPrint">
+			Total Count: <span class="smallPrint" id="total">0</span>
+		</p>
+		<p class="smallPrint">
+			Pending Upload: <span class="smallPrint" id="pending">0</span>
+		</p>
 	</div>
 	<div id="infoContain">
 		<!-- User and location information -->
@@ -80,7 +102,6 @@
 		</form>
 	</div>
 	<div id="dataContain">
-		<p class="smallPrint">Total Count: <span id="total"></span></p>
 		<p>Data: </p>
 		<pre id="data"></pre>
 	</div>
