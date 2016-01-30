@@ -252,15 +252,14 @@ def editEventTraveler(eventTravelerID=0):
     if eventTravelerID == 0:
         #If creating a new record, get a list of unused travelers
 
-        ## It's important to call fetchcll() or fetchone() after executing sql this way or the
-        ##  database will be left in a locked state.
-
         sql = 'select ID,name from traveler \
             where  \
             ID not in \
                (select traveler_ID from event_traveler where countEvent_ID  = %d);' \
             % (g.countEventID)
 
+        ## It's important to call fetchcll() or fetchone() after executing sql this way or the
+        ##  database will be left in a locked state.
         availableTravelers = db.engine.execute(sql).fetchall()
         if len(availableTravelers) == 0:
             return "failure: There are no more Travelers to use."
@@ -301,12 +300,24 @@ def editEventTraveler(eventTravelerID=0):
         rec.sortOrder = form.sortOrder.data
         try:
             db.session.commit()
-            # "Normalize the sortOrders"
             
         except Exception as e:
             printException("Unable to save Assignment from list", "error", e)
             return "failure: Sorry. Unable to save your changes."
         
+        # "Normalize the sortOrders"
+        recs = EventTraveler.query.filter(EventTraveler.countEvent_ID == g.countEventID).order_by(EventTraveler.sortOrder)
+        if recs:
+            next = 100
+            for rec in recs:
+                rec.sortOrder = next
+                next += 100
+            try:
+                db.session.commit()
+            except Exception as e:
+                # this is not critical to the current operation, advise only
+                printException("Unable to Normalize EventTraveler recs", "error", e)
+                
         return "success" # the success function looks for this...
     
     return render_template('traveler/eventTravelerPopupEditForm.html', 
