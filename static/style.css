@@ -269,7 +269,8 @@ p.eventTravlerActions {
     countEvent Assignment List
 */
 div#assignment-contain {
-    margin-top:2.5em;
+    margin-top:1em;
+    padding-top:.1em;
 }
 div#assignmentList {
     border:1pt solid black;
