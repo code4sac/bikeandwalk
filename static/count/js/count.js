@@ -5,7 +5,6 @@
 
 
 function startUp(){
-	//clearData();
 	setLanes();
 	setTravelers();
 	setUndo();
