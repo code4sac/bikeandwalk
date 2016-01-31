@@ -201,6 +201,8 @@ img#headerlogo {
     background-color:yellow;
     padding:.5em;
     border:1pt solid red;
+    margin-top:1em;
+    margin-bottom:1em;
 }
 p.flash {
     font-style:italic;
