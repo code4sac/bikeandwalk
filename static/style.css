@@ -224,6 +224,10 @@ p.flash {
     margin-top:0;
 }
 
+p#addRecord {
+    padding-top:.5em;
+}
+
 div#eventRecordForm {
     width:17em;
     float:left;
