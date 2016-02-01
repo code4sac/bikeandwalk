@@ -13,11 +13,19 @@
 			  },
 		});
 		$( "#datepicker" ).datepicker( "setDate", "{{ theTime["eventDate"]}}" );
-	})
+		{% if g.eventTotalCount > 0 %}
+			$("a#form_delete_link").hide();
+		{% endif %}
+	});
 </script>
 {% endblock head %}
 {% block body %}
-<h2>Edit {{ g.title }}</h2>	
+<h2>
+	Edit {{ g.title }}
+	{% if g.eventTotalCount > 0 %}
+		<span id="eventTotalCount">(Total Count: {{ g.eventTotalCount}})</span>
+	{% endif %}
+</h2>	
 <div id="eventRecordForm">
 	    <form action="{{ g.editURL }}{{rec.ID|default("0",true)}}/" method=post class="entry">
 		<input type=hidden name="ID" value="{{rec.ID|default("0",true)}}">

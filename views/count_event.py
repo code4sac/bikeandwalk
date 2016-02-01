@@ -6,6 +6,7 @@ from views.utils import nowString, printException, getTimeZones, cleanRecordID
 from views.assignment import getAssignmentList
 from views.traveler import getTravelerList
 from views.org import getOrgDefaultTimeZone
+from views.trip import getCountEventTripTotal
 from models import CountEvent, Assignment, EventTraveler, User
 
 mod = Blueprint('count_event',__name__)
@@ -69,6 +70,8 @@ def edit(id=0):
     assignmentList = getAssignmentList(id) #fully rendered HTML
     travelerList = getTravelerList(id)
     timeZones = getTimeZones()
+    g.eventTotalCount = getCountEventTripTotal(id)
+    
     if not request.form:
         """ if no form object, send the form page """
         #Set up a default time for the event

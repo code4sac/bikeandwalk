@@ -1,7 +1,7 @@
 <dd class="form_button_row" >
-	<input type=submit value=Save />  
+	<input type=submit value=Save />&nbsp;&nbsp;
 	{% if rec.ID and rec.ID > 0 %}
-	&nbsp;&nbsp;<a href = "{{g.deleteURL}}{{rec.ID|default('0',true)}}/" onclick="return confirmRecordDelete();">Delete...</a>
+	<a id="form_delete_link" href = "{{g.deleteURL}}{{rec.ID|default('0',true)}}/" onclick="return confirmRecordDelete();">Delete...&nbsp;&nbsp;</a>
 	{% endif %}
-	&nbsp;&nbsp;<a href="{{ g.listURL }}" >Cancel</a>
+	<a href="{{ g.listURL }}" >Cancel</a>
 </dd> 
