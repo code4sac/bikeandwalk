@@ -38,7 +38,8 @@
 			Organization Name: <strong>{{g.organizationName}}</strong> {% if request.path != url_for('home') %}&nbsp;&nbsp;&nbsp;<a href="{{url_for('home')}}">Go to Menu</a>{%endif%} 
 		</p>
 		{% else %}
-		<p><a href="{{url_for('report.display')}}">Go to Report Menu</a></p>
+		{% if request.path != url_for('home') and g.user %}<p><a href="{{url_for('home')}}">Go to Admin Menu</a></p>{%endif%}
+		{% if request.path != url_for('report.display') %}<p><a href="{{url_for('report.display')}}">Go to Report Menu</a></p>{%endif%}
 		{% endif %} 
 	</div>
 	{% with messages = get_flashed_messages() %} {% if messages %} 
