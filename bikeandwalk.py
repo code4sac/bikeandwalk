@@ -92,7 +92,13 @@ def before_request():
         if views.user.setUserStatus(g.user):
             # Session timeout is set in app.config["PERMANENT_SESSION_LIFETIME"]
             # g.email, g.role, & g.orgID will be set
-            
+            if g.role == "counter":
+                ## Nothing for these users here...
+                session.clear()
+                g.user = None
+                flash("You don't have access to the Administration web site.")
+                return redirect(url_for("login"))
+                
             g.organizationName = views.org.getName(g.orgID)
             if superRequired and g.role != "super":
                 flash("Sorry, you don't have access for that feature.")
