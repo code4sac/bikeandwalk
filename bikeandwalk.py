@@ -69,8 +69,9 @@ def before_request():
         printException("Database not Available", "error")
         return render_template('errors/500.html'), 500
         
-    freeDirectories = ("login","count","static","ping","_auth",) #first directory of request URL
-    superUserDirectories = ("org","feature","trip","traveler","super","map",) #first directory of request URL
+    freeDirectories = ("login","count","static","ping","_auth","map",
+            "report",) #first directory of request URL
+    superUserDirectories = ("org","feature","trip","traveler","super",) #first directory of request URL
     rootURL = request.path.split("/")
     rootURL = rootURL[1]
     superRequired = rootURL in superUserDirectories
@@ -152,6 +153,8 @@ from views import trip
 app.register_blueprint(trip.mod)
 from views import mapping
 app.register_blueprint(mapping.mod)
+from views import report
+app.register_blueprint(report.mod)
 
 
 def startLogging():

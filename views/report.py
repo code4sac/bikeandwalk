@@ -1,8 +1,26 @@
+from flask import request, session, g, redirect, url_for, abort, \
+     render_template, flash, Blueprint, Response
 from bikeandwalk import db, app
 import csv
 import StringIO
 
+mod = Blueprint('report',__name__)
 
+def setExits():
+    g.listURL = url_for('.display')
+    #g.editURL = url_for('.edit')
+    #g.deleteURL = url_for('.delete')
+    g.title = 'Report'
+
+@mod.route('/report')
+@mod.route('/report/')
+def display():
+    setExits()
+    return render_template("report/report_list.html")
+    
+    
+@mod.route('/report/get_csv')
+@mod.route('/report/get_csv/')
 def getcsv():
     sql = 'select trip.tripCount, trip.turnDirection, trip.location_ID, trip.tripDate, \
     location.locationName, location.latitude, location.longitude, \
@@ -25,5 +43,10 @@ def getcsv():
     result = out.getvalue()
     out.close()
     result = result.replace("\r\n", chr(13))
-    return result
+    # setup the page headers for a file download
+    return Response(result,
+                           mimetype="text/csv",
+                           headers={"Content-Disposition":
+                                        "attachment;filename=bikeandwalkTrips.csv"})
+
 
