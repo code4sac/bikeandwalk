@@ -1,4 +1,4 @@
-#!/usr/local/bin/ python
+#!/usr/bin/env python
 """
 This script creates a timestamped database backup,
 and cleans backups older than a set number of dates
@@ -36,7 +36,7 @@ def sqlite3_backup(dbfile=FILE_TO_BACKUP, backupdir=BACKUP_DIRECTORY):
     if(os.path.isfile(dbfile)):
         backup_file = os.path.join(backupdir, os.path.basename(dbfile) +
                                    time.strftime("-%Y%m%d-%H%M%S"))
-
+        
         connection = sqlite3.connect(dbfile)
         cursor = connection.cursor()
 
@@ -44,7 +44,7 @@ def sqlite3_backup(dbfile=FILE_TO_BACKUP, backupdir=BACKUP_DIRECTORY):
         cursor.execute('begin immediate')
         # Make new backup file
         shutil.copyfile(dbfile, backup_file)
-        print ("\nCreating {}...".format(backup_file))
+        print ("\nCreating {0}").format(os.path.basename(backup_file))
         # Unlock database
         connection.rollback()
     else:
@@ -65,7 +65,6 @@ def clean_data(dbfile=FILE_TO_BACKUP, backupdir=BACKUP_DIRECTORY):
     fileCount = len(filelist)
     for listElement in range(fileCount-1, -1,-1):
         if os.path.basename(filelist[listElement])[:len(os.path.basename(dbfile))] != os.path.basename(dbfile)[:len(os.path.basename(dbfile))]:
-            print listElement
             del filelist[listElement]
     
     #the filelist should only contain backup files      
@@ -74,9 +73,9 @@ def clean_data(dbfile=FILE_TO_BACKUP, backupdir=BACKUP_DIRECTORY):
         for listElement in range(MINIMUM_BACKUPS, fileCount):
             backup_file = os.path.join(backupdir, filelist[listElement])
             if os.path.isfile(backup_file):
-                if os.stat(backup_file).st_ctime < (time.time() - NO_OF_DAYS * 86400):
+                if os.stat(backup_file).st_mtime < (time.time() - (NO_OF_DAYS * 86400)):
                     os.remove(backup_file)
-                    print ("Deleting {}...".format(backup_file))
+                    print "Deleting {0}".format(os.path.basename(backup_file))
     else:
         print('No Backup files to delete')
         
