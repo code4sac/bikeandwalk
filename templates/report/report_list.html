@@ -1,0 +1,19 @@
+{% extends "layout.html" %}
+{% block title %}{{ g.title }} List{% endblock %}
+{% block body %}
+	<h2>{{g.title}} List</h2>
+		<table class="datatable">
+		<tr>
+			<th>Name</th>
+			<th>Desc</th>
+		</tr>
+	    <tr>
+			<td><a href="{{ url_for("map.display") }}">Map</a></td>
+			<td>A map of all counting locations.</td>
+		</tr>
+		<tr>
+			<td><a href="{{ url_for("report.getcsv") }}">CSV Data Dump</a></td>
+			<td>A text file in Comma Separated Values format of all trip data.</td>
+		</tr>
+	  </table>
+ {% endblock body %}
