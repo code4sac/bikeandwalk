@@ -10,7 +10,12 @@
 {% endblock head %}
 
 {% block body %}
-	<h2>Edit {{ g.title }}</h2>
+<h2>
+	Edit {{ g.title }}
+	{% if g.tripTotalCount and g.tripTotalCount > 0 %}
+		<span id="tripTotalCount">(Total Count: {{ g.tripTotalCount}})</span>
+	{% endif %}
+</h2>	
 	{% if form %}
 	<div id="form-contain">
     <form class="entry" action="{{ g.editURL }}{{rec.ID|default("0",true)}}/" method="POST" enctype="multipart/form-data">
