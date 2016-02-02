@@ -328,3 +328,8 @@ table.edit-form-table td {
     font-weight:bold;
 }
 
+.leaflet-control-attribution, .leaflet-control-attribution a {
+    /* let leaflet styling shine through */
+    font-size:inherit;
+    cursor:inherit;
+}
