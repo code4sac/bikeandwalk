@@ -8,22 +8,18 @@
 		$('#datepicker').datepicker({inline:true,
 			dateFormat: "yy-mm-dd",
 			onSelect: function(dateText) {
-			    //display("Selected date: " + dateText + "; input's current value: " + this.value);
 				$("#eventDate").val(dateText);
 			  },
 		});
 		$( "#datepicker" ).datepicker( "setDate", "{{ theTime["eventDate"]}}" );
-		{% if g.eventTotalCount > 0 %}
-			$("a#form_delete_link").hide();
-		{% endif %}
 	});
 </script>
 {% endblock head %}
 {% block body %}
 <h2>
 	Edit {{ g.title }}
-	{% if g.eventTotalCount > 0 %}
-		<span id="eventTotalCount">(Total Count: {{ g.eventTotalCount}})</span>
+	{% if g.tripTotalCount and g.tripTotalCount > 0 %}
+		<span id="tripTotalCount">(Total Count: {{ g.tripTotalCount}})</span>
 	{% endif %}
 </h2>	
 <div id="eventRecordForm">

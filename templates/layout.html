@@ -18,6 +18,13 @@
 	</script> 
 	<script src="{{ url_for('static', filename='persona-local.js') }}"></script>
 	<script src="{{ url_for('static', filename='bikeandwalk.js') }}"></script>
+	{% if g.tripTotalCount and g.tripTotalCount > 0 %}
+	<script type="text/javascript">
+		$(document).ready(function(){
+				$("a#form_delete_link").hide();
+		});
+	</script>
+	{% endif %}
     {% block head%}{% endblock %}
 </head>
 <body>

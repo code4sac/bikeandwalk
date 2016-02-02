@@ -70,7 +70,7 @@ def edit(id=0):
     assignmentList = getAssignmentList(id) #fully rendered HTML
     travelerList = getTravelerList(id)
     timeZones = getTimeZones()
-    g.eventTotalCount = getCountEventTripTotal(id)
+    g.tripTotalCount = getCountEventTripTotal(id)
     
     if not request.form:
         """ if no form object, send the form page """
