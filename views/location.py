@@ -34,7 +34,7 @@ def edit(id=0):
         flash("That is not a valid ID")
         return redirect(g.listURL)
             
-    g.tripTotalCount = getLocationTripTotal
+    g.tripTotalCount = getLocationTripTotal(id)
     rec = None
     if id > 0:
         rec = Location.query.get(id)
