@@ -2,6 +2,7 @@ from flask import request, g, redirect, url_for, \
      render_template, flash, Blueprint, abort
 from bikeandwalk import db
 from models import Location
+from views.trip import getLocationTripTotal
 from views.utils import printException, getDatetimeFromString, nowString, cleanRecordID
 from forms import LocationForm
 
@@ -33,6 +34,7 @@ def edit(id=0):
         flash("That is not a valid ID")
         return redirect(g.listURL)
             
+    g.tripTotalCount = getLocationTripTotal
     rec = None
     if id > 0:
         rec = Location.query.get(id)

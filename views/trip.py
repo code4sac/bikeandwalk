@@ -123,3 +123,15 @@ def getCountEventTripTotal(countEventID):
             
     return result
 
+def getLocationTripTotal(locationID):
+    result = 0
+    locationID = cleanRecordID(locationID)
+    sql =  "select sum(tripCount) as tripTotal from trip where location_ID = %d;" % (locationID)
+    cur = db.engine.execute(sql).fetchone()
+    if cur:
+        result = cur[0]
+        if result == None:
+            result = 0
+            
+    return result
+
