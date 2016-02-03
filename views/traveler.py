@@ -179,8 +179,8 @@ def getFeatureSet(id=0):
     return records
 
 ## return an HTML code segment to include in the count_event edit form
-@mod.route("/traveler/getTravelerList", methods=['GET'])
-@mod.route("/traveler/getTravelerList/<countEventID>/", methods=['GET','POST'])
+@mod.route("/eventtraveler/getTravelerList", methods=['GET'])
+@mod.route("/eventtraveler/getTravelerList/<countEventID>/", methods=['GET','POST'])
 def getTravelerList(countEventID = 0):
     countEventID = cleanRecordID(countEventID)
     out = ""
