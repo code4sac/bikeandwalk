@@ -16,8 +16,8 @@
 	<div id="countContain" >
 		<p id="countName"><strong>{{ location.locationName }}</strong></p>
 		{% if location.locationType == "intersection" %}
-			<p id="eastWestStreetName"><img class="arrows" src="{{ url_for('static', filename='count/images/arrows/EastToWest.png') }}" alt="" />&nbsp;{{ location.EW_Street }}&nbsp;<img class="arrows" src="{{ url_for('static', filename='count/images/arrows/WestToEast.png') }}" alt="" /></p>
-			<p id="northSouthStreetName"><img class="arrows" src="{{ url_for('static', filename='count/images/arrows/EastToWest.png') }}" alt="" />&nbsp;{{ location.NS_Street}}&nbsp;<img class="arrows" src="{{ url_for('static', filename='count/images/arrows/WestToEast.png') }}" alt="" /></p>
+			<p id="eastWestStreetName"><img class="arrows" src="{{ url_for('static', filename='count/images/arrows/EastToWest.png') }}" alt="arrow" />&nbsp;{{ location.EW_Street }}&nbsp;<img class="arrows" src="{{ url_for('static', filename='count/images/arrows/WestToEast.png') }}" alt="arrow" /></p>
+			<p id="northSouthStreetName"><img class="arrows" src="{{ url_for('static', filename='count/images/arrows/EastToWest.png') }}" alt="arrow" />&nbsp;{{ location.NS_Street}}&nbsp;<img class="arrows" src="{{ url_for('static', filename='count/images/arrows/WestToEast.png') }}" alt="arrow" /></p>
 			<div id="streetPattern">
 			<!-- The traffic counting layout -->
 				<p id="northWay" >
