@@ -94,7 +94,7 @@ function laneClicked(which){
 				lastTravelerSet.push(undoSet); 
 			}
 			
-			var y = cnt + "\t" + entryLane + "\t"+  tripTime + "\t" + $("#traveler_"+i).attr("name") + "\t" + seqNo;
+			var y = cnt + "\t" + entryLane + "\t"+  tripTime + "\t" + $("#traveler_"+i).attr("data-travelerID") + "\t" + seqNo;
 			// saveData writes data to localStorage
 			saveData(seqNo,y);
 			updateTotal(cnt);
