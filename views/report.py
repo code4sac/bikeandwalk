@@ -22,11 +22,14 @@ def display():
 @mod.route('/report/get_csv')
 @mod.route('/report/get_csv/')
 def getcsv():
-    sql = 'select trip.tripCount, trip.turnDirection, trip.location_ID, trip.tripDate, \
-    location.locationName, location.latitude, location.longitude, \
-    traveler.name as travelerName \
-    from trip, location, traveler \
-    where location.latitude <> "" and location.longitude <> "";'
+    sql = 'SELECT trip.tripCount, trip.turnDirection, trip.tripDate, trip.location_ID, \
+        location.locationName, location.latitude, location.longitude, \
+        traveler.ID as travelerID, traveler.name as travelerName \
+        FROM trip \
+        JOIN location, traveler \
+        ON location.ID = trip.location_ID AND traveler.ID = trip.traveler_ID \
+        WHERE location.latitude <> "" AND location.longitude <> "" \
+        ORDER BY trip.tripDate;'
     recs = db.engine.execute(sql).fetchall()
     k = db.engine.execute(sql).keys()
     out = StringIO.StringIO()
