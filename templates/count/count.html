@@ -15,7 +15,19 @@
 	</div>
 	<div id="countContain" >
 		<p id="countName"><strong>{{ location.locationName }}</strong></p>
-		{% if location.locationType == "intersection" %}
+		{% if location.locationType.upper() == "SCREENLINE" %}
+		<!-- rudimentary for now.. -->
+			<div id="screenlineTraffic">
+				<p id="eastWestStreetName">
+					<img class="arrows" src="{{ url_for('static', filename='count/images/arrows/EastToWest.png') }}" alt="spacer" />&nbsp;
+						{{ location.EW_Street }}&nbsp;
+					<img class="arrows" src="{{ url_for('static', filename='count/images/arrows/WestToEast.png') }}" alt="spacer" />
+				</p>
+				<p class="eastWestWay" style="border: 1pt black solid;border-left:0pt;border-right:0pt;width:90%; margin:auto">                                                                                                                             
+					<span id="D2" class="entry W_Entry">D2</span><img class="intersection" src="{{ url_for('static', filename='count/images/spacer.png') }}" alt="spacer" /><span id="B2" class="entry E_Entry">B2</span>
+				</p>
+			</div>
+		{% else %} {# Intersection by default #}
 			<p id="eastWestStreetName"><img class="arrows" src="{{ url_for('static', filename='count/images/arrows/EastToWest.png') }}" alt="arrow" />&nbsp;{{ location.EW_Street }}&nbsp;<img class="arrows" src="{{ url_for('static', filename='count/images/arrows/WestToEast.png') }}" alt="arrow" /></p>
 			<p id="northSouthStreetName"><img class="arrows" src="{{ url_for('static', filename='count/images/arrows/EastToWest.png') }}" alt="arrow" />&nbsp;{{ location.NS_Street}}&nbsp;<img class="arrows" src="{{ url_for('static', filename='count/images/arrows/WestToEast.png') }}" alt="arrow" /></p>
 			<div id="streetPattern">
@@ -38,18 +50,6 @@
 					<span id="C1" class="entry S_Entry">C1</span><img class="shoulder" src="{{ url_for('static', filename='count/images/spacer.png') }}" alt="spacer" />
 					<span id="C2" class="entry S_Entry">C2</span><img class="shoulder" src="{{ url_for('static', filename='count/images/spacer.png') }}" alt="spacer" />
 					<span id="C3" class="entry S_Entry">C3</span>
-				</p>
-			</div>
-		{% elif location.locationType == "screenline" %}
-		<!-- rudimentary for now.. -->
-			<div id="screenlineTraffic">
-				<p id="eastWestStreetName">
-					<img class="arrows" src="{{ url_for('static', filename='count/images/arrows/EastToWest.png') }}" alt="spacer" />&nbsp;
-						{{ location.EW_Street }}&nbsp;
-					<img class="arrows" src="{{ url_for('static', filename='count/images/arrows/WestToEast.png') }}" alt="spacer" />
-				</p>
-				<p class="eastWestWay" style="border: 1pt black solid;border-left:0pt;border-right:0pt;width:90%; margin:auto">                                                                                                                             
-					<span id="D2" class="entry W_Entry">D2</span><img class="intersection" src="{{ url_for('static', filename='count/images/spacer.png') }}" alt="spacer" /><span id="B2" class="entry E_Entry">B2</span>
 				</p>
 			</div>
 		{% endif %}
