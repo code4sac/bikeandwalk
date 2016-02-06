@@ -35,6 +35,8 @@ class Config(object):
     MAPBOX_PROJECT_ID = ""
     MAPBOX_ACCESS_TOKEN = ""
     
+    HOST_NAME = "app.bikeandwalk.org"
+
 class ProductionConfig(Config):
     pass
     

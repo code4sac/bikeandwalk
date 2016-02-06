@@ -8,7 +8,7 @@ and will last for {{ countEventDict["duration"] }} hours until {{ countEventDict
 You will be counting at {{ assignment.locationName }}
 
 If you will be using our on-line counting tool, click the link below or copy and paste it into your browser:
-http://app.bikeandwalk.org/count/{{ assignment.assignmentUID }}/
+http://{{ hostName }}/count/{{ assignment.assignmentUID }}/
 
 For more information on the on-line tool, see the help files here:
 http://bikeandwalk.org/help/counting/

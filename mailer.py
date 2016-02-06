@@ -7,7 +7,7 @@ from models import Organization
 
 def sendInvite(assignment,user,countEventDict):
     """ Send a single counting Assignment email """
-    
+    hostName = app.config["HOST_NAME"]
     organization = Organization.query.get(cleanRecordID(g.orgID))
     
     with mail.record_messages() as outbox:
@@ -21,11 +21,13 @@ def sendInvite(assignment,user,countEventDict):
                 assignment=assignment,
                 countEventDict=countEventDict,
                 user=user,
+                hostName = hostName,
                 )
             msg.html = render_template("email/standardInvite.html", 
                     assignment=assignment,
                     countEventDict=countEventDict,
                     user=user,
+                    hostName = hostName,
                     )
         else:
             mes = "Email is missing parameters"
