@@ -4,8 +4,6 @@ from wtforms import Form, BooleanField, StringField, HiddenField, SelectField, I
 class AssignmentForm(Form):
     #ID = HiddenField('ID')
     #assignmentUID = StringField('Assignment ID', )
-    weather = SelectField("Weather",
-        choices=[("","Select Weather Type"),("Fair", "Fair"),("Rainy","Rainy"),("Very Cold", "Very Cold")], )
     countEvent_ID = SelectField("Count Event",
         [validators.NumberRange(min=1, message="You must select a count event")], 
         coerce=int, choices=[], )
@@ -22,6 +20,9 @@ class AssignmentEditFromListForm(AssignmentForm):
     countEvent_ID = HiddenField("Count Event ID")
     location_ID = HiddenField("Location ID")
 
+### Old weather field from Assignments, now in countEvent
+#weather = SelectField("Weather",
+#    choices=[("","Select Weather Type"),("Fair", "Fair"),("Rainy","Rainy"),("Very Cold", "Very Cold")], )
 
   
 class LocationForm(Form):

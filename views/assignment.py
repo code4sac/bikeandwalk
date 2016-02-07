@@ -205,7 +205,6 @@ def editFromList(id="0"):
         rec.location_ID = form.location_ID.data
         rec.countEvent_ID = form.countEvent_ID.data
         rec.user_ID = form.user_ID.data
-        rec.weather = form.weather.data
         try:
             db.session.commit()
         except Exception as e:

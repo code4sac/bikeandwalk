@@ -111,27 +111,28 @@ def edit(id=0):
     if validForm():
         startingDate = startDateFromForm()
         endingDate = endDateFromForm()
+        if id > 0:
+            cur = CountEvent.query.get(id)
+            #update the record
+            cur.title = request.form["title"]
+            cur.startDate = startingDate.isoformat()[:19]
+            cur.endDate = endingDate.isoformat()[:19]
+            cur.isDST = isDST
+            cur.timeZone = request.form["timeZone"]
+            cur.weather = request.form["weather"]
+            cur.organization_ID = request.form['organization_ID']
+        else:
+            ## create a new record
+            cur = CountEvent(request.form["title"],startingDate.isoformat()[:19],endingDate.isoformat()[:19],request.form["timeZone"],isDST,request.form['organization_ID'])
+            db.session.add(cur)
         try:
-            if id > 0:
-                cur = CountEvent.query.get(id)
-                #update the record
-                cur.title = request.form["title"]
-                cur.startDate = startingDate.isoformat()[:19]
-                cur.endDate = endingDate.isoformat()[:19]
-                cur.isDST = isDST
-                cur.timeZone = request.form["timeZone"]
-                cur.organization_ID = request.form['organization_ID']
-            else:
-                ## create a new record
-                cur = CountEvent(request.form["title"],startingDate.isoformat()[:19],endingDate.isoformat()[:19],request.form["timeZone"],isDST,request.form['organization_ID'])
-                db.session.add(cur)
             db.session.commit()
-            
-            return redirect(g.listURL)
-
         except Exception as e:
-            flash(printException('Error attempting to save '+g.title+' record.',"error",e))
             db.session.rollback()
+            flash(printException('Error attempting to save '+g.title+' record.',"error",e))
+            
+        return redirect(g.listURL)
+
 
     # form not valid - redisplay
     #restore theTime to the values as entered

@@ -71,6 +71,15 @@
 			<input type="radio" name="isDST" value="0" {%if rec.isDST != 1 %}checked="checked"{%endif%} id="DSTno" /> <label class="smallprint" for="DSTno">No</label>
 			<input type="radio" name="isDST" value="1" {%if rec.isDST == 1 %}checked="checked"{%endif%} id="DSTyes" /> <label class="smallprint" for="DSTyes">Yes</label>
 		</p>
+		<p><strong>Weather:</strong> <span class="smallprint">(Set after the count)</span></p>
+		<p>
+			<select name="weather">
+				<option value="" {% if rec.weather == "" %}selected="selected"{% endif %}>Select After the Count</option>
+				<option value="Fair" {% if rec.weather == "Fair" %}selected="selected"{% endif %}>Fair</option>
+				<option value="Rainy" {% if rec.weather == "Rainy" %}selected="selected"{% endif %}>Rainy</option>
+				<option value="Very Cold" {% if rec.weather == "Very Cold" %}selected="selected"{% endif %}>Very Cold</option>
+			</select>
+		</p>
     </form>
 </div> <!--Event record form -->
 <div id="travelerListContain">
