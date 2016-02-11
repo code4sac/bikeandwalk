@@ -17,27 +17,31 @@
 	{% endif %}
 </h2>	
 	{% if form %}
-	<div id="form-contain">
-    <form class="entry" action="{{ g.editURL }}{{rec.ID|default("0",true)}}/" method="POST" enctype="multipart/form-data">
-		{% include "editFormButtons.html" %}
-		{% from "_form_helpers.html" import render_field_in_table %}
-			{{ form.csrf_token }}
-      <table class="edit-form-table">
-			{% for f in form %}
-				{{ render_field_in_table(f) }}
-			{% endfor%}
-      </table>
-    </form>
-	</div>
-	<div id="locationMap"></div>
-    <script type="text/javascript">
-        // Initialize the map
-        var map = new BAWAMap("locationMap", 15);
-        // Add the location
-        map.addSimpleLocation('{{rec.locationName}}', {{rec.latitude}}, {{rec.longitude}});
-        // Add markers for location to map
-        map.setLocationMarkers(true);
-    </script>
+        <div id="form-contain">
+        <form class="entry" action="{{ g.editURL }}{{rec.ID|default("0",true)}}/" method="POST" enctype="multipart/form-data">
+            {% include "editFormButtons.html" %}
+            {% from "_form_helpers.html" import render_field_in_table %}
+                {{ form.csrf_token }}
+            <table class="edit-form-table">
+                {% for f in form %}
+                    {{ render_field_in_table(f) }}
+                {% endfor%}
+            </table>
+        </form>
+        </div>
+        <div id="locationMap"></div>
+        <script type="text/javascript">
+            // Initialize the map
+            var map = new BAWAMap('{{ config.MAPBOX_PROJECT_ID }}', '{{ config.MAPBOX_ACCESS_TOKEN }}', "locationMap", 15);
+            // Check if we have the location
+            {% if rec == None or rec.latitude == '' or rec.longitude == '' %}
+                // No location, so add the current location
+                map.addCurrentLocation('{{rec.locationName}}', 'latitude', 'longitude');
+            {% else %}
+                // Add the location
+                map.addSimpleLocation('{{rec.locationName}}', {{rec.latitude}}, {{rec.longitude}}, true);
+            {% endif %}
+        </script>
 	{% else %}
 		<dt>No form found</dt>
 	{% endif %}

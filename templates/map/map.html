@@ -16,13 +16,13 @@
 
         <script type="text/javascript">
             // Initialize the map
-            var map = new BAWAMap("tripsMap", 14);
+            var map = new BAWAMap('{{ config.MAPBOX_PROJECT_ID }}', '{{ config.MAPBOX_ACCESS_TOKEN }}',"tripsMap", 14);
             // Add trip locations
             {% for rec in recs %}
                 map.addTripLocation('{{ rec.locationName }}', {{ rec.locationLatitude }}, {{ rec.locationLongitude }}, {{ rec.tripCount }});
             {% endfor %}
             // Add markers for locations to map
-            map.setLocationMarkers(true);
+            map.setLocationMarkers(true, false);
         </script>
   	{% else %}
     	<p><em>No Trips to map</em></p>

@@ -1,11 +1,13 @@
 /**
  * Bike And Walk App (BAWA) Map Implementation
  *
+ * @param mapboxProjectId
+ * @param mapboxAccessToken
  * @param mapDivId
  * @param zoomLevel
  * @constructor
  */
-function BAWAMap(mapDivId, zoomLevel) {
+function BAWAMap(mapboxProjectId, mapboxAccessToken, mapDivId, zoomLevel) {
     this.map = L.map(mapDivId, {
         center: [38.551253, -121.488683],
         zoom: zoomLevel
@@ -15,8 +17,8 @@ function BAWAMap(mapDivId, zoomLevel) {
         attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
         '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
         maxZoom: zoomLevel,
-        id: 'jimryan.p0f37ng8',
-        accessToken: 'pk.eyJ1IjoiamltcnlhbiIsImEiOiJjaWp4Z2NmZ3QweTk1dmdsejM0NTk3cXZnIn0.BEc764xfxFGOr8HBQvmN7g'
+        id: mapboxProjectId,
+        accessToken: mapboxAccessToken
     }).addTo(this.map);
 
     this.locations = [];
@@ -32,9 +34,11 @@ BAWAMap.prototype = {
      * @param locationName
      * @param latitude
      * @param longitude
+     * @param draggable
      */
-    addSimpleLocation: function(locationName, latitude, longitude)  {
+    addSimpleLocation: function(locationName, latitude, longitude, draggable)  {
         this.pushNewLocation(locationName, latitude, longitude);
+        this.setLocationMarkers(true, draggable);
     },
 
     /**
@@ -62,6 +66,46 @@ BAWAMap.prototype = {
 
             // location doesn't exist, so push it to trips
             this.pushNewLocation(locationName, latitude, longitude, tripCount);
+        }
+    },
+
+    /**
+     * Get and add current geolocation.
+     *
+     * @param locationName
+     * @param latitudeFieldId
+     * @param longitudeFieldId
+     */
+    addCurrentLocation: function(locationName, latitudeFieldId, longitudeFieldId) {
+        if (navigator.geolocation) {
+            var self = this;
+
+            navigator.geolocation.getCurrentPosition(function(position) {
+                // Add the location
+                map.addSimpleLocation(locationName, position.coords.latitude, position.coords.longitude, true);
+
+                // Update location input fields
+                self.updateFormLocationFields(latitudeFieldId, longitudeFieldId,
+                                     position.coords.latitude, position.coords.longitude);
+
+            }, function(error) {
+                switch(error.code) {
+                    case error.PERMISSION_DENIED:
+                        console.log("User denied the request for Geolocation.");
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        console.log("Location information is unavailable.");
+                        break;
+                    case error.TIMEOUT:
+                        console.log("The request to get user location timed out.");
+                        break;
+                    case error.UNKNOWN_ERROR:
+                        console.log("An unknown error occurred.");
+                        break;
+                }
+            });
+        } else {
+            console.log("Geolocation is not supported by this browser.");
         }
     },
 
@@ -100,15 +144,17 @@ BAWAMap.prototype = {
      * Add the locations to the map as markers.
      *
      * @param zoomToFit
+     * @param draggable
      */
-    setLocationMarkers: function(zoomToFit) {
+    setLocationMarkers: function(zoomToFit, draggable) {
         for (var trip in this.locations) {
             if (this.locations.hasOwnProperty(trip)) {
                 this.addLocationMarker(
                     this.locations[trip].locationName,
                     this.locations[trip].latitude,
                     this.locations[trip].longitude,
-                    this.locations[trip].tripCount);
+                    this.locations[trip].tripCount,
+                    draggable);
             }
         }
 
@@ -124,17 +170,33 @@ BAWAMap.prototype = {
      * @param latitude
      * @param longitude
      * @param tripCount
+     * @param draggable
      */
-    addLocationMarker: function(locationName, latitude, longitude, tripCount) {
-        var marker = L.marker([latitude, longitude]).addTo(this.map);
+    addLocationMarker: function(locationName, latitude, longitude, tripCount, draggable) {
+        var self = this;
 
-        var tripString = "<b>" + locationName + "</b>";
+        // Create marker
+        var options = {"draggable": draggable === true};
+        var marker = L.marker([latitude, longitude], options).addTo(this.map);
 
-        if (tripCount !== undefined) {
-            tripString += "<br>" + "Trip Count: " + tripCount;
+        if (draggable === true) {
+            // Add drag event handler
+            marker.on('dragend', function (event) {
+                var marker = event.target;
+                var position = marker.getLatLng();
+
+                self.updateFormLocationFields("latitude", "longitude", position.lat, position.lng);
+            });
         }
 
-        marker.bindPopup(tripString).openPopup();
+        if (locationName !== undefined && locationName !== "") {
+            // Create trip marker popup string
+            var tripString = "<b>" + locationName + "</b>";
+            if (tripCount !== undefined) {
+                tripString += "<br>" + "Trip Count: " + tripCount;
+            }
+            marker.bindPopup(tripString).openPopup();
+        }
     },
 
     /**
@@ -143,5 +205,20 @@ BAWAMap.prototype = {
     zoomToFitAllMarkers: function() {
         var bounds = new L.LatLngBounds(this.geocodes);
         this.map.fitBounds(bounds);
+    },
+
+    /**
+     * Update the location form input fields.
+     *
+     * @param latitudeFieldId
+     * @param longitudeFieldId
+     * @param latitude
+     * @param longitude
+     */
+    updateFormLocationFields: function(latitudeFieldId, longitudeFieldId, latitude, longitude) {
+        if (latitudeFieldId !== undefined && longitudeFieldId !== undefined) {
+            document.getElementById(latitudeFieldId).value = latitude;
+            document.getElementById(longitudeFieldId).value = longitude;
+        }
     }
 };

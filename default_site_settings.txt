@@ -29,7 +29,7 @@ DATABASE_URI = 'sqlite:///' + DATABASE_PATH_PREFIX + DATABASE
 #MAX_CONTENT_LENGTH = 300000
 
 #Map Box Settings...
-#MAPBOX_PROJECT_ID = ""
-#MAPBOX_ACCESS_TOKEN = ""
+#MAPBOX_PROJECT_ID = "baw.p0hdja4j"
+#MAPBOX_ACCESS_TOKEN = "pk.eyJ1IjoiYmF3IiwiYSI6ImNpanh4bHQ3MzFleXh2d2tpMTNzYXQ0bGcifQ.WNpDcwH6Y9pGVZhUtZOdwg"
 
 #HOST_NAME = "app.bikeandwalk.org"
