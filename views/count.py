@@ -58,8 +58,11 @@ def count_begin(UID=""):
         
     localTime = getLocalTimeAtEvent(event.timeZone,event.isDST) # Get the current local time at the event location
     endDate = getDatetimeFromString(event.endDate)
+    print localTime
+    print endDate
+    print (endDate + timedelta(days=1))
     
-    if endDate <= (localTime + timedelta(days=1)):
+    if localTime >= endDate + timedelta(days=1):
         # The count date has passed
         g.title="Count Event is over"
         g.UIDStatus = "countOver"
@@ -76,7 +79,7 @@ def count_begin(UID=""):
         
     if noInitialUID:
         #Redirect to here but with UID
-        return redirect(url_for("count_begin")+UID+"/")
+        return redirect(url_for(".count_begin")+UID+"/")
         
     ## Valid UID
     #Get the travelers

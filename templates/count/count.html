@@ -1,5 +1,13 @@
 {% extends "count/base.html" %}
 {% block title %}Bike And Walk Web{% endblock %}
+
+{% block head %}
+<script type="text/javascript" src="{{ url_for('static', filename='count/js/count.js') }}"></script>
+<script type="text/javascript">
+	$(document).ready(function() {startUp();});
+</script>
+{% endblock head %}
+
 {% block body %}
 <div id="modalDiv"></div>
 <div id="contain">
@@ -57,7 +65,7 @@
 			{% for elem in range(g.travelerCnt) %}
 				<p id="traveler_{{travelers[elem].row}}" class="traveler" data-travelerID="{{travelers[elem].ID}}"
 					style="background-image:url({{travelers[elem].iconURL}});" >
-					<span id="Cnt_traveler_{{travelers[elem].row}}" class="travelerCnt"></span>
+					<span id="Cnt_traveler_{{travelers[elem].row}}" class="travelerCnt">0</span>
 				</p>
 				{% endfor %}
 		</div>
