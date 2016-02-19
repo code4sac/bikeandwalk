@@ -93,14 +93,19 @@
 	</p>
 </div>
 
+{% if rec.ID > 0 %}
 <div id="assignment-contain" class="clearer" >
-	<h3>Assignments</h3>
-	<p class="editAssignmentFromList script-link" onclick="editFromList('{{ url_for('assignment.createFromList')}}/{{rec.ID|default("0",true)}}/')">Create New Assignment...</p>
+	<h3>Location List</h3>
+	<p>
+		<span class="editAssignmentFromList script-link" onclick="editFromList('{{ url_for('assignment.createFromList')}}/{{rec.ID}}/')">Add a Location...</span>
+		&nbsp;&nbsp;
+	</p>
 	
 <div id="assignmentList">
 		{{ assignmentList | safe }}
 </div>
 </div>
+{% endif %}
 {% endblock body %}
 
 
