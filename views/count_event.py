@@ -45,7 +45,9 @@ def create():
   
 def createEventRecord():
     """ Create a stub record """
-    startingDate = datetime.now()
+    n = datetime.now()
+    # Round time to even hour
+    startingDate = datetime(n.year, n.month, n.day, n.hour)
     endingDate = startingDate + timedelta(hours=2)
     cur = CountEvent("Untitled",startingDate.isoformat()[:19],endingDate.isoformat()[:19],getDefaultTimeZone(),0,g.orgID)
     db.session.add(cur)
