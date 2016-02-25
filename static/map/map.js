@@ -21,6 +21,10 @@ function BAWAMap(mapboxProjectId, mapboxAccessToken, mapDivId, zoomLevel) {
         accessToken: mapboxAccessToken
     }).addTo(this.map);
 
+    if (L.markerClusterGroup !== undefined) {
+        this.cluster = L.markerClusterGroup();
+    }
+
     this.locations = [];
     this.geocodes = [];
 }
@@ -38,7 +42,7 @@ BAWAMap.prototype = {
      */
     addSimpleLocation: function(locationName, latitude, longitude, draggable)  {
         this.pushNewLocation(locationName, latitude, longitude);
-        this.setLocationMarkers(true, draggable);
+        this.setLocationMarkers(true, draggable, false);
     },
 
     /**
@@ -145,8 +149,9 @@ BAWAMap.prototype = {
      *
      * @param zoomToFit
      * @param draggable
+     * @param cluster
      */
-    setLocationMarkers: function(zoomToFit, draggable) {
+    setLocationMarkers: function(zoomToFit, draggable, cluster) {
         for (var trip in this.locations) {
             if (this.locations.hasOwnProperty(trip)) {
                 this.addLocationMarker(
@@ -154,8 +159,12 @@ BAWAMap.prototype = {
                     this.locations[trip].latitude,
                     this.locations[trip].longitude,
                     this.locations[trip].tripCount,
-                    draggable);
+                    draggable, cluster);
             }
+        }
+
+        if (cluster === true) {
+            this.map.addLayer(this.cluster);
         }
 
         if (zoomToFit === true) {
@@ -171,13 +180,17 @@ BAWAMap.prototype = {
      * @param longitude
      * @param tripCount
      * @param draggable
+     * @param cluster
      */
-    addLocationMarker: function(locationName, latitude, longitude, tripCount, draggable) {
+    addLocationMarker: function(locationName, latitude, longitude, tripCount, draggable, cluster) {
         var self = this;
 
         // Create marker
         var options = {"draggable": draggable === true};
-        var marker = L.marker([latitude, longitude], options).addTo(this.map);
+        var marker = L.marker([latitude, longitude], options);
+        if (cluster === false) {
+            marker.addTo(this.map);
+        }
 
         if (draggable === true) {
             // Add drag event handler
@@ -196,6 +209,10 @@ BAWAMap.prototype = {
                 tripString += "<br>" + "Trip Count: " + tripCount;
             }
             marker.bindPopup(tripString).openPopup();
+        }
+
+        if (cluster === true) {
+            this.cluster.addLayer(marker);
         }
     },
 

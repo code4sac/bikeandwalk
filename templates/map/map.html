@@ -7,6 +7,9 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='map/map.css') }}" type="text/css" media="all" >
     <script type="text/javascript" src="{{ url_for('static', filename='map/leaflet/leaflet-src.js') }}"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='map/leaflet/leaflet.css') }}" type="text/css" media="all" >
+    <script type="text/javascript" src="{{ url_for('static', filename='map/leaflet/leaflet.markercluster-src.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='map/leaflet/MarkerCluster.css') }}" type="text/css" media="all" >
+    <link rel="stylesheet" href="{{ url_for('static', filename='map/leaflet/MarkerCluster.Default.css') }}" type="text/css" media="all" >
 {% endblock head %}
 
 {% block body %}
@@ -22,7 +25,7 @@
                 map.addTripLocation('{{ rec.locationName }}', {{ rec.locationLatitude }}, {{ rec.locationLongitude }}, {{ rec.tripCount }});
             {% endfor %}
             // Add markers for locations to map
-            map.setLocationMarkers(true, false);
+            map.setLocationMarkers(true, false, true);
         </script>
   	{% else %}
     	<p><em>No Trips to map</em></p>
