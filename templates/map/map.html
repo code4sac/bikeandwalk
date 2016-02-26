@@ -22,7 +22,9 @@
             var map = new BAWAMap('{{ config.MAPBOX_PROJECT_ID }}', '{{ config.MAPBOX_ACCESS_TOKEN }}',"tripsMap", 14);
             // Add trip locations
             {% for rec in recs %}
-                map.addTripLocation('{{ rec.locationName }}', {{ rec.locationLatitude }}, {{ rec.locationLongitude }}, {{ rec.tripCount }});
+                {% if rec.locationLatitude != '' and rec.locationLongitude != '' %}
+                    map.addTripLocation('{{ rec.locationName }}', {{ rec.locationLatitude }}, {{ rec.locationLongitude }}, {{ rec.tripCount }});
+                {% endif %}
             {% endfor %}
             // Add markers for locations to map
             map.setLocationMarkers(true, false, true);
