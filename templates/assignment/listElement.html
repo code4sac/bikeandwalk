@@ -13,10 +13,13 @@
 			}"
 			{% else %}
 			onclick="if(confirm('Send Invitation Email to {{ rec.userName }}?')){
-				sendAssignmentEmail('{{ url_for('count_event.sendAssignmentEmail') }}/{{ rec.ID }}/');}"
+				sendAssignmentEmail('{{ url_for('count_event.sendAssignmentEmail') }}/{{ rec.ID }}/');
+				// refresh the whole assignment list...
+				$('#assignmentList').load('{{ url_for('assignment.getAssignmentList') }}/{{ rec.countEvent_ID }}/');
+				}"
 			{% endif %}
-			>Send Invitation
-		</span>
+			>Send Invitation 
+		</span>{% if rec.invitationSent != "" %}&nbsp;(Sent - {{rec.invitationSent}}){%endif%}
 	</p>
 	<p class="assignmentActions">
 		<span class="totalTrips">Trips Recorded: {{totalTrips}}</span>

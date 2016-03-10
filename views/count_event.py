@@ -182,7 +182,7 @@ def sendAssignmentEmail(assignmentID):
     import mailer
     setExits()
     resultString = ""
-    
+    assignmentID = cleanRecordID(assignmentID)
     assignment = Assignment.query.get(cleanRecordID(assignmentID))
     if not assignment:
         resultString = "Invitaton Could not be sent. The Assignment Record could not be found"
@@ -201,7 +201,15 @@ def sendAssignmentEmail(assignmentID):
     countEventDict = getTimeDictionary(countEvent.startDate,countEvent.endDate)
 
     sendResult, resultString = mailer.sendInvite(assignment,user,countEventDict)
-
+    
+    # Record the fact that the email was sent
+    if sendResult == True:
+        sql = "UPDATE assignment set invitationSent = '%s' WHERE ID = %d;" % (datetime.strftime(datetime.now(), '%Y-%m-%d'), assignmentID)
+        try:
+            ass = db.engine.execute(sql)
+        except Exception as e:
+            printException('Error attempting to update invitationSent for '+g.title+' record.',"error",e)
+            
     return resultString
 
 

@@ -91,6 +91,7 @@ class Assignment(db.Model):
     countEvent_ID = db.Column(db.Integer, db.ForeignKey('count_event.ID'))
     location_ID = db.Column(db.Integer, db.ForeignKey('location.ID'))
     user_ID = db.Column(db.Integer, db.ForeignKey('user.ID'))
+    invitationSent = db.Column(db.Text, default="")
 
     #countevent = relationship(CountEvent)
     #locations = relationship(Location)
