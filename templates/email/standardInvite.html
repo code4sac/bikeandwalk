@@ -1,14 +1,16 @@
 <p>Hello {{ user.name }},</p>
 
-<p>Thank you for helping with the {{ countEventDict["title"] }} traffic count.</p>
+<p>Thank you for helping with the {{ countEventDict["title"] }} traffic count for <strong>{{organization.name}}</strong>.</p>
+<p>You will be counting at: <span  style="font-size:14pt;font-weight:bold;color:rgb(150, 22, 200);text-decoration:none;">{{ assignment.locationName }}</span></p>
+<p>Date: <span  style="font-size:14pt;font-weight:bold;color:rgb(150, 22, 200);text-decoration:none;">{{ countEventDict["longStartDate"] }}</span>.</p>
+<p>
+	Count Starts: <span  style="font-size:14pt;font-weight:bold;color:rgb(150, 22, 200);text-decoration:none;">{{ countEventDict["startTime"] }}</span><br>
+	Count ends: <span  style="font-size:14pt;font-weight:bold;color:rgb(150, 22, 200);text-decoration:none;">{{ countEventDict["endTime"] }}</span>
+</p>
 
-<p>The count will take place on {{ countEventDict["longStartDate"] }} at {{ countEventDict["startTime"] }} 
-and will last for {{ countEventDict["duration"] }} hours until {{ countEventDict["endTime"]}}.</p>
 
-<p>You will be counting at {{ assignment.locationName }}</p>
-
-<p>If you will be using our on-line counting tool, click the link below:
-<a href="http://{{ hostName }}/count/{{ assignment.assignmentUID }}/" >Your Counting Assignment</a></p>
+<p>If you will be using the online counting tool:
+<a  style="font-size:14pt;font-weight:bold;color:rgb(150, 22, 200);text-decoration:none;" href="http://{{ hostName }}/count/{{ assignment.assignmentUID }}/" >Click here to start counting</a></p>
 
 <p>For more information on the on-line tool, see the 
 <a href="http://bikeandwalk.org/help/counting/" >On-line Tool help file</a>.</p>

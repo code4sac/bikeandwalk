@@ -1,11 +1,11 @@
 Hello {{ user.name }},
 
-Thank you for helping with the {{ countEventDict["title"] }} traffic count.
+Thank you for helping with the {{ countEventDict["title"] }} traffic count for {{ organization.name }}.
+
+You will be counting at {{ assignment.locationName }}
 
 The count will take place on {{ countEventDict["longStartDate"] }} at {{ countEventDict["startTime"] }} 
 and will last for {{ countEventDict["duration"] }} hours until {{ countEventDict["endTime"]}}.
-
-You will be counting at {{ assignment.locationName }}
 
 If you will be using our on-line counting tool, click the link below or copy and paste it into your browser:
 http://{{ hostName }}/count/{{ assignment.assignmentUID }}/

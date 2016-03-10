@@ -275,9 +275,9 @@ def getTimeDictionary(start=datetime.now().isoformat(),end=(datetime.now() + tim
         
         theTime["eventDate"] = datetime.strftime(st, '%Y-%m-%d')
         theTime["longStartDate"] = datetime.strftime(st, '%A, %B %d, %Y')
-        theTime["startTime"] = datetime.strftime(st, '%I:%M %p')
+        theTime["startTime"] = datetime.strftime(st, '%-I:%M %p')
         theTime["longEndDate"] = datetime.strftime(et, '%A, %B %d, %Y')
-        theTime["endTime"] = datetime.strftime(et, '%I:%M %p')
+        theTime["endTime"] = datetime.strftime(et, '%-I:%M %p')
 
         AMPM = "PM"
         theHour = st.hour

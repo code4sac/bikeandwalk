@@ -22,12 +22,14 @@ def sendInvite(assignment,user,countEventDict):
                 countEventDict=countEventDict,
                 user=user,
                 hostName = hostName,
+                organization = organization,
                 )
             msg.html = render_template("email/standardInvite.html", 
                     assignment=assignment,
                     countEventDict=countEventDict,
                     user=user,
                     hostName = hostName,
+                    organization = organization,
                     )
         else:
             mes = "Email is missing parameters"
