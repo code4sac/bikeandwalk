@@ -3,10 +3,14 @@
 	script for Bike and Walk counting page
 */
 
+var lastTravelerSet = []; // will hold the last set of trips for undo-ing
+var lastUploadSet = []; // will hold the sequence numbers of the last set of trips uploaded to the server
+var undoTimer;
 
 function startUp(){
 	setLanes();
 	setTravelers();
+	$("#undoCounts").click(function(){undoCounts();});
 	setUndo();
 	hideMenu();
 	showCountPage();
@@ -17,11 +21,10 @@ function startUp(){
 }
 
 function setUndo(){
-	$("#undoCounts").click(function(){undoCounts();}).text("Clear")
+	$("#undoCounts").text("Clear")
 	if (lastTravelerSet.length > 0){
 		$('#undoCounts').text("Undo")
 	}
-	
 }
 
 function undoCounts(){
@@ -29,6 +32,19 @@ function undoCounts(){
 	undoTripsWithArray();
 	setUndo();
 	showData();
+}
+
+function clearUndo(){
+	lastTravelerSet = [];
+	setUndo();
+}
+
+function startUndoTimer(){
+	// after a period of time, the "Undo" button changes to "Clear"
+	if (undoTimer != undefined) {
+		clearTimeout(undoTimer)
+	}
+	undoTimer = setTimeout(clearUndo,1000*15); // 15 seconds
 }
 
 function setLanes() {
@@ -67,8 +83,6 @@ function travelerClicked(which){
 }
 
 // end Traveler and Lanes UI
-var lastTravelerSet = []; // will hold the last set of trips for undo-ing
-var lastUploadSet = []; // will hold the sequence numbers of the last set of trips uploaded to the server
 
 function laneClicked(which){
 	var entryLane = which.id;
@@ -93,6 +107,7 @@ function laneClicked(which){
 				var undoSet = [seqNo, tripTime];
 				lastTravelerSet.push(undoSet); 
 			}
+			startUndoTimer()
 			
 			var y = cnt + "\t" + entryLane + "\t"+  tripTime + "\t" + $("#traveler_"+i).attr("data-travelerID") + "\t" + seqNo;
 			// saveData writes data to localStorage
