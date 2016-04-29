@@ -18,8 +18,8 @@ def setExits():
 @mod.route("/location", methods=['GET'])
 def display():
     setExits()
-    recs = Location.query.filter(Location.organization_ID == g.orgID).order_by(Location.locationName)
-
+    recs = Location.query.filter(Location.organization_ID == g.orgID).order_by(Location.state,Location.city,Location.locationName)
+    
     return render_template('location/location_List.html', recs=recs)
         
 

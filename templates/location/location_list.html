@@ -7,11 +7,15 @@
 		<tr>
 			<th>ID</th>
 			<th>Location Name</th>
+			<th>City</th>
+			<th>State</th>
 		</tr>
 		{% for rec in recs %}
 	    <tr>
 			<td><a href="{{ g.editURL }}{{ rec.ID }}/">{{ rec.ID }}</a></td>
 			<td><a href="{{ g.editURL }}{{ rec.ID }}/">{{ rec.locationName }}</a></td>
+			<td>{{ rec.city }}</td>
+			<td>{{ rec.state }}</td>
 		</tr>
 		{% endfor %}
 	  </table>
