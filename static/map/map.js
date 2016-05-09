@@ -236,6 +236,8 @@ BAWAMap.prototype = {
         if (latitudeFieldId !== undefined && longitudeFieldId !== undefined) {
             document.getElementById(latitudeFieldId).value = latitude;
             document.getElementById(longitudeFieldId).value = longitude;
+			// update the url for google maps
+			document.getElementById('mapURL').value = "https://www.google.com/maps/place//@"+ latitude +","+ longitude +",17z";
         }
     }
 };

@@ -8,8 +8,12 @@
 			<th>Desc</th>
 		</tr>
 	    <tr>
-			<td><a href="{{ url_for("map.display") }}">Map</a></td>
+			<td><a href="{{ url_for("map.location") }}">Map Locations</a></td>
 			<td>A map of all counting locations.</td>
+		</tr>
+	    <tr>
+			<td><a href="{{ url_for("map.display") }}">Map Trips</a></td>
+			<td>A map of Trip Counts.</td>
 		</tr>
 		<tr>
 			<td><a href="{{ url_for("report.getcsv") }}">CSV Data Dump</a></td>
