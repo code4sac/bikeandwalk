@@ -26,6 +26,10 @@
                 {% for f in form %}
                     {{ render_field_in_table(f) }}
                 {% endfor%}
+				<tr>
+					<th>Map URL:</th>
+					<td><input type="text" id="mapURL" size="120" value="https://www.google.com/maps/place//@{{rec.latitude}},{{rec.longitude}},17z" readonly="readonly" /></td>
+				</tr>
             </table>
         </form>
         </div>
