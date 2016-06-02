@@ -332,3 +332,14 @@ def editEventTraveler(eventTravelerID=0):
 def getEventTravelers(countEventID):
     countEventID = cleanRecordID(countEventID)
     return EventTraveler.query.filter(EventTraveler.countEvent_ID==countEventID).order_by(EventTraveler.sortOrder)
+    
+def getTravelersForEvent(countEventID):
+    countEventID = cleanRecordID(countEventID)
+    eventTravelers = getEventTravelers(countEventID)
+    travelers = None
+    if eventTravelers:
+        sql = "select * from traveler where ID in (select traveler_ID from event_traveler where countEvent_ID = %d)" % (countEventID)
+        travelers = db.engine.execute(sql).fetchall()
+        
+    return travelers
+    
