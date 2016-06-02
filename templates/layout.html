@@ -49,15 +49,8 @@
 		{% if request.path != url_for('report.display') %}<p><a href="{{url_for('report.display')}}">Go to Report Menu</a></p>{%endif%}
 		{% endif %} 
 	</div>
-	{% with messages = get_flashed_messages() %} {% if messages %} 
-	<div class="clear" id="flasher_contain">
-		{% for message in messages %} 
-		<p class="flash">
-			{{ message }}
-		</p>
-		{% endfor %} 
-	</div>
-	{% endif %} {% endwith %} {% block body %}{% endblock %} 
+	{% include "flasher.html" %}
+	{% block body %}{% endblock %} 
 </div>
 </body>
 </html>
