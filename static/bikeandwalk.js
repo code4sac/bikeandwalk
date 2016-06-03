@@ -77,6 +77,7 @@ function deleteFromList(deleteActionURL, successTarget){
 	})
 	}
 }
+
 function loadAssignmentList(data, target, successURL){
 	if (modalFormSuccess(data)){
 		cancelModalForm();

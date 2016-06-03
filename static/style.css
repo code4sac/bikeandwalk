@@ -296,7 +296,22 @@ p.assignmentActions{
     padding-left:2em;
 }
 
-
+form#assignment-edit-trips-form {
+    max-height:400px;
+    overflow:auto;
+}
+table.assignment-edit-trips {
+    border:0;
+}
+.assignment-edit-trips, .assignment-edit-trips-data {
+    text-align:center;
+    font-weight:bold;
+}
+.assignment-edit-trips-data input {
+    width:20px;
+    text-align:right;
+    font-weight:normal;
+}
 img.travelerIcon {
     height:57px;
     width:57px;

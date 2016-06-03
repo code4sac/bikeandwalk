@@ -85,18 +85,31 @@ def delete(id=0):
         
     return redirect(g.listURL)
     
-def getAssignmentTripTotal(countEventID=0, locationID=0):
+def getAssignmentTripTotal(countEventID=0, locationID=0, travelerID=0, turnDir=None, seqNo = None):
+    # Jun 3, 2016 - Modified to allow for selection of total count for a single turn Direction and or seqNo
+    
     result = 0
     countEventID = cleanRecordID(countEventID)
     locationID = cleanRecordID(locationID)
-    sql =  "select sum(tripCount) as tripTotal from trip where countEvent_ID = %d and location_ID = %d;" % (int(countEventID), int(locationID))
+    travelerID = cleanRecordID(travelerID)
+    sql =  "select sum(tripCount) as tripTotal from trip where countEvent_ID = %d and location_ID = %d" % (int(countEventID), int(locationID))
+    if travelerID > 0:
+        sql += " and traveler_ID = %d" % (travelerID)
+    if turnDir:
+        sql += " and turnDirection = '%s'" % (turnDir)
+    if seqNo:
+        sql += " and seqNo = '%s'" % (seqNo)
+        
+    sql += ";"
+    
     cur = db.engine.execute(sql).fetchone()
     if cur:
         result = cur[0]
         if result == None:
             result = 0
-            
+
     return result
+    
     
 def getEventTravelerTripTotal(countEventID = 0, travelerID =0):
     result = 0

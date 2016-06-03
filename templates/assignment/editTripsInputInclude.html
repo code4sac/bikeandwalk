@@ -1,0 +1,9 @@
+	<table class="assignment-edit-trips-data">
+		<tr>
+			{% for c in range(3) %}
+			{% set turnDir = "%s%d"|format(d,(c+1)) %}
+			{% set inputName = "%d-%s"|format(traveler.ID,turnDir) %}
+			<td>{{turnDir}} <br> <input name="{{ inputName }}" type="num" value="{{ tripData[inputName][0] }}" /></td>
+			{% endfor %}
+		</tr>
+	</table>

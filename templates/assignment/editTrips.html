@@ -1,0 +1,46 @@
+{# Form to add trips from Assignment List of Event form #}
+
+<h3>Edit Trips for {{rec.locationName}}</h3>
+{% include "flasher.html" %}
+<form id="assignment-edit-trips-form"  action="" method="POST">
+	<input type="hidden" name="ID" value="{{ rec.ID }}">
+	<table class="assignment-edit-trips">
+	{% for traveler in travelers %}
+		<tr><td rowspan="4">
+			<p>{{ traveler.name }}</p>
+			<p><img class="travelerIcon" src="{{traveler.iconURL|default("//bikeandwalk.org/images/travelers/unknown.png",true)}}" /></p>
+		</td>
+		<td>Leg A</td>
+		<td>Leg B</td>
+		</tr>
+		<tr>
+			{% for d in ("A", "B")%}
+			<td>
+				{% include 'assignment/editTripsInputInclude.html' %}
+			</td>
+			{% endfor %}
+		</tr>
+		<tr>
+		<td>Leg C</td>
+		<td>Leg D</td>
+		</tr>
+		<tr>
+			{% for d in ("C", "D")%}
+			<td>
+				{% include 'assignment/editTripsInputInclude.html' %}
+			</td>
+			{% endfor %}
+		</td></tr>
+		</tr>
+		</tr>
+		<tr style="border:0;" ><td colspan="3" style="border:0;">&nbsp;</td></tr>
+	{% endfor %} {# travelers #}
+	</table>
+	<div class="assignment-buttons data-element">
+		<p>
+		<span class="cancel-link" onclick="cancelModalForm()">Cancel</span>
+		<input class="assignmentSave" type="button" onclick="submitModalForm('assignment-edit-trips-form', '{{ url_for('assignment.editTripsFromList')}}/{{ rec.ID }}/', 'assignmentList', '{{ url_for('assignment.getAssignmentList')}}/{{ rec.countEvent_ID}}/')" name="Save" value="Save" />
+		</p>
+	</div>
+</form>
+

@@ -22,14 +22,17 @@
 		</span>{% if rec.invitationSent != "" %}&nbsp;(Sent - {{rec.invitationSent}}){%endif%}
 	</p>
 	<p class="assignmentActions">
-		<span class="totalTrips">Trips Recorded: {{totalTrips}}</span>
+		<span class="assignmentEditTrips script-link" onclick="editFromList('{{ url_for('assignment.editTripsFromList')}}/{{ rec.ID }}/');">Enter Trips</span>
 		<span class="assignmentActionSpacer">&nbsp;</span>
-		{% if totalTrips == 0 %}
-		<span class="deleteAssignmentFromList script-link" 
+	{% if totalTrips == 0 %}
+		<span class="assignmentDeleteFromList script-link" 
 		onclick="deleteFromList('{{ url_for('assignment.deleteFromList')}}/{{ rec.ID }}/','assignmentListItem_{{rec.ID}}')"
 		>Remove Location...
-	</span>
-	<span class="assignmentActionSpacer">&nbsp;</span>
+		</span>
+		<span class="assignmentActionSpacer">&nbsp;</span>
+	{% else %}
+		<span class="assignmetnTotalTrips">Trips Recorded: {{totalTrips}}</span>
+		<span class="assignmentActionSpacer">&nbsp;</span>
 	{% endif %}
 	<span class="editAssignmentFromList script-link" 
 		onclick="editFromList('{{ url_for('assignment.editFromList')}}/{{rec.ID}}/')"

@@ -1,13 +1,14 @@
 from flask import request, session, g, redirect, url_for, \
      render_template, flash, Blueprint, abort
 from bikeandwalk import db, app
-from models import Assignment, Location, User, CountEvent
+from models import Assignment, Location, User, CountEvent, Trip, Traveler
 from views.utils import printException, getDatetimeFromString, nowString, getUserChoices, getCountEventChoices, \
     getLocationChoices, cleanRecordID
 from forms import AssignmentForm, AssignmentEditFromListForm
 import hmac
 from datetime import datetime
 from views.trip import getAssignmentTripTotal
+from views.traveler import getTravelersForEvent
 
 mod = Blueprint('assignment',__name__)
 
@@ -225,6 +226,98 @@ def editFromList(id="0"):
         assigned=assignedUserIDs, 
         )
     
+@mod.route('/assignment/editTripsFromList', methods=["GET","POST"])
+@mod.route('/assignment/editTripsFromList/<id>/', methods=["GET","POST"])
+def editTripsFromList(id):
+    setExits()
+    tripData = {} #empty dictionary
+    id=cleanRecordID(id)
+    if id > 0:
+        rec = Assignment.query.get(id)
+        if not rec:
+            return "failure: Assignment record not found"
+            
+        tripCount = getAssignmentTripTotal(id)
+        if tripCount > 0:
+            return "failure: There are already trips recorded."
+        
+        # Get travelers
+        travelers = getTravelersForEvent(rec.countEvent_ID)        
+        
+        #populate tripData with info on manually enterd counts
+        tripData = getTurnData(rec)
+        
+        if request.method == "POST":
+            # Validate form?
+            result = True
+            countEvent = CountEvent.query.get(rec.countEvent_ID)
+            # record trips
+            for countInputName in tripData.keys():
+                if not request.form[countInputName]:
+                    tripCount = 0
+                else:
+                    tripCount = request.form[countInputName]
+
+                turnLeg = tripData[countInputName][1]
+                travelerID = tripData[countInputName][2]
+                try:
+                    tripCount = int(tripCount) #this may throw a ValueError
+                    if tripCount < 0:
+                        result = False
+                        raise ValueError("Negative values are not allowed.")
+                        
+                    if tripCount != tripData[countInputName][0]:
+                         #delete the previous manual trips, if any
+                         try:
+                             trips = Trip.query.filter(Trip.countEvent_ID == rec.countEvent_ID, 
+                                                       Trip.location_ID == rec.location_ID, 
+                                                       Trip.traveler_ID == travelerID, 
+                                                       Trip.turnDirection == turnLeg, 
+                                                       Trip.seqNo == "000"
+                                                       ).delete()
+                         except:
+                             pass #the trip records may not exist
+                             
+                             
+                         if tripCount > 0:
+                             try:
+                                 cur = Trip(tripCount,countEvent.startDate,turnLeg,"000",rec.location_ID,travelerID,rec.countEvent_ID)
+                                 db.session.add(cur)
+                             except Exception as e:
+                                 result = False
+                                 flash(printException('Could not record Trip for ' + turnLeg,"error",e))
+                                
+                except ValueError as e:
+                    result = False
+                    #remove the 'standard' errpr message
+                    mes = "%s" % (e)
+                    if mes[0:7] == 'invalid':
+                        mes = ''
+                        
+                    trav = Traveler.query.get(travelerID)
+                    errTrav = "a traveler"
+                    if trav:
+                        errTrav = trav.name
+
+                    flash("The value '%s' in turn %s of %s is invalid. %s" % (tripCount,turnLeg,errTrav,mes))
+                            
+            if result:
+                db.session.commit()
+                return "success" # this is an ajax request
+            else:
+                db.session.rollback()
+                tripData = getTurnData(rec,request.form)
+                flash("No changes were saved.")
+                
+        # render form
+        return render_template('assignment/editTrips.html',
+            rec=rec, 
+            travelers=travelers,
+            tripData=tripData,
+            )
+        
+    return "failure: Unable to edit trips for Assignment"
+    
     
 @mod.route('/assignment/deletefromList', methods=["GET","POST"])
 @mod.route('/assignment/deletefromList/<id>/', methods=["GET","POST"])
@@ -284,3 +377,36 @@ def deleteRecordID(id):
         return True
        
     return False
+
+def getTurnData(assignmentRec, inputForm=None):
+    ''' 
+    return a dictionary of lists with data that will be used to populate the input form
+    when editing the trip data from the assignment record. 
+    
+    Dictionary layout: 
+    ---- Key --- : [TripCount, turnDirection, travelerID]
+    
+    if inputForm (the request.form obj.) is provided, use the values there instead of querying db
+    
+    '''
+    
+    tripData = {}
+    
+    # Get travelers
+    travelers = getTravelersForEvent(assignmentRec.countEvent_ID)        
+    
+    for traveler in travelers:
+        for leg in ("A", "B", "C", "D"):
+            for turn in range(3):
+                turnLeg = leg + str(turn+1)
+                countInputName = str(traveler.ID)+"-"+turnLeg
+                tripData[countInputName] = [0,turnLeg,traveler.ID]
+                if inputForm and countInputName in inputForm:
+                    tripData[countInputName][0] = inputForm[countInputName]
+                else:
+                    # get the current manual count if any
+                    tripData[countInputName][0] = getAssignmentTripTotal(assignmentRec.countEvent_ID, assignmentRec.location_ID, traveler.ID, turnLeg, "000")
+                
+    return tripData
+    
+    
