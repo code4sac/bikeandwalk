@@ -338,7 +338,9 @@ def getTravelersForEvent(countEventID):
     eventTravelers = getEventTravelers(countEventID)
     travelers = None
     if eventTravelers:
-        sql = "select * from traveler where ID in (select traveler_ID from event_traveler where countEvent_ID = %d)" % (countEventID)
+        # sql = "select * from traveler where ID in (select traveler_ID from event_traveler where countEvent_ID = %d)" % (countEventID)
+        sql = "select traveler.*, event_traveler.sortOrder from traveler join event_traveler on event_traveler.traveler_ID = traveler.ID and event_traveler.countEvent_ID = %d " % (countEventID)
+        sql += " where traveler.ID in (select traveler_ID from event_traveler where countEvent_ID = %d) order by event_traveler.sortOrder" % (countEventID)
         travelers = db.engine.execute(sql).fetchall()
         
     return travelers
