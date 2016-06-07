@@ -1,9 +1,27 @@
-	<table class="assignment-edit-trips-data">
+{# creates the input form elements used to edit trip data from the assignment form #}
+<table class="assignment-edit-trips-data">
+	<tr>
+		{% if d == "A" or d == "C" %}
+		<th class="assignment-edit-trips-timeFrame-cell">Time</th>
+		{% endif %}
+		{% for c in range(1,4) %}
+		{% set turnDir = "%s%d"|format(d,c) %}
+		<th>{{turnDir}}</th>
+		{% endfor %} {# turn dir header row #}
+	</tr>
+
+		{%for timeFrame in timeFrames %}
 		<tr>
-			{% for c in range(3) %}
-			{% set turnDir = "%s%d"|format(d,(c+1)) %}
-			{% set inputName = "%d-%s"|format(traveler.ID,turnDir) %}
-			<td>{{turnDir}} <br> <input name="{{ inputName }}" type="num" value="{{ tripData[inputName][0] }}" /></td>
+			{% if d == "A" or d == "C" %}
+			<td class="assignment-edit-trips-timeFrame-cell" >{{ timeFrame }}</td>
+			{% endif %}
+			{% for c in range(1,4) %}
+			{% set turnDir = "%s%d"|format(d,c) %}
+			{% set inputName = "%d-%s-%s"|format(traveler.ID,turnDir,timeFrame) %}
+			<td><input name="{{ inputName }}" type="num" value="{% if tripData[inputName] %}{{ tripData[inputName][0] }}{% else %}-2{% endif %}" /></td>
 			{% endfor %}
 		</tr>
-	</table>
+		
+		{% endfor %}
+
+</table>

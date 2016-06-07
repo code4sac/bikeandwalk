@@ -9,6 +9,7 @@ import hmac
 from datetime import datetime
 from views.trip import getAssignmentTripTotal
 from views.traveler import getTravelersForEvent
+from datetime import timedelta
 
 mod = Blueprint('assignment',__name__)
 
@@ -246,6 +247,7 @@ def editTripsFromList(id):
         
         #populate tripData with info on manually enterd counts
         tripData = getTurnData(rec)
+        timeFrames = getTripTimeFrames()
         
         if request.method == "POST":
             # Validate form?
@@ -268,10 +270,15 @@ def editTripsFromList(id):
                         
                     if tripCount != tripData[countInputName][0]:
                          #delete the previous manual trips, if any
+                         # gin up the possible start and end times
+                         startTime, endTime = getTimeStampFromTimeFrame(tripData[countInputName][3].split("-")[0],countEvent.startDate)
+                        
                          try:
                              trips = Trip.query.filter(Trip.countEvent_ID == rec.countEvent_ID, 
                                                        Trip.location_ID == rec.location_ID, 
                                                        Trip.traveler_ID == travelerID, 
+                                                       Trip.tripDate >= startTime,
+                                                       Trip.tripDate <= endTime,
                                                        Trip.turnDirection == turnLeg, 
                                                        Trip.seqNo == "000"
                                                        ).delete()
@@ -280,8 +287,10 @@ def editTripsFromList(id):
                              
                              
                          if tripCount > 0:
+                             # genterate the trip time stamp
+                             startTime, endTime = getTimeStampFromTimeFrame(tripData[countInputName][3].split("-")[0],countEvent.startDate)
                              try:
-                                 cur = Trip(tripCount,countEvent.startDate,turnLeg,"000",rec.location_ID,travelerID,rec.countEvent_ID)
+                                 cur = Trip(tripCount,endTime,turnLeg,"000",rec.location_ID,travelerID,rec.countEvent_ID)
                                  db.session.add(cur)
                              except Exception as e:
                                  result = False
@@ -314,6 +323,7 @@ def editTripsFromList(id):
             rec=rec, 
             travelers=travelers,
             tripData=tripData,
+            timeFrames=timeFrames
             )
         
     return "failure: Unable to edit trips for Assignment"
@@ -394,19 +404,48 @@ def getTurnData(assignmentRec, inputForm=None):
     
     # Get travelers
     travelers = getTravelersForEvent(assignmentRec.countEvent_ID)        
+    timeFrames = getTripTimeFrames()
+    ce = CountEvent.query.get(assignmentRec.countEvent_ID)
     
     for traveler in travelers:
         for leg in ("A", "B", "C", "D"):
             for turn in range(3):
                 turnLeg = leg + str(turn+1)
-                countInputName = str(traveler.ID)+"-"+turnLeg
-                tripData[countInputName] = [0,turnLeg,traveler.ID]
-                if inputForm and countInputName in inputForm:
-                    tripData[countInputName][0] = inputForm[countInputName]
-                else:
-                    # get the current manual count if any
-                    tripData[countInputName][0] = getAssignmentTripTotal(assignmentRec.countEvent_ID, assignmentRec.location_ID, traveler.ID, turnLeg, "000")
-                
+                for timeFrame in timeFrames:
+                    countInputName = "%d-%s-%s" % (traveler.ID,turnLeg,timeFrame)
+                    tripData[countInputName] = [0,turnLeg,traveler.ID,timeFrame]
+                    if inputForm and countInputName in inputForm:
+                        # load the matching value from the input form object
+                        tripData[countInputName][0] = inputForm[countInputName]
+                    else:
+                        # get the current manual count if any from the database
+                        # Calculate the start and end time for the current time frame
+                        startTime, endTime = getTimeStampFromTimeFrame(timeFrame,ce.startDate)
+                        tripData[countInputName][0] = getAssignmentTripTotal(assignmentRec.countEvent_ID, assignmentRec.location_ID, traveler.ID, startTime, endTime, turnLeg, "000")
+                        
     return tripData
     
+def getTripTimeFrames():
+    # this sets up a for a 2 hour count, but we should really addapt to the duration of the count event.
+    return ("0:00~0:15","0:16~0:30","0:31~0:45","0:46~1:00","1:01~1:15","1:16~1:30","1:31~1:45","1:46~2:00")
+    
+def getTimeStampFromTimeFrame(timeFrame,baseTimeString):
+    # Returns two timestamp strings for the start time and end time of the timeFrame string
+    # The timeFrame is in the format: h:mm~h:mm
+    #baseTimeString is the string representation of the start of the count event
+    
+    t = timeFrame.split("~") # = "1:15~1:30" for example
+    
+    # get the minute offset from the timeFrame to add to the start time
+    m = int(t[0].split(":")[0])*60 + int(t[0].split(":")[1])
+    tripTime = getDatetimeFromString(baseTimeString) #Start timestamp text to time
+    tripTime = tripTime + timedelta(minutes=m)
+    startTime = tripTime.isoformat()[:19]
+    
+    m = int(t[1].split(":")[0])*60 + int(t[1].split(":")[1])
+    tripTime = getDatetimeFromString(baseTimeString) #Start timestamp text to time
+    tripTime = tripTime + timedelta(minutes=m)
+    endTime = tripTime.isoformat()[:19]
+    
+    return startTime, endTime
     

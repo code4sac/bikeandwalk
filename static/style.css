@@ -303,15 +303,20 @@ form#assignment-edit-trips-form {
 table.assignment-edit-trips {
     border:0;
 }
-.assignment-edit-trips, .assignment-edit-trips-data {
-    text-align:center;
-    font-weight:bold;
-}
+
 .assignment-edit-trips-data input {
     width:20px;
     text-align:right;
     font-weight:normal;
 }
+td.assignment-edit-trips-timeFrame-cell, th.assignment-edit-trips-timeFrame-cell {
+    text-align:center;
+    font-size:.2em;
+    border:0pt;
+    padding:0;
+    width:6em;
+}
+
 img.travelerIcon {
     height:57px;
     width:57px;

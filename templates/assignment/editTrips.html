@@ -1,17 +1,18 @@
 {# Form to add trips from Assignment List of Event form #}
 
 <h3>Edit Trips for {{rec.locationName}}</h3>
-{% include "flasher.html" %}
 <form id="assignment-edit-trips-form"  action="" method="POST">
+{% include "flasher.html" %}
 	<input type="hidden" name="ID" value="{{ rec.ID }}">
 	<table class="assignment-edit-trips">
 	{% for traveler in travelers %}
-		<tr><td rowspan="4">
-			<p>{{ traveler.name }}</p>
-			<p><img class="travelerIcon" src="{{traveler.iconURL|default("//bikeandwalk.org/images/travelers/unknown.png",true)}}" /></p>
-		</td>
-		<td>Leg A</td>
-		<td>Leg B</td>
+		<tr>
+			<th rowspan="4">
+				<p>{{ traveler.name }}</p>
+				<p><img class="travelerIcon" src="{{traveler.iconURL|default("//bikeandwalk.org/images/travelers/unknown.png",true)}}" /></p>
+			</th>
+			<th>Leg A</th>
+			<th>Leg B</th>
 		</tr>
 		<tr>
 			{% for d in ("A", "B")%}
@@ -21,8 +22,8 @@
 			{% endfor %}
 		</tr>
 		<tr>
-		<td>Leg C</td>
-		<td>Leg D</td>
+		<th>Leg C</th>
+		<th>Leg D</th>
 		</tr>
 		<tr>
 			{% for d in ("C", "D")%}
@@ -30,8 +31,6 @@
 				{% include 'assignment/editTripsInputInclude.html' %}
 			</td>
 			{% endfor %}
-		</td></tr>
-		</tr>
 		</tr>
 		<tr style="border:0;" ><td colspan="3" style="border:0;">&nbsp;</td></tr>
 	{% endfor %} {# travelers #}

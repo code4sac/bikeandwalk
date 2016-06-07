@@ -5,6 +5,7 @@ from models import Trip
 from views.utils import printException, getCountEventChoices, \
     getLocationChoices, getTravelerChoices, getTurnDirectionChoices, cleanRecordID
 from forms import TripForm
+from datetime import datetime
 
 mod = Blueprint('trip',__name__)
 
@@ -85,7 +86,7 @@ def delete(id=0):
         
     return redirect(g.listURL)
     
-def getAssignmentTripTotal(countEventID=0, locationID=0, travelerID=0, turnDir=None, seqNo = None):
+def getAssignmentTripTotal(countEventID=0, locationID=0, travelerID=0, startTime=None, endTime=None, turnDir=None, seqNo = None):
     # Jun 3, 2016 - Modified to allow for selection of total count for a single turn Direction and or seqNo
     
     result = 0
@@ -95,6 +96,12 @@ def getAssignmentTripTotal(countEventID=0, locationID=0, travelerID=0, turnDir=N
     sql =  "select sum(tripCount) as tripTotal from trip where countEvent_ID = %d and location_ID = %d" % (int(countEventID), int(locationID))
     if travelerID > 0:
         sql += " and traveler_ID = %d" % (travelerID)
+    if startTime:
+        timeStamp = startTime
+        sql += " and tripDate >= '%s'" % (timeStamp)
+    if endTime:
+        timeStamp = endTime
+        sql += " and tripDate <= '%s'" % (timeStamp)
     if turnDir:
         sql += " and turnDirection = '%s'" % (turnDir)
     if seqNo:
