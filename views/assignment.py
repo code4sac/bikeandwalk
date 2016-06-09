@@ -247,12 +247,13 @@ def editTripsFromList(id):
         
         #populate tripData with info on manually enterd counts
         tripData = getTurnData(rec)
-        timeFrames = getTripTimeFrames()
+        countEvent = CountEvent.query.get(rec.countEvent_ID)
+        
+        timeFrames = getTripTimeFrames(getDatetimeFromString(countEvent.startDate),getDatetimeFromString(countEvent.endDate))
         
         if request.method == "POST":
             # Validate form?
             result = True
-            countEvent = CountEvent.query.get(rec.countEvent_ID)
             # record trips
             for countInputName in tripData.keys():
                 if not request.form[countInputName]:
@@ -404,8 +405,9 @@ def getTurnData(assignmentRec, inputForm=None):
     
     # Get travelers
     travelers = getTravelersForEvent(assignmentRec.countEvent_ID)        
-    timeFrames = getTripTimeFrames()
     ce = CountEvent.query.get(assignmentRec.countEvent_ID)
+    timeFrames = getTripTimeFrames(getDatetimeFromString(ce.startDate),getDatetimeFromString(ce.endDate))
+    
     
     for traveler in travelers:
         for leg in ("A", "B", "C", "D"):
@@ -424,13 +426,27 @@ def getTurnData(assignmentRec, inputForm=None):
                         tripData[countInputName][0] = getAssignmentTripTotal(assignmentRec.countEvent_ID, assignmentRec.location_ID, traveler.ID, startTime, endTime, turnLeg, "000")
                         
     return tripData
+
+
+def getTripTimeFrames(startDateTime,endDateTime):
+    # return a list of start and end times for 15 minute count segments. Used to render and record 
+    #    manually entered trip counts.
+    #e.g.: ["0:00~0:15","0:16~0:30","0:31~0:45","0:46~1:00","1:01~1:15","1:16~1:30","1:31~1:45","1:46~2:00"]
     
-def getTripTimeFrames():
-    # this sets up a for a 2 hour count, but we should really addapt to the duration of the count event.
-    return ("0:00~0:15","0:16~0:30","0:31~0:45","0:46~1:00","1:01~1:15","1:16~1:30","1:31~1:45","1:46~2:00")
+    e = b = datetime.now().replace(hour=0,minute=0)
+    duration = endDateTime.hour - startDateTime.hour
+    timeFrames = []
+    for h in range(duration):
+       for m in range(4):
+           e = e + timedelta(minutes=15)
+           timeFrames.append("%d:%02d~%d:%02d" % (b.hour,b.minute,e.hour,e.minute))
+           b = e + timedelta(minutes=1)
+
+    return timeFrames
+    
     
 def getTimeStampFromTimeFrame(timeFrame,baseTimeString):
-    # Returns two timestamp strings for the start time and end time of the timeFrame string
+    # Returns two datetime strings for the start time and end time of the timeFrame string
     # The timeFrame is in the format: h:mm~h:mm
     #baseTimeString is the string representation of the start of the count event
     
