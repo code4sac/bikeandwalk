@@ -5,7 +5,6 @@ from bikeandwalk import db
 from models import Trip, Location
 from views.utils import printException
 
-
 mod = Blueprint('map', __name__)
 
 def setExits():
@@ -16,8 +15,17 @@ def setExits():
 def display():
     setExits()
     if db :
-        recs = Trip.query.order_by(Trip.tripDate)
-
+        #recs = Trip.query.order_by(Trip.tripDate)
+        
+        # Jun 10, 2016 modified query to speed up map display
+        # The order of the columns selected is critical to the html template
+        sql = "select (select locationName from location where location.id = trip.location_ID)"
+        sql += " ,(select latitude from location where location.id = trip.location_ID)"
+        sql += " ,(select longitude from location where location.id = trip.location_ID)"
+        sql += " ,sum(tripCount)"
+        sql += " from Trip group by location_ID;"
+        recs = db.engine.execute(sql).fetchall()
+        
         return render_template('map/map.html', recs=recs)
 
     else:

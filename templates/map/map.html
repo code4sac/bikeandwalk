@@ -22,17 +22,22 @@
             var map = new BAWAMap('{{ config.MAPBOX_PROJECT_ID }}', '{{ config.MAPBOX_ACCESS_TOKEN }}',"tripsMap", 14);
             // Add trip locations
             {% for rec in recs %}
-                {% if rec.locationLatitude %} {# Trip records #}
-					{% set cluster = 'true' %}
-                	{% if rec.locationLatitude != '' and rec.locationLongitude != '' %}
-	                    map.addTripLocation('{{ rec.locationName }}', {{ rec.locationLatitude }}, {{ rec.locationLongitude }}, {{ rec.tripCount }});
-	                {% endif %}
-	            {% endif %}
-	            {% if rec.latitude %} {# Location Records #}
-					   {% set cluster = 'false' %}
+	            {% if g.title == 'All Locations' %} {# Location Records #}
+					{% set cluster = 'false' %}
 					{% if rec.latitude != '' and rec.longitude != '' %}
 		               map.addTripLocation('{{ rec.locationName }}', {{ rec.latitude }}, {{ rec.longitude }});
 					{% endif %}
+	            {% endif %}
+	 			{% if g.title == 'Trips Map'%}{# Trip records #}
+					{# cant rely on the column naming from sqlalchemy since I dont know how to sum on a column (bl) #}
+					{% set locationName = rec[0]%}
+					{% set locationLatitude = rec[1]%}
+					{% set locationLongitude = rec[2]%}
+					{% set tripCount = rec[3]%}
+					{% set cluster = 'true' %}
+                	{% if locationLatitude != '' and locationLongitude != '' %}
+	                    map.addTripLocation('{{ locationName|default("Huh?") }}', {{ locationLatitude }}, {{ locationLongitude }}, {{ tripCount|default(0) }});
+	                {% endif %}
 	            {% endif %}
             {% endfor %}
             // Add markers for locations to map
