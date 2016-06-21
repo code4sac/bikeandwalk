@@ -10,6 +10,7 @@
 			<th>Date</th>
 			<th>Start Time</th>
 			<th>End Time</th>
+			<th>Dup.</th>
 		</tr>
 		{% for rec in recs %}
 	    <tr>
@@ -18,6 +19,7 @@
 			<td>{{ theTime[rec.ID]["longStartDate"]}}</td>
 			<td>{{ theTime[rec.ID]["hour"]}}:{{ theTime[rec.ID]["strMinute"]}} {{ theTime[rec.ID]["AMPM"]}}</td>
 			<td>{{ theTime[rec.ID]["hourEnd"]}}:{{ theTime[rec.ID]["strMinuteEnd"]}} {{ theTime[rec.ID]["AMPMEnd"]}}</td>
+			<td><a href="{{ url_for('.duplicate')}}{{ rec.ID }}">Duplicate this event</a></td>
 		</tr>
 		{% endfor %}
 	  </table>

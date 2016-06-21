@@ -3,7 +3,7 @@ from flask import request, session, g, redirect, url_for, \
 from datetime import datetime, timedelta
 from bikeandwalk import db,app
 from views.utils import nowString, printException, getTimeZones, cleanRecordID
-from views.assignment import getAssignmentList
+from views.assignment import getAssignmentList, createNewRecord as createNewAssignment
 from views.traveler import getTravelerList
 from views.org import getOrgDefaultTimeZone
 from views.trip import getCountEventTripTotal
@@ -148,6 +148,75 @@ def edit(id=0):
     return render_template('count_event/count_event_edit.html', rec=request.form, theTime=theTime, timeZones=timeZones, assignmentList=assignmentList)
 
 
+@mod.route('/event/duplicate', methods=['GET'])
+@mod.route('/event/duplicate/', methods=['GET'])
+@mod.route('/event/duplicate/<id>/', methods=['GET'])
+def duplicate(id=0):
+    setExits()
+    id = cleanRecordID(id)
+    if id < 0:
+        flash("That is not a valid ID")
+        return redirect(g.listURL)
+
+    #duplicate this event without any assignments or trips
+    rec = CountEvent.query.get(id)
+    if rec:
+        #Duplicate the Count Event record
+        newRec = createEventRecord()
+        
+        #ID = db.Column(db.Integer, primary_key=True)
+        #title = db.Column(db.Text)
+        #weather = db.Column(db.Text)
+        #startDate = db.Column(db.Text, nullable=False)
+        #endDate = db.Column(db.Text, nullable=False)
+        #timeZone = db.Column(db.Text)
+        #isDST = db.Column(db.Integer, default=0)
+        #organization_ID = db.Column(db.Integer, db.ForeignKey('organization.ID'), nullable=False)
+        
+        newRec.title = "Copy of " + rec.title
+        newRec.startDate = rec.startDate
+        newRec.endDate = rec.endDate
+        newRec.timeZone = rec.timeZone
+        newRec.isDST = rec.isDST
+        db.session.commit()
+        
+        #Get the new ID
+        newID = newRec.ID
+        
+        #Duplicate the Travelers
+        travs = EventTraveler.query.filter(EventTraveler.countEvent_ID == id )
+        if travs:
+            for trav in travs:
+                newTrav = EventTraveler(newRec.ID,trav.traveler_ID)
+                db.session.add(newTrav)
+                newTrav.sortOrder = trav.sortOrder
+            
+            db.session.commit()
+        
+        #Duplicate the Locations
+        #ID = db.Column(db.Integer, primary_key=True)
+        #assignmentUID = db.Column(db.Text, unique=True)
+        #countEvent_ID = db.Column(db.Integer, db.ForeignKey('count_event.ID'))
+        #location_ID = db.Column(db.Integer, db.ForeignKey('location.ID'))
+        #user_ID = db.Column(db.Integer, db.ForeignKey('user.ID'))
+        #invitationSent = db.Column(db.Text, default="")
+        
+        assignments = Assignment.query.filter(Assignment.countEvent_ID == id)
+        if assignments:
+            for assignment in assignments:
+                newAssignment = createNewAssignment(newRec.ID)
+                newAssignment.location_ID = assignment.location_ID
+                newAssignment.user_ID = 0
+                newAssignment.invitationSent = ""
+                
+            db.session.commit()
+        
+        return redirect(url_for('.edit', id=newRec.ID))
+        
+    flash("That Count Event Record does not exsist")
+    return redirect(g.listURL)
+
+
 @mod.route('/event/delete', methods=['GET'])
 @mod.route('/event/delete/', methods=['GET'])
 @mod.route('/event/delete/<id>/', methods=['GET'])
@@ -156,6 +225,10 @@ def delete(id=0):
     id = cleanRecordID(id)
     if id < 0:
         flash("That is not a valid ID")
+        return redirect(g.listURL)
+        
+    if getCountEventTripTotal(id) > 0 and g.role != "super":
+        flash("You must be the super user to delete an event with trips.")
         return redirect(g.listURL)
 
     if id > 0:
