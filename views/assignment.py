@@ -343,7 +343,7 @@ def getUID():
     i = 0
     while i < 1000:
         uid = hmac.new(datetime.now().isoformat(), app.config["SECRET_KEY"]).hexdigest()
-        cur = Assignment.query.filter(Assignment.assignmentUID == uid)
+        cur = Assignment.query.filter(Assignment.assignmentUID == uid).count()
         if cur:
             i += 1
         else:
