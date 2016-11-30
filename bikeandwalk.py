@@ -53,42 +53,38 @@ def home():
 def ping():
     return "OK"
     
-@app.route('/login', methods=['GET'])
-def login():
-    return views.index.login()
-
 
 @app.before_request
 def before_request():
     # layout.html looks for g.user so declare it early
-    g.user = session.get('email')
+    g.user = session.get('user')
     g.orgID = None
+    g.role = None
     
     if not db:
         # really can't do anything with out a database, so just bail
         printException("Database not Available", "error")
         return render_template('errors/500.html'), 500
         
-    freeDirectories = ("login","count","static","ping","_auth","map",
+    freeDirectories = ("login","logout","count","static","ping","_auth","map",
             "report",) #first directory of request URL
     superUserDirectories = ("org","feature","trip","traveler","super",) #first directory of request URL
     rootURL = request.path.split("/")
     rootURL = rootURL[1]
+
     superRequired = rootURL in superUserDirectories
     noLoginRequired = rootURL in freeDirectories
+    ### Otherwise, user must be an Org. admin
     
-    if rootURL == "login" and g.user != None:
-        # usually this is the refresh after the persona validation
-        return redirect(url_for('home'))
-    elif noLoginRequired:
+    if noLoginRequired:
         #No login required
         pass
     else:
         # login required
-        if g.user is None:
-            # no email in session
-            return redirect(url_for('login'))
-            
+        if g.user is None and rootURL !="":
+            # no email in session, can only see the home page
+            return redirect(url_for('login.login'))
+        
         ## email must be linked to a user
         if views.user.setUserStatus(g.user):
             # Session timeout is set in app.config["PERMANENT_SESSION_LIFETIME"]
@@ -98,15 +94,15 @@ def before_request():
                 session.clear()
                 g.user = None
                 flash("You don't have access to the Administration web site.")
-                return redirect(url_for("login"))
+                return redirect(url_for("login.login"))
                 
             g.organizationName = views.org.getName(g.orgID)
             if superRequired and g.role != "super":
                 flash("Sorry, you don't have access for that feature.")
                 return redirect(url_for("home"))
         else:
-            # Not a valid email or session timed out, go to login page...
-            return redirect(url_for('login'))
+            # Not a valid email or session timed out, go to Home page...
+            return views.index.home()
                 
     ## otherwise, serve the requested page...
     
@@ -131,6 +127,8 @@ def db_error():
     return render_template('errors/500.html'), 404
     
 ### Blueprinted views ####
+from views import login
+app.register_blueprint(login.mod)
 from views import user
 app.register_blueprint(user.mod)
 from views import org

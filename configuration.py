@@ -29,12 +29,8 @@ class Config(object):
     # Uploads ...
     MAX_CONTENT_LENGTH = 300000
     
-    # Persona settings
-    PERSONA_JS='https://login.persona.org/include.js'
-    PERSONA_VERIFIER='https://verifier.login.persona.org/verify'
-    
-    MAPBOX_PROJECT_ID = "baw.p0hdja4j"
-    MAPBOX_ACCESS_TOKEN = "pk.eyJ1IjoiYmF3IiwiYSI6ImNpanh4bHQ3MzFleXh2d2tpMTNzYXQ0bGcifQ.WNpDcwH6Y9pGVZhUtZOdwg"
+    MAPBOX_PROJECT_ID = ""
+    MAPBOX_ACCESS_TOKEN = ""
     
     HOST_NAME = "app.bikeandwalk.org"
 

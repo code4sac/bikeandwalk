@@ -13,7 +13,7 @@ SECRET_KEY = "somereallylongstringtouseasakey"
 ## If you need to change the value for DATABASE_PATH_PREFIX to
 ## match the absolute path to your database file.
 ## You can change DATABASE to another name if you like.
-DATABASE_PATH_PREFIX = '/Users/baw/Sites/app.bikeandwalk.org/'
+DATABASE_PATH_PREFIX = '<path_to_your_app>/app.bikeandwalk.org/'
 DATABASE = "bikeandwalk.sqlite"
 DATABASE_URI = 'sqlite:///' + DATABASE_PATH_PREFIX + DATABASE
 
@@ -29,7 +29,7 @@ DATABASE_URI = 'sqlite:///' + DATABASE_PATH_PREFIX + DATABASE
 #MAX_CONTENT_LENGTH = 300000
 
 #Map Box Settings...
-#MAPBOX_PROJECT_ID = "baw.p0hdja4j"
-#MAPBOX_ACCESS_TOKEN = "pk.eyJ1IjoiYmF3IiwiYSI6ImNpanh4bHQ3MzFleXh2d2tpMTNzYXQ0bGcifQ.WNpDcwH6Y9pGVZhUtZOdwg"
+#MAPBOX_PROJECT_ID = ""
+#MAPBOX_ACCESS_TOKEN = ""
 
 #HOST_NAME = "app.bikeandwalk.org"

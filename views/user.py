@@ -5,6 +5,10 @@ import re
 from bikeandwalk import db,app
 from models import User
 from views.utils import printException, cleanRecordID
+import hmac
+import hashlib
+import random
+from sqlalchemy import func
 
 mod = Blueprint('user',__name__)
 
@@ -16,8 +20,8 @@ def setExits():
 
 @mod.route('/user/')
 def display():
+    setExits()
     if db :
-        setExits()
         recs = User.query.filter(User.organization_ID == int(g.orgID)).order_by(User.name)
         return render_template('user/user_list.html', recs=recs)
 
@@ -40,15 +44,19 @@ def edit(id=0):
     if not request.form:
         """ if no form object, send the form page """
         # get the user record if you can
+        currentPassword = ""
         if id > 0:
             rec = User.query.get(id)
-        return render_template('user/user_edit.html', rec=rec)
+            currentPassword = rec.password
+            
+        return render_template('user/user_edit.html', rec=rec, currentPassword=currentPassword)
             
     #have the request form
     #ensure a value for the check box
     inactive = request.form.get('inactive')
     if not inactive: 
         inactive = "0"
+        
 
     if validForm():
         if id > 0:
@@ -57,34 +65,50 @@ def edit(id=0):
             ## create a new record stub
             rec = User(request.form['name'],request.form['email'],request.form['organization_ID'])
             db.session.add(rec)
+            rec.userName = db.null()
             
         #update the record
-        rec.name = request.form['name']
-        rec.email = request.form['email']
-        rec.role = request.form['role']
+        rec.name = request.form['name'].strip()
+        rec.email = request.form['email'].strip()
+        rec.role = request.form['role'].strip()
         rec.inactive = str(inactive)
         rec.organization_ID = request.form['organization_ID']
-        
+                
         ### for now the username and password are not used
-        rec.userName = db.null()
-        rec.password = db.null()
-        #if str(uName) !='':
-        #    rec.userName = str(uName)
-        #    rec.password = request.form['password']
-        #else:
-        #    rec.userName = db.null()
-        #    rec.password = db.null()
-         
+        user_name = ''
+        if request.form['userName']:
+            user_name = (request.form['userName']).strip()
+            
+        if user_name != '':
+            rec.userName = user_name
+        else:
+            rec.userName = db.null()
+
+        user_password = ''
+        if request.form['password']:
+            user_password = getPasswordHash(request.form['password'].strip())
+
+        if user_password != '':
+            rec.password = user_password
+            
         try:
             db.session.commit()
-        except:
+        except Exception as e:
             db.session.rollback()
             flash(printException('Error attempting to save '+g.title+' record.',"error",e))
             
         return redirect(g.listURL)
+        
+    else:
+        # form did not validate, giv user the option to keep their old password if there was one
+        currentPassword = ""
+        if request.form["password"] != "" and id > 0:
+            rec = User.query.get(id)
+            currentPassword = rec.password
+        
 
     # form not valid - redisplay
-    return render_template('user/user_edit.html', rec=request.form)
+    return render_template('user/user_edit.html', rec=request.form, currentPassword=currentPassword)
 
 
 @mod.route('/user/delete', methods=['GET'])
@@ -110,26 +134,27 @@ def delete(id=0):
             
     return redirect(g.listURL)
     
+        
 def validForm():
     # Validate the form
     global uName, inactive
     goodForm = True
     
-    if request.form['name'] == '':
+    if request.form['name'].strip() == '':
         goodForm = False
         flash('Name may not be blank')
 
-    if request.form['email'] == '':
+    if request.form['email'].strip() == '':
         goodForm = False
         flash('Email may not be blank')
 
     if request.form['email'] != '':
-        cur = User.query.filter(User.email == request.form['email'], User.ID != request.form['ID']).count()
+        cur = User.query.filter(func.lower(User.email) == request.form['email'].strip().lower(), User.ID != request.form['ID']).count()
         if cur > 0 :
             goodForm = False
             flash('That email address is already in use')
         #test the format of the email address (has @ and . after @)
-        elif not re.match(r"[^@]+@[^@]+\.[^@]+", request.form['email']):
+        elif not looksLikeEmailAddress(request.form['email']):
             goodForm = False
             flash('That doesn\'t look like a valid email address')
             
@@ -137,38 +162,69 @@ def validForm():
         goodForm = False
         flash('You must select an Organization')
 
-## Username and password not used for now        
-#    # user name must be unique
-#    uName = request.form['userName']
-#    if uName == "None":
-#        uName = ""
-#    else :
-#        cur = User.query.filter(str(User.userName).upper() == request.form['userName'].upper(), User.ID != request.form['ID']).count()
-#        if cur > 0 :
-#            goodForm = False
-#            flash('That User Name is already in use')
-#        
-#    if request.form['password'] == '' and uName != '':
-#        goodForm = False
-#        flash('Password may not be blank if User Name is present')
-    
+    # user name must be unique
+    uName = request.form['userName'].strip()
+    if uName == "None":
+        uName = ""
+    else :
+        cur = User.query.filter(func.lower(User.userName) == request.form['userName'].strip().lower(), User.ID != request.form['ID']).count()
+        if cur > 0 :
+            goodForm = False
+            flash('That User Name is already in use')
+        
+    #passwords must match if present
+    if request.form['password'].strip() != '' and request.form['confirmPassword'].strip() != request.form['password'].strip():
+        goodForm = False
+        flash('Passwords don\'t match.')
+        
     return goodForm
     
-def setUserStatus(email):
+def findUser(emailOrUserName=None,includeInactive=False):
+    if emailOrUserName == None:
+        return None
+        
+    emailOrUserName = emailOrUserName.strip()
+    sql = "SELECT * FROM User where "
     ## locate the user with this email and set some globals        
-    rec = User.query.filter(User.email == email).first()
+    if looksLikeEmailAddress(emailOrUserName):
+        sql = sql + "lower(User.email) = '" + emailOrUserName.lower() + "' "
+    else:
+        sql = sql + "lower(User.userName) = '" + emailOrUserName.lower() + "' "
+
+        #Filter inactive if needed
+    if includeInactive:
+        pass
+    else:
+        #Active user only
+        sql = sql + " and User.inactive = '0'"
+    
+    sql = sql + " ;"
+
+    rec = db.engine.execute(sql).fetchone()
     if rec:
-        g.user = rec.email
+        return rec
+        
+    return None
+    
+def setUserStatus(emailOrUserName):
+    if emailOrUserName == None:
+        return False
+    emailOrUserName = emailOrUserName.strip()
+    rec = findUser(emailOrUserName.strip())
+    if rec:
+        g.user = emailOrUserName
         g.role = rec.role
         g.orgID = rec.organization_ID
+        
         if g.role == "super" and ('superOrgID' in session) :
             ## super user is managing another organization's data
-            g.orgID = int(session.get('superOrgID'))
+            if 'superOrgID' in session:
+                g.orgID = int(session.get('superOrgID'))
         
         return True
     else:
-        session.clear()
-        flash("That email address is not on file")
+        #session.clear()
+        flash("User is not on file")
         return False
             
 
@@ -178,4 +234,50 @@ def orgSwitch(newOrg=None):
     if g.role == 'super' and newOrg :
         session['superOrgID'] = newOrg
         
-    return redirect(url_for('home'))           
+    return redirect(url_for('home'))        
+    
+def getPasswordHash(pw, theSalt=None, timesAround='05'):
+    if type(pw) is str or type(pw) is unicode:
+        pw = pw.strip()
+        if not theSalt:
+            theSalt = getPasswordSalt()
+        codeWord = str(pw) + theSalt
+        
+        for i in range(int(timesAround) * 1000):
+            codeWord = hmac.new(app.config["SECRET_KEY"], str(codeWord), hashlib.sha256).hexdigest() 
+        return theSalt +'.'+timesAround+'.'+codeWord
+    return "" #test this for error
+    
+def getPasswordSalt():
+    theChars = '0123456789abcdef'
+    s = random.sample(theChars,16)
+    salt = ''
+    for i in range(len(s)):
+        salt = salt + s[i]
+        
+    return salt
+    
+def matchPasswordToHash(pw,passHash):
+    if pw and passHash:
+        s = passHash.split('.')
+        if len(s) != 3:
+            return False
+        salt = s[0]
+        timesAround = s[1]
+        hashToTest = getPasswordHash(pw,salt,timesAround)
+        if hashToTest == passHash:
+            return True
+        
+    return False
+    
+def getUserPasswordHash(emailOrUserName=''):
+    includeInactive = True
+    rec = findUser(emailOrUserName.strip(),includeInactive)
+    if rec:
+        return rec.password
+        
+    return ""
+    
+def looksLikeEmailAddress(email):
+    return re.match(r"[^@]+@[^@]+\.[^@]+", email.strip())
+    

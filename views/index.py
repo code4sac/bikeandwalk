@@ -11,5 +11,3 @@ def home():
     
     return render_template('index.html', orgs=orgs)
 
-def login():
-    return render_template('login.html')

@@ -10,23 +10,24 @@
         <dd><input type=text size=30 name="name" value="{{rec.name}}"/>
         <dt>Email:
         <dd><input type=text size=30 name="email" value="{{rec.email|default("",true)}}"/>
-		{% if False %}
         <dt>User Name:
         <dd><input type=text size=30 name="userName" value="{{rec.userName|default("",true)}}"/>
-        <dt>Password:
-        <dd><input type=text size=30 name="password" value="{{rec.password|default("",true)}}"/>
-		{% endif %}
+        <dt>Password {% if currentPassword %}(leave blank to keep current){% else %}(&mdash; Optional &mdash;){% endif %}:
+        <dd><input type=password size=30 name="password" value=""/>
+        <dt>Re-type password:
+        <dd><input type=password size=30 name="confirmPassword" value=""/>
+
 		{% if g.role == 'super' or g.role == 'admin' %}
-        <dt>Role:
+        <dt>Role:</dt>
 		<dd><select name="role">
 			<option value="counter" {% if rec.role == 'counter' %}selected="selected" {% endif %}>counter</option>
 			<option value="admin" {% if rec.role == 'admin' %}selected="selected" {% endif %}>admin</option>
 		{% if g.role == 'super' %}
 			<option value="super" {% if rec.role == 'super' %}selected="selected" {% endif %}>super</option>
 		{% endif %}
-		</select>
+		</select></dd>
 		{% else %}
-		<input type=hidden name="role" value="{{rec.role|default("0",true)}}">
+		<input type=hidden name="role" value="{{rec.role|default("counter",true)}}">
 		{% endif %}
 		<input type=hidden name="organization_ID" value="{{g.orgID}}">
         <dt>Inactive:<input type=checkbox  name="inactive" value="1" {% if rec.inactive %} checked="checked" {% endif %}/>
