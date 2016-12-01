@@ -1,0 +1,8 @@
+{% extends "layout.html" %}
+{% block title %}Log In{% endblock %}
+{% block body %}
+  <h3>Cookies Required</h3>
+  <p>We require that cookies be enabled in your browser in order to log in to the system.</p>
+  <p>In your browser Settings or Preferences area, enable cookies from the sites you visit then your can try to <a href="{{ url_for("login.login")}}">log in</a> again</p>
+  <p><a href="{{ url_for("home") }}">Go to Home page</a></p>
+{% endblock %}

@@ -16,21 +16,31 @@ def setExits():
 @mod.route('/login/', methods=['GET', 'POST'])
 def login():
     setExits()
+    
     if g.user and g.user != None:
         flash("Already Logged in...")
         return redirect(url_for("home"))
-       
+        
+    if not request.form:
+        if 'loginTries' not in session:
+            session['loginTries'] = 0
+        
     if request.form:
-            
+        if 'loginTries' not in session:
+            #Testing that user agent is keeping cookies.
+            #If not, there is no point in going on... Also, could be a bot.
+            return render_template('login/no-cookies.html')
+                
         if validateUser(request.form["password"],request.form["userNameOrEmail"]):
             session["user"] = request.form["userNameOrEmail"].strip()
             return redirect(url_for("home"))
         else:
             flash("Invalid User Name or Password")
         
-    #remember howmany times the user has tried to log in
     if 'loginTries' not in session:
         session['loginTries'] = 0
+        
+    #remember howmany times the user has tried to log in
     session['loginTries'] = session['loginTries'] + 1
     #slow down login attempts
     if session['loginTries'] > 5:
