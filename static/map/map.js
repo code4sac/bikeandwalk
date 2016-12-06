@@ -54,24 +54,112 @@ BAWAMap.prototype = {
      * @param tripCount
      */
     addTripLocation: function(locationName, latitude, longitude, tripCount) {
-        if (this.locations.length == 0) {
-            this.pushNewLocation(locationName, latitude, longitude, tripCount)
-        } else {
-            // Check if trip location already exists
-            for (var trip in this.locations) {
-                if (this.locations.hasOwnProperty(trip)) {
-                    if (this.locations[trip].latitude == latitude && this.locations[trip].longitude == longitude) {
-                        // if the location already exists, add count to existing trip
-                        this.addTripCountToExistingLocation(this.locations[trip], tripCount);
-                        return;
-                    }
-                }
-            }
-
-            // location doesn't exist, so push it to trips
-            this.pushNewLocation(locationName, latitude, longitude, tripCount);
-        }
+		// Test if there are any locations and if this one exists...
+        if (this.locations.length > 0 && this.mapHasMarkerAt(latitude,longitude)){
+			// if the location already exists, add count to existing trip
+			this.addTripCountToExistingLocation(this.locations[trip], tripCount);
+			return;
+		}
+		// location doesn't exist, so push it to trips
+		this.pushNewLocation(locationName, latitude, longitude, tripCount);
     },
+
+	/**
+	Add markers using JSON object
+	*
+	* @param JSON object with all marker data
+	* @param url of error response page
+	*
+	*/
+	addMarkersFromJSON: function(data,errorPage){
+		var markerData;
+		var parseError =false;
+		var parseError = '';
+
+		try{
+			markerData = JSON.parse(data);
+		}catch(errorMess){
+			alert("err '" + errorMess + "'");
+			parseError = true
+		}
+		if(!parseError){
+			/*
+				for each:
+					extract and validate data
+					if valid data:
+						create Marker
+
+				if bbox specified:
+					set bounding box
+					if zoomLevel specified & >=0:
+						set zoom level
+					else:
+						zoomToFit
+				else:
+					zoomToFit
+			*/
+			// create a cluster layer if needed
+			if (markerData.cluster === true) {
+	            this.map.addLayer(this.cluster);
+			}
+
+			for (var i = 0; i < markerData.markers.length; i++) {
+			    data = markerData.markers[i]
+				if(	data.latitude != undefined && 
+					data.longitude != undefined && 
+					!this.mapHasMarkerAt(data.latitude,data.longitude)
+					){
+					this.pushNewLocation(data.locationName, data.latitude, data.longitude)
+					// create the marker
+					var marker = L.marker([data.latitude, data.longitude]);
+					// Put the maker into the cluster or map layer
+					if (markerData.cluster === true) {
+			            this.cluster.addLayer(marker);
+			        } else { marker.addTo(this.map); }
+			
+					marker.draggable = (data.draggable == true );
+					this.setDragFunction(marker);
+					
+					if (data.popup != undefined) {
+						marker.bindPopup(data.popup);
+					} else {
+						if(data.locationName != undefined){
+							marker.bindPopup(data.locationName);
+						} else {
+							marker.bindPopup("Unnamed Location");
+						}
+					
+					} // bindPopup
+					
+				} // Mimimal Data
+			
+			} // end for
+			if (markerData.bbox != undefined){
+				alert("Bounding Box not implemented yet.")
+				this.zoomToFitAllMarkers();
+				/*
+				set bounding box
+				if zoomLevel specified & >=0:
+					(zoom must be > 0 and < 13 {I think})
+					set zoom level
+				else:
+					set max zoom that will show all the markers within the bounding box
+					? is this last step needed?
+				*/
+			} else {
+		        if (markerData.zoomToFit === undefined || markerData.zoomToFit != false) {
+						this.zoomToFitAllMarkers();
+		        }
+			}
+				
+		}else{
+			// error parsing JSON data
+			// go to error page
+			document.location = errorPage + errorMess + "/";
+		}
+		// end of addManyLocations()
+	},
+	
 
     /**
      * Get and add current geolocation.
@@ -134,6 +222,20 @@ BAWAMap.prototype = {
         this.geocodes.push([latitude, longitude]);
     },
 
+	mapHasMarkerAt: function (lat,lng){
+	    // Check if trip location already exists
+	    for (var trip in this.locations) {
+	        if (this.locations.hasOwnProperty(trip)) {
+	            if (this.locations[trip].latitude == lat && this.locations[trip].longitude == lng) {
+	                // if the location already exists return true
+	                return true;
+	            }
+	        }
+	    }
+		return false
+	},
+
+
     /**
      * If the location already exists in the locations array, then just increment the tripCount.
      *
@@ -191,16 +293,8 @@ BAWAMap.prototype = {
         if (cluster === false) {
             marker.addTo(this.map);
         }
+		this.setDragFunction(marker);
 
-        if (draggable === true) {
-            // Add drag event handler
-            marker.on('dragend', function (event) {
-                var marker = event.target;
-                var position = marker.getLatLng();
-
-                self.updateFormLocationFields("latitude", "longitude", position.lat, position.lng);
-            });
-        }
 
         if (locationName !== undefined && locationName !== "") {
             // Create trip marker popup string
@@ -223,6 +317,17 @@ BAWAMap.prototype = {
         var bounds = new L.LatLngBounds(this.geocodes);
         this.map.fitBounds(bounds);
     },
+	setDragFunction: function(theMarker){
+        if (theMarker.draggable === true) {
+            // Add drag event handler
+            theMarker.on('dragend', function (event) {
+                var marker = event.target;
+                var position = marker.getLatLng();
+
+                self.updateFormLocationFields("latitude", "longitude", position.lat, position.lng);
+            });
+		}
+    },
 
     /**
      * Update the location form input fields.
@@ -241,3 +346,4 @@ BAWAMap.prototype = {
         }
     }
 };
+

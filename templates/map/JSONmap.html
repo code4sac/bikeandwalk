@@ -1,0 +1,32 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ g.title }}{% endblock %}
+
+{% block head %}
+    <script type="text/javascript" src="{{ url_for('static', filename='map/map.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='map/map.css') }}" type="text/css" media="all" >
+    <script type="text/javascript" src="{{ url_for('static', filename='map/leaflet/leaflet-src.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='map/leaflet/leaflet.css') }}" type="text/css" media="all" >
+    <script type="text/javascript" src="{{ url_for('static', filename='map/leaflet/leaflet.markercluster-src.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='map/leaflet/MarkerCluster.css') }}" type="text/css" media="all" >
+    <link rel="stylesheet" href="{{ url_for('static', filename='map/leaflet/MarkerCluster.Default.css') }}" type="text/css" media="all" >
+{% endblock head %}
+
+{% block body %}
+	<h2>{{ g.title }}</h2>
+	{% if markerData == '' %}
+		<h3>No Map Data Found.</h3>
+	{% endif %}
+		<div id="tripsMap"></div>
+		<div id="queryData">{{ queryData }}</div>
+        <script type="text/javascript">
+            // Initialize the map
+            var map = new BAWAMap('{{ config.MAPBOX_PROJECT_ID }}', '{{ config.MAPBOX_ACCESS_TOKEN }}',"tripsMap", 14);
+		</script>
+	{% if markerData != '' %}
+        <script type="text/javascript">
+            // Add markers
+			map.addMarkersFromJSON('{{markerData|tojson|safe}}','{{ url_for(".mapError") }}');
+		</script>
+	{% endif %}
+{% endblock body %}

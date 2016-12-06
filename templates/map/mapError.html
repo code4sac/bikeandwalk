@@ -1,0 +1,9 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ g.title }}{% endblock %}
+
+{% block body %}
+<h3>Map Error</h3>
+<p>There was an error while trying to create the map.</p>
+<p>{{ errorMessage }}</p>
+{% endblock body %}
