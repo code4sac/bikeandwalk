@@ -18,7 +18,7 @@
 		<h3>No Map Data Found.</h3>
 	{% endif %}
 		<div id="tripsMap"></div>
-		<div id="queryData">{{ queryData }}</div>
+		<div id="queryData" style="display:none;">'{{ queryData|tojson|safe }}'</div>
         <script type="text/javascript">
             // Initialize the map
             var map = new BAWAMap('{{ config.MAPBOX_PROJECT_ID }}', '{{ config.MAPBOX_ACCESS_TOKEN }}',"tripsMap", 14);

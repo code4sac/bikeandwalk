@@ -4,6 +4,8 @@ from flask import g, redirect, url_for, \
 from bikeandwalk import db
 from models import Trip, Location
 from views.utils import printException
+from collections import namedtuple
+
 
 mod = Blueprint('map', __name__)
 
@@ -20,13 +22,37 @@ def display():
         # Jun 10, 2016 modified query to speed up map display
         # The order of the columns selected is critical to the html template
         sql = "select (select locationName from location where location.id = trip.location_ID)"
+        sql += " ,trip.location_ID"
         sql += " ,(select latitude from location where location.id = trip.location_ID)"
         sql += " ,(select longitude from location where location.id = trip.location_ID)"
         sql += " ,sum(tripCount)"
         sql += " from Trip group by location_ID;"
         recs = db.engine.execute(sql).fetchall()
         
-        return render_template('map/map.html', recs=recs)
+        #return render_template('map/map.html', recs=recs)
+        markerData = {}
+        queryData = {}
+        
+        if recs:
+            markerData = {"markers":[]}
+            for rec in recs:
+                #db.engine.execute returns a list of sets without column names
+                #namedtuple creates an object that makeBasicMarker can access with dot notation
+                Fields = namedtuple('record', 'locationName ID latitude longitude tripCount')
+                record = Fields(rec[0], rec[1], rec[2], rec[3], rec[4])
+                
+                marker = makeBasicMarker(record) # returns a dict or None
+                if marker:
+                    popup = render_template('map/tripCountMapPopup.html', rec=record)
+                    popup = escapeForJson(popup)
+                    marker['popup'] = popup
+                    
+                    markerData["markers"].append(marker)
+                    
+        markerData["cluster"] = True
+        markerData["zoomToFit"] = True
+        
+        return render_template('map/JSONmap.html', markerData=markerData, queryData=queryData)
 
     else:
         flash(printException('Could not open Database',"info"))
@@ -37,29 +63,32 @@ def display():
 def location():
     setExits()
     g.title = 'All Locations'
+    
     if db :
         if g.orgID:
             recs = Location.query.filter(Location.organization_ID == g.orgID)
         else:
             recs = Location.query.all()
             
-        markerData = ""
-        queryData = ""
+        markerData = {}
+        queryData = {}
         
         if recs:
             markerData = {"markers":[]}
+
             for rec in recs:
-                popup = render_template('map/locationListPopup.html', locationName=rec.locationName)
-                popup = popup.replace('"','\\"') # to escape double quotes in html
+                marker = makeBasicMarker(rec) # returns a dict or None
                 
-                if rec.latitude.strip() != '' and rec.longitude.strip() !='':
-                    marker = {"latitude": float(rec.latitude), "longitude": float(rec.longitude), \
-                      "locationID": rec.ID, "locationName": rec.locationName, "popup": popup, "draggable": True, }
-                    markerData["markers"].append(marker)
-                else:
-                    pass
+                if marker:
+                    popup = render_template('map/locationListPopup.html', rec=rec)
+                    popup = escapeForJson(popup)
+                    marker['popup'] = popup
                     
-            markerData["cluster"] = True
+                    markerData["markers"].append(marker)
+                    
+        markerData["cluster"] = True
+        markerData["zoomToFit"] = True
+            
          # would like to set cluster to false but makes map view not dragable for some reason
         # This seems to be a Safari(6.1.1) issue. Not tested on newer
         return render_template('map/JSONmap.html', markerData=markerData, queryData=queryData)
@@ -76,4 +105,23 @@ def location():
 def mapError(errorMessage=""):
     setExits()
     return render_template('map/mapError.html', errorMessage=errorMessage)
+    
+    
+def escapeForJson(popup):
+    if type(popup) != str and type(popup) != unicode:
+        popup = ''
+    popup = popup.replace('"','\\"') # to escape double quotes in html
+    popup = popup.replace('\r','') # remove any carriage returns
+    popup = popup.replace('\n','') # remove any new lines
+    
+    return popup
+    
+def makeBasicMarker(rec):
+    if rec and rec.latitude.strip() != '' and rec.longitude.strip() !='':
+        marker = {"latitude": float(rec.latitude), "longitude": float(rec.longitude), \
+           "locationID": rec.ID, "locationName": rec.locationName, "draggable": False, }
+        return marker
+    return None
+    
+    
     

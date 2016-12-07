@@ -74,13 +74,14 @@ BAWAMap.prototype = {
 	addMarkersFromJSON: function(data,errorPage){
 		var markerData;
 		var parseError =false;
-		var parseError = '';
+		var errorMess = '';
+		console.log('the Data: ' + data);
 
 		try{
 			markerData = JSON.parse(data);
 		}catch(errorMess){
 			alert("err '" + errorMess + "'");
-			parseError = true
+			parseError = true;
 		}
 		if(!parseError){
 			/*
@@ -155,7 +156,7 @@ BAWAMap.prototype = {
 		}else{
 			// error parsing JSON data
 			// go to error page
-			document.location = errorPage + errorMess + "/";
+			// document.location = errorPage + errorMess + "/";
 		}
 		// end of addManyLocations()
 	},
