@@ -7,3 +7,10 @@
     height: 400px;
     width: 400px;
 }
+
+.mapPopUpTitle{
+  font-weight:900;
+}
+.mapPopupTripCount {
+  font-style:italic;
+}
