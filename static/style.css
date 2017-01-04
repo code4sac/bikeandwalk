@@ -13,7 +13,7 @@ table, caption, tbody, tfoot, thead, tr, th, td {
 	font-weight: inherit;
 	font-style: inherit;
 	font-size: 12pt;
-	font-family: inherit;
+	font-family:inherit;
 	vertical-align: baseline;
 }
 
@@ -71,6 +71,11 @@ code {
     font-size:.8em;
     line-height:.8;
 }
+
+ input, textarea {
+    font-size:10pt;
+    font-family:helvetica,arial,sans-serif;
+ }
 input.num {text-align:right;}
 
 
