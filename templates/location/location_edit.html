@@ -3,10 +3,25 @@
 {% block title %}Edit {{ g.title }}{% endblock %}
 
 {% block head %}
-    <script type="text/javascript" src="{{ url_for('static', filename='map/map.js') }}"></script>
-    <link rel="stylesheet" href="{{ url_for('static', filename='map/map.css') }}" type="text/css" media="all" >
     <script type="text/javascript" src="{{ url_for('static', filename='map/leaflet/leaflet-src.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='map/map.js') }}"></script>
+	<script type="text/javascript">
+		$(document).ready(function(){
+				// Initialize the map
+	            var map = new BAWAMap('{{ config.MAPBOX_PROJECT_ID }}', '{{ config.MAPBOX_ACCESS_TOKEN }}', "locationMap", 15);
+	            // Check if we have the location
+	            {% if rec == None or rec.latitude == '' or rec.longitude == '' %}
+	                // No location, so add the current location
+	                map.addCurrentLocation('{{rec.locationName}}', 'latitude', 'longitude');
+	            {% else %}
+	                // Add the location
+	                map.addSimpleLocation('{{rec.locationName}}', {{rec.latitude}}, {{rec.longitude}}, true);
+	            {% endif %}
+		});
+	</script>
+	
     <link rel="stylesheet" href="{{ url_for('static', filename='map/leaflet/leaflet.css') }}" type="text/css" media="all" >
+    <link rel="stylesheet" href="{{ url_for('static', filename='map/map.css') }}" type="text/css" media="all" >
 {% endblock head %}
 
 {% block body %}
@@ -34,18 +49,6 @@
         </form>
         </div>
         <div id="locationMap"></div>
-        <script type="text/javascript">
-            // Initialize the map
-            var map = new BAWAMap('{{ config.MAPBOX_PROJECT_ID }}', '{{ config.MAPBOX_ACCESS_TOKEN }}', "locationMap", 15);
-            // Check if we have the location
-            {% if rec == None or rec.latitude == '' or rec.longitude == '' %}
-                // No location, so add the current location
-                map.addCurrentLocation('{{rec.locationName}}', 'latitude', 'longitude');
-            {% else %}
-                // Add the location
-                map.addSimpleLocation('{{rec.locationName}}', {{rec.latitude}}, {{rec.longitude}}, true);
-            {% endif %}
-        </script>
 	{% else %}
 		<dt>No form found</dt>
 	{% endif %}

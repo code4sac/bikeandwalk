@@ -112,13 +112,14 @@ BAWAMap.prototype = {
 					){
 					this.pushNewLocation(data.locationName, data.latitude, data.longitude)
 					// create the marker
-					var marker = L.marker([data.latitude, data.longitude]);
+					var draggable = (data.draggable == true );
+					var options = {"draggable": draggable};
+					var marker = L.marker([data.latitude, data.longitude],options);
 					// Put the maker into the cluster or map layer
 					if (markerData.cluster === true) {
 			            this.cluster.addLayer(marker);
 			        } else { marker.addTo(this.map); }
 			
-					marker.draggable = (data.draggable == true );
 					this.setDragFunction(marker);
 					
 					if (data.popup != undefined) {
@@ -175,7 +176,7 @@ BAWAMap.prototype = {
 
             navigator.geolocation.getCurrentPosition(function(position) {
                 // Add the location
-                map.addSimpleLocation(locationName, position.coords.latitude, position.coords.longitude, true);
+                self.addSimpleLocation(locationName, position.coords.latitude, position.coords.longitude, true);
 
                 // Update location input fields
                 self.updateFormLocationFields(latitudeFieldId, longitudeFieldId,
@@ -319,7 +320,9 @@ BAWAMap.prototype = {
         this.map.fitBounds(bounds);
     },
 	setDragFunction: function(theMarker){
-        if (theMarker.draggable === true) {
+		var self = this;
+		// 'draggable' is in the 'options' object
+        if (theMarker.options.draggable === true) {
             // Add drag event handler
             theMarker.on('dragend', function (event) {
                 var marker = event.target;
@@ -340,11 +343,12 @@ BAWAMap.prototype = {
      */
     updateFormLocationFields: function(latitudeFieldId, longitudeFieldId, latitude, longitude) {
         if (latitudeFieldId !== undefined && longitudeFieldId !== undefined) {
-            document.getElementById(latitudeFieldId).value = latitude;
-            document.getElementById(longitudeFieldId).value = longitude;
-			// update the url for google maps
-			document.getElementById('mapURL').value = "https://www.google.com/maps/place//@"+ latitude +","+ longitude +",17z";
+			var theID = document.getElementById(latitudeFieldId);
+			if(theID != null){theID.value = latitude;}
+			theID = document.getElementById(longitudeFieldId);
+			if(theID != null){theID.value = longitude;}
+			theID = document.getElementById('mapURL');
+			if(theID != null){theID.value = "https://www.google.com/maps/place//@"+ latitude +","+ longitude +",17z";}
         }
     }
 };
-
