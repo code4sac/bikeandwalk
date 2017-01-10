@@ -9,6 +9,8 @@ import hmac
 import hashlib
 import random
 from sqlalchemy import func
+#from views.login import setUserSession #user imported in login
+import views.login
 
 mod = Blueprint('user',__name__)
 
@@ -67,7 +69,15 @@ def edit(id=0):
             db.session.add(rec)
             rec.userName = db.null()
             rec.password = db.null()
- 
+        
+        #Are we editing the current user's record?
+        editingCurrentUser = ''
+        if(g.user == rec.userName):
+            editingCurrentUser = request.form['userName'].strip()
+        else: 
+            if(g.user == rec.email):
+                editingCurrentUser = request.form['email'].strip()
+            
         #update the record
         rec.name = request.form['name'].strip()
         rec.email = request.form['email'].strip()
@@ -78,7 +88,7 @@ def edit(id=0):
         ### for now the username and password are not used
         user_name = ''
         if request.form['userName']:
-            user_name = (request.form['userName']).strip()
+            user_name = request.form['userName'].strip()
             
         if user_name != '':
             rec.userName = user_name
@@ -101,6 +111,12 @@ def edit(id=0):
             
         try:
             db.session.commit()
+            # if the username or email address are the same as g.user
+            # update g.user if it changes
+            if(editingCurrentUser != ''):
+                setUserStatus(editingCurrentUser)
+                views.login.setUserSession(editingCurrentUser)
+                
         except Exception as e:
             db.session.rollback()
             flash(printException('Error attempting to save '+g.title+' record.',"error",e))

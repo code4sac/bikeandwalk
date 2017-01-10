@@ -32,7 +32,7 @@ def login():
             return render_template('login/no-cookies.html')
                 
         if validateUser(request.form["password"],request.form["userNameOrEmail"]):
-            session["user"] = request.form["userNameOrEmail"].strip()
+            setUserSession(request.form["userNameOrEmail"].strip())
             return redirect(url_for("home"))
         else:
             flash("Invalid User Name or Password")
@@ -70,3 +70,6 @@ def logout():
     flash("Successfully Logged Out")
     return redirect(url_for("home"))
     
+    
+def setUserSession(userNameOrEmail):
+        session["user"] = userNameOrEmail
