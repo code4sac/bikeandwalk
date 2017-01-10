@@ -86,7 +86,7 @@ def edit(id=0):
             rec.userName = db.null()
         
         # Null values in db are returned as None
-        if rec.password != None and request.form['password'].strip() == '':
+        if str(rec.password) != 'NULL' and request.form['password'].strip() == '':
             # Don't change the password
             pass
         else:
@@ -200,7 +200,7 @@ def validForm():
     
     if request.form["userName"].strip() != '' and request.form["password"].strip() == '' and not passwordIsSet:
         goodForm = False
-        flash('There must be a password id there is a User Name')
+        flash('There must be a password if there is a User Name')
         
     if len(request.form["password"].strip()) == 0 and len(request.form["password"]) != 0 and passwordIsSet:
         goodForm = False
