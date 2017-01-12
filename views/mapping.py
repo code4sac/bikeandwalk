@@ -1,8 +1,8 @@
 ## Map view of trips
 from flask import g, redirect, url_for, \
-     render_template, flash, Blueprint
+     render_template, flash, Blueprint, request
 from bikeandwalk import db
-from models import Trip, Location
+from models import Trip, Location, Organization, CountEvent, Traveler, TravelerFeature, Feature
 from views.utils import printException
 from collections import namedtuple
 
@@ -11,13 +11,63 @@ mod = Blueprint('map', __name__)
 
 def setExits():
     g.title = 'Trips Map'
-
+    g.listURL = url_for('.display')
+    
 @mod.route('/map', methods=['POST', 'GET'])
 @mod.route('/map/', methods=['POST', 'GET'])
 def display():
     # Display the Trips map
     setExits()
     if db :
+        mapOrgs = ['0']
+        if request.form and 'mapOrgs' in request.form.keys():
+            mapOrgs = request.form.getlist('mapOrgs')
+            if '0' in mapOrgs:
+                # if 'ALL' is selected just show all
+                mapOrgs = ['0']
+                
+        mapEvents = ['0']
+        if request.form and 'mapEvents' in request.form.keys():
+            mapEvents = request.form.getlist('mapEvents')
+            if '0' in mapEvents:
+                # if 'ALL' is selected just show all
+                mapEvents = ['0']
+                
+        #Get all orgs
+        queryData = {"orgs":[]}
+        sql = "select * from organization where 1=1 "
+        sql += " order by 'name'"
+            
+        orgs = db.engine.execute(sql).fetchall()
+        
+        if orgs:
+            for org in orgs:
+                d = {'name':org.name, 'ID':str(org.ID)}
+                queryData['orgs'].append(d)
+                
+        # get the events
+        sql = "select * from count_event "
+        haswhere = False
+        if mapOrgs and len(mapOrgs) > 0 and '0' not in mapOrgs:
+            for i in range(len(mapOrgs)):
+                if i != '0' and mapOrgs[i].isdigit():
+                    if not haswhere:
+                        sql += " where count_event.organization_ID in ("
+                        haswhere=True
+                    sql += "%s" % (mapOrgs[i])
+                    if i < len(mapOrgs) -1 and mapOrgs[i+1].isdigit():
+                        sql +=","
+            if haswhere:
+                sql += ")"
+                
+        sql += " order by startDate desc"
+
+        events = db.engine.execute(sql).fetchall()
+        queryData['events'] = []
+        if events:
+            for event in events:
+                d = {'name':event.title, 'ID':str(event.ID)}
+                queryData['events'].append(d)
         
         # Jun 10, 2016 modified query to speed up map display
         # The order of the selected fields is critical to creating a proper namedtuple below
@@ -26,11 +76,39 @@ def display():
         sql += " ,(select latitude from location where location.id = trip.location_ID)"
         sql += " ,(select longitude from location where location.id = trip.location_ID)"
         sql += " ,sum(tripCount)"
-        sql += " from Trip group by location_ID;"
+        sql += " from Trip "
+        haswhere = False
+        if mapOrgs and '0' not in mapOrgs:
+            for i in range(len(mapOrgs)):
+                if mapOrgs[i].isdigit():
+                    if not haswhere:
+                        sql += " where ("
+                        haswhere = True
+                    sql += " trip.countEvent_ID in (select ID from count_event where organization_ID = %s) " % (mapOrgs[i])
+                    if i < len(mapOrgs) - 1 and mapOrgs[i+1].isdigit():
+                        sql += " or "
+            if haswhere:
+                sql += ") "
+                
+        if mapEvents and '0' not in mapEvents:
+            for i in range(len(mapEvents)):
+                if mapEvents[i].isdigit():
+                    if not haswhere:
+                        sql += " where ("
+                        haswhere = True
+                    else:
+                        sql += " and ("
+                    sql += " trip.countEvent_ID = %s " % (mapEvents[i])
+                    if i < len(mapEvents) - 1  and mapEvents[i+1].isdigit():
+                        sql += " or "
+            if haswhere:
+                sql += ") "
+            
+        sql += " group by location_ID "
+        
         recs = db.engine.execute(sql).fetchall()
         
-        markerData = {}
-        queryData = {"orgs":[{"name":"Another Org","ID":2},{"name":"SABA","ID":1},]}
+        markerData = None
         
         if recs:
             markerData = {"markers":[]}
@@ -48,10 +126,10 @@ def display():
                     
                     markerData["markers"].append(marker)
                     
-        markerData["cluster"] = True
-        markerData["zoomToFit"] = True
+            markerData["cluster"] = True
+            markerData["zoomToFit"] = True
         
-        return render_template('map/JSONmap.html', markerData=markerData, queryData=queryData)
+        return render_template('map/JSONmap.html', markerData=markerData, queryData=queryData, mapOrgs=mapOrgs, mapEvents=mapEvents)
 
     else:
         flash(printException('Could not open Database',"info"))

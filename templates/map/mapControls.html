@@ -1,56 +1,67 @@
 <div id="mapControls">
-	<div id="queryData" style="display:block;">'{{ queryData|tojson|safe }}'</div>
-	<h4>Search:</h4>
-	<table id="mapControlsTable">
-		<tr>
-			{% if queryData["orgs"] %}
-			<th>Org:</th>
-			<td>
-				<select id="mapOrgs" name="mapOrgs" class="mapSelect" multiple="multiple" size="4">
-					<option value="0">All</option>
-					{% for org in queryData["orgs"] %}
-					<option value="{{org.ID}}" {%if mapOrgs%}
-													{% for i in mapOrgs %}
-													 	{% if i.ID == org.ID %}select="select"{% endif %}
-													{% endfor %}
-												{%endif%}>{{org.name}}</option>
-					{% endfor %}
-				</select>
-			</td>
-			{% endif %}
-			{% if queryData["events"] %}
-			<th>Events:</th>
-			<td>
-				<select id="mapEvents" name="mapEvents" class="mapSelect" multiple="multiple" size="4">
-					<option value="0">All</option>
-					{% if events %} {% for event in events %}
-					<option value="{{event.ID}}" {% if mapEvents and mapEvents == event.ID %}select="select"{%endif%}>{{event.title}}</option>
-					{% endfor %} {% endif %}
-				</select>
-			</td>
-			{% endif %}
-			{% if travelers %}
-			<th>Travelers:</th>
-			<td>
-				<select id="mapTravelers" name="mapTravelers" class="mapSelect" multiple="multiple" size="4">
-					<option value="0">All</option>
-					{% if travelers %} {% for traveler in travelers %}
-					<option value="{{traveler.ID}}" {% if mapTravelers and mapTravelers == traveler.ID %}select="select"{%endif%}>{{traveler.name}}</option>
-					{% endfor %} {% endif %}
-				</select>
-			</td>
-			{% endif %}
-			{% if features %}
-			<th>Features:</th>
-			<td>
-				<select id="mapFeatures" name="mapFeatures" class="mapSelect" multiple="multiple" size="4">
-					<option value="0">All</option>
-					{% if features %} {% for feature in features %}
-					<option value="{{feature.ID}}" {% if mapFeatures and mapFeatures == feature.ID %}select="select"{%endif%}>{{feature.featureClass}} = {{feature.featureValue}}</option>
-					{% endfor %} {% endif %}
-				</select>
-			</td>
-			{% endif %}
-		</tr>
-	</table>
+	<form action="{{ g.listURL}}" method="post" accept-charset="utf-8">
+		<div id="queryData" style="display:block;">'{{ queryData|tojson|safe }}'</div>
+		<div style="display:block;">mapOrgs: '{{ mapOrgs }}'</div>
+		<div style="display:block;">mapEvents: '{{ mapEvents }}'</div>
+		<h4>Search:</h4>
+		<table id="mapControlsTable">
+			<tr>
+				{% if queryData["orgs"] %}
+				<th>Org:</th>
+				<td>
+					<select id="mapOrgs" name="mapOrgs" class="mapSelect" multiple size="4">
+						<option value="0" {% if mapOrgs and '0' in mapOrgs %}selected{% endif %} >All</option>
+						{% for org in queryData["orgs"] %}
+							<option value="{{org.ID}}" 
+								{%if mapOrgs and org.ID in mapOrgs %} selected {%endif%} 
+							>{{org.name}}</option>
+						{% endfor %}
+					</select>
+				</td>
+				{% endif %}
+				{% if queryData["events"] %}
+				<th>Events:</th>
+				<td>
+					<select id="mapEvents" name="mapEvents" class="mapSelect" multiple size="4">
+						<option value="0" {% if mapEvents and '0' in mapEvents %}selected{% endif %}>All</option>
+							{% for event in queryData['events'] %}
+								<option value="{{event.ID}}" 
+									{%if mapEvents%}
+										{% for i in mapEvents %}
+										 	{% if i == event.ID %}selected="selected"{% endif %}
+										{% endfor %}
+									{%endif%}
+								>{{event.name}}</option>
+							{% endfor %}
+					</select>
+				</td>
+				{% endif %}
+				{% if travelers %}
+				<th>Travelers:</th>
+				<td>
+					<select id="mapTravelers" name="mapTravelers" class="mapSelect" multiple size="4">
+						<option value="0">All</option>
+						{% if travelers %} {% for traveler in travelers %}
+						<option value="{{traveler.ID}}" {% if mapTravelers and mapTravelers == traveler.ID %}selected="selected"{%endif%}>{{traveler.name}}</option>
+						{% endfor %} {% endif %}
+					</select>
+				</td>
+				{% endif %}
+				{% if features %}
+				<th>Features:</th>
+				<td>
+					<select id="mapFeatures" name="mapFeatures" class="mapSelect" multiple size="4">
+						<option value="0">All</option>
+						{% if features %} {% for feature in features %}
+						<option value="{{feature.ID}}" {% if mapFeatures and mapFeatures == feature.ID %}selected="selected"{%endif%}>{{feature.featureClass}} = {{feature.featureValue}}</option>
+						{% endfor %} {% endif %}
+					</select>
+				</td>
+				{% endif %}
+				<td>
+					<p><input type="submit" name="Search" value="Search" /></p>
+				</td>
+			</tr>
+		</table>
+	</form>
 </div>
