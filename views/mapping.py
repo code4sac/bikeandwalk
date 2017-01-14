@@ -191,18 +191,17 @@ def export():
     
     if recs:
     # the columns output are:
-    #   Location Name, Location ID, Latitude, Longitude, sum(tripCount)*, tripCount, 
-    #      tripDate, Event Start, Event End, Turn direction, Traveler name
-    #  * - sum(tripCount) is only in sumary style
+    #   Location, Location ID, Latitude, Longitude, Trip Count, 
+    #       Trip Date, Turn direction, Traveler name, Organization Name, Event Title, Event Start, Event End
         csv = ""
         for rec in recs:
             row = ""
             if exportStyle == "summary":
-                headers = "Location Name,Latitude,Longitude,Trip Count,Event Start,Event End\n"
-                row = "\"%s\",\"%s\",\"%s\",%d,\"%s\",\"%s\"\n" % (rec[0], rec[2], rec[3], rec[4], rec[7], rec[8] )
+                headers = "Location Name,Latitude,Longitude,Trip Count,Organization Name,Event Title,Event Start,Event End\n"
+                row = "\"%s\",\"%s\",\"%s\",%d,\"%s\",\"%s\",\"%s\",\"%s\"\n" % (rec[0], rec[2], rec[3], rec[4], rec[8], rec[9], rec[10], rec[11])
             if exportStyle == "detail":
-                headers = "Location Name,Latitude,Longitude,Trip Count,Trip Date,Event Start,Event End,Turn,Traveler\n"
-                row = "\"%s\",\"%s\",\"%s\",%d,\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"\n" % (rec[0], rec[2], rec[3], rec[4], rec[5], rec[6], rec[7], rec[8], rec[9])
+                headers = "Location Name,Latitude,Longitude,Trip Count,Trip Date,Turn,Traveler,Organization Name,Event Title,Event Start,Event End\n"
+                row = "\"%s\",\"%s\",\"%s\",%d,\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"\n" % (rec[0], rec[2], rec[3], rec[4], rec[5], rec[6], rec[7], rec[8], rec[9], rec[10], rec[11])
             if exportStyle == "nbpd":
                 headers = "NBPD Report not available yet"
                 row = ""
@@ -231,6 +230,7 @@ def queryTripData(mapOrgs, mapEvents, exportStyle='summary'):
     #   Location Name, Location ID, Latitude, Longitude, sum(tripCount), tripCount, 
     #      tripDate, Event Start, Event End, Turn direction, Traveler name
     
+    # the first 5 fields are used for map display
     sql = "Select "
     sql += "location.locationName, "
     sql += "location.ID, "
@@ -239,14 +239,16 @@ def queryTripData(mapOrgs, mapEvents, exportStyle='summary'):
     
     if exportStyle == "summary" :
         sql += "sum(tripCount), " #using a summary function will compress detail
+    else:
+        sql += "tripCount, "
         
-    ## fields above are used for map display
-    sql += "tripCount, "
-    sql += "tripDate, "
-    sql += "strftime('%Y-%m-%d %H:%M', count_event.startDate) as 'Count Start', "
-    sql += "strftime('%Y-%m-%d %H:%M', count_event.endDate) as 'Count End', "
-    sql += "trip.turnDirection as 'Turn', "
-    sql += "traveler.name as 'Traveler' "
+    sql += "strftime('%Y-%m-%d %H:%M:%S', tripDate), "
+    sql += "trip.turnDirection, "
+    sql += "traveler.name, "
+    sql += "organization.name, "
+    sql += "count_event.title, "
+    sql += "strftime('%Y-%m-%d %H:%M', count_event.startDate), "
+    sql += "strftime('%Y-%m-%d %H:%M', count_event.endDate) "
     
     sql += "from trip JOIN location, organization, count_event, traveler "
     
@@ -283,12 +285,12 @@ def queryTripData(mapOrgs, mapEvents, exportStyle='summary'):
     sql += "trip.traveler_ID = traveler.ID and "
     sql += "count_event.organization_ID = organization.ID "
     if exportStyle == "summary":
-        sql += "Group by location.ID "
-        sql += "Order by location.locationName"
+        sql += "Group by organization.name, count_event.ID, location.Locationname "
+        sql += "Order by organization.name, count_event.ID, location.locationName"
         
     else:
         #Detail
-        sql += "Order by organization.name, count_event.startDate, location.locationName, trip.turnDirection, traveler.name"
+        sql += "Order by organization.name, count_event.ID, location.locationName, trip.tripDate, trip.turnDirection, traveler.name"
         
     #print sql
     
@@ -328,7 +330,7 @@ def getSearchFormSelectValues(mapOrgs,mapEvents):
     else:
         mapOrgs.append('0')
         
-    if request.form and 'mapEvents' in request.form.keys() and '0' not in mapOrgs:
+    if request.form and 'mapEvents' in request.form.keys():
         tempList = request.form.getlist('mapEvents')
         if '0' in tempList:
             # if 'ALL' is selected just show all
