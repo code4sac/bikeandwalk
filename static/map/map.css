@@ -14,3 +14,35 @@
 .mapPopupTripCount {
   font-style:italic;
 }
+
+div#mapControls, div#mapExport, div#mapExport {
+    margin:10pt 0;
+}
+div#mapExport {display:none;}
+
+#mapControlsTable, #exportTable {
+    background-color:#eee;
+    border-collapse:collapse;
+    border: #aaa solid 1pt;
+}
+
+#mapControlsTable th, #mapControlsTable td, #exportTable th, #exportTable td {
+    border:none;
+    font-size:10pt;
+    padding:2px 2px 2px 2px;
+}
+#mapControlsTable th, #exportTable th {
+    vertical-align:top;
+    text-align:right;
+    padding:2px 2px 2px 8px;
+}
+
+#exportTable th, #exportTable td{
+    padding: 8px 2px 0px 2px;
+}
+
+.mapSelect {}
+
+.disabled {
+    color:#999;
+}
