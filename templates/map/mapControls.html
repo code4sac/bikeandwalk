@@ -1,19 +1,16 @@
 <div id="mapControls">
-	<form action="{{ g.listURL}}" method="post" accept-charset="utf-8">
-		<div id="queryData" style="display:block;">'{{ queryData|tojson|safe }}'</div>
-		<div style="display:block;">mapOrgs: '{{ mapOrgs }}'</div>
-		<div style="display:block;">mapEvents: '{{ mapEvents }}'</div>
+	<form action="{{ g.listURL}}" name="mapControlsForm" method="post" accept-charset="utf-8">
 		<h4>Search:</h4>
 		<table id="mapControlsTable">
 			<tr>
 				{% if queryData["orgs"] %}
 				<th>Org:</th>
 				<td>
-					<select id="mapOrgs" name="mapOrgs" class="mapSelect" multiple size="4">
-						<option value="0" {% if mapOrgs and '0' in mapOrgs %}selected{% endif %} >All</option>
+					<select id="mapOrgs" name="mapOrgs" class="mapSelect" multiple size="4" >
+						<option value="0" {% if queryData["mapOrgs"] and '0' in queryData["mapOrgs"] %}selected{% endif %} >All</option>
 						{% for org in queryData["orgs"] %}
 							<option value="{{org.ID}}" 
-								{%if mapOrgs and org.ID in mapOrgs %} selected {%endif%} 
+								{%if queryData["mapOrgs"] and org.ID in queryData["mapOrgs"] %} selected {%endif%} 
 							>{{org.name}}</option>
 						{% endfor %}
 					</select>
@@ -23,14 +20,10 @@
 				<th>Events:</th>
 				<td>
 					<select id="mapEvents" name="mapEvents" class="mapSelect" multiple size="4">
-						<option value="0" {% if mapEvents and '0' in mapEvents %}selected{% endif %}>All</option>
+						<option value="0" {% if queryData["mapEvents"] and '0' in queryData['mapEvents'] %}selected{% endif %}>All</option>
 							{% for event in queryData['events'] %}
 								<option value="{{event.ID}}" 
-									{%if mapEvents%}
-										{% for i in mapEvents %}
-										 	{% if i == event.ID %}selected="selected"{% endif %}
-										{% endfor %}
-									{%endif%}
+									{%if queryData["mapEvents"] and event.ID in queryData["mapEvents"] %} selected {%endif%} 
 								>{{event.name}}</option>
 							{% endfor %}
 					</select>
@@ -58,10 +51,57 @@
 					</select>
 				</td>
 				{% endif %}
-				<td>
-					<p><input type="submit" name="Search" value="Search" /></p>
-				</td>
+				<th>
+					<p><input id="searchButton" type="submit" name="searchButton" value="Search" /></p>
+					<p><button id="exportButton" type="button" name="exportButton" >Export</button></p>
+				</th>
 			</tr>
 		</table>
 	</form>
+	<div id="mapExport">
+		<h4>Export Options...</h4>
+		<form action="{{ g.exportURL }}" id="mapExportForm" name="mapExportForm" method="post" accept-charset="utf-8">
+			<textarea style="display:none;" rows="3" cols="80" readonly id="queryDataArea" >{{ queryData|tojson|safe }}</textarea>
+			<table id="exportTable">
+				<tr>
+					<th>Export Style:</th>
+					<td>
+						<select id="exportStyle" name="exportStyle">
+							<option value="summary" selected >Summary</option>
+							<option value="detail">Full Detail</option>
+							<option value="nbpd">NBPD Report</option>
+						</select>
+					</td>
+					<th>
+						<p><input type="submit" value="Download"></p>
+					</th>
+				</tr>
+			</table>
+		</form>
+	</div>
 </div>
+<script>
+	// prevent export if search criteria has changed
+	$('#exportButton').click(function(){$('#mapExport').toggle();});
+	$('select.mapSelect').change(
+		function(){
+			$('#mapExport').hide();
+			$('#exportButton').addClass('disabled').unbind('click').click(
+				function(){
+					alert('Selection changed.\nClick Search button first.');
+					return false;
+				}
+			);
+		}
+		)
+		
+	// can't seem to get the json data into an input field, so append a hidden textarea
+	 $("#mapExportForm").submit( function(eventObj) {
+			var theQuery = $('#queryDataArea').text();
+	      $('<input />').attr('type', 'hidden')
+	          .attr('name', "queryData")
+	          .attr('value', theQuery)
+	          .appendTo('#mapExportForm');
+	      return true;
+	  });
+</script>
