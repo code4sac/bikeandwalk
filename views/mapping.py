@@ -191,8 +191,9 @@ def export():
     
     if recs:
     # the columns output are:
-    #   Location Name, Location ID, Latitude, Longitude, sum(tripCount), tripCount, 
+    #   Location Name, Location ID, Latitude, Longitude, sum(tripCount)*, tripCount, 
     #      tripDate, Event Start, Event End, Turn direction, Traveler name
+    #  * - sum(tripCount) is only in sumary style
         csv = ""
         for rec in recs:
             row = ""
@@ -201,7 +202,7 @@ def export():
                 row = "\"%s\",\"%s\",\"%s\",%d,\"%s\",\"%s\"\n" % (rec[0], rec[2], rec[3], rec[4], rec[7], rec[8] )
             if exportStyle == "detail":
                 headers = "Location Name,Latitude,Longitude,Trip Count,Trip Date,Event Start,Event End,Turn,Traveler\n"
-                row = "\"%s\",\"%s\",\"%s\",%d,\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"\n" % (rec[0], rec[2], rec[3], rec[5], rec[6], rec[7], rec[8], rec[9], rec[10])
+                row = "\"%s\",\"%s\",\"%s\",%d,\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"\n" % (rec[0], rec[2], rec[3], rec[4], rec[5], rec[6], rec[7], rec[8], rec[9])
             if exportStyle == "nbpd":
                 headers = "NBPD Report not available yet"
                 row = ""
@@ -231,11 +232,14 @@ def queryTripData(mapOrgs, mapEvents, exportStyle='summary'):
     #      tripDate, Event Start, Event End, Turn direction, Traveler name
     
     sql = "Select "
-    sql += "location.locationName as 'Location', "
-    sql += "location.ID as 'Location ID', "
-    sql += "location.latitude as 'lat', "
-    sql += "location.longitude as 'lng', "
-    sql += "sum(tripCount), "
+    sql += "location.locationName, "
+    sql += "location.ID, "
+    sql += "location.latitude, "
+    sql += "location.longitude, "
+    
+    if exportStyle == "summary" :
+        sql += "sum(tripCount), " #using a summary function will compress detail
+        
     ## fields above are used for map display
     sql += "tripCount, "
     sql += "tripDate, "
@@ -284,7 +288,6 @@ def queryTripData(mapOrgs, mapEvents, exportStyle='summary'):
         
     else:
         #Detail
-        sql += "Group by trip.turnDirection, traveler.ID, location.locationName "
         sql += "Order by organization.name, count_event.startDate, location.locationName, trip.turnDirection, traveler.name"
         
     #print sql
