@@ -1,3 +1,8 @@
+# Version 0.01.0
+Not really a release, but I thought it would be good to draw a line under the work so far.
+
+--Bill Leddy
+
 # The Bike and Walk Project
 
 The goal of this project is to create an on-line traffic counting tool to aid groups promoting 
