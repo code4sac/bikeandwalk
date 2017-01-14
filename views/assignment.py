@@ -177,7 +177,8 @@ def editFromList(id="0"):
         
         sql = 'select ID,locationName from location where organization_ID = %d \
                and ID not in \
-               (select location_ID from assignment where countEvent_ID  = %d);' \
+               (select location_ID from assignment where countEvent_ID  = %d) \
+               order by locationName;' \
             % (g.orgID, ceID)
         
         locations = db.engine.execute(sql).fetchall()
