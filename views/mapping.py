@@ -21,39 +21,18 @@ def display():
     # Display the Trips map
     setExits()
     if db :
-        mapOrgs = ['0']
-        if request.form and 'mapOrgs' in request.form.keys():
-            mapOrgs = request.form.getlist('mapOrgs')
-            if '0' in mapOrgs:
-                # if 'ALL' is selected just show all
-                mapOrgs = ['0']
-                
-        mapEvents = ['0']
-        if request.form and 'mapEvents' in request.form.keys():
-            mapEvents = request.form.getlist('mapEvents')
-            if '0' in mapEvents:
-                # if 'ALL' is selected just show all
-                mapEvents = ['0']
-                
-        ### TODO - remove any ID's from mapEvents that don't belong to a selected org in mapOrgs
-        ###    if none of the events belong to a selected org, set the mapEvents to ['0']
+        mapOrgs = []
+        mapEvents = []
+        getSearchFormSelectValues(mapOrgs,mapEvents) # all parameters must be empty lists
         
         queryData = {}
         queryData["mapOrgs"] = mapOrgs
         queryData["mapEvents"] = mapEvents
+        queryData['mapType'] = 'trips'
         
         #Get all orgs
-        queryData["orgs"] = []
-        sql = "select * from organization where 1=1 "
-        sql += " order by 'name'"
-            
-        orgs = db.engine.execute(sql).fetchall()
-        
-        if orgs:
-            for org in orgs:
-                d = {'name':org.name, 'ID':str(org.ID)}
-                queryData['orgs'].append(d)
-                
+        getOrgs(queryData)
+
         # get the events
         sql = "select * from count_event "
         haswhere = False
@@ -112,32 +91,54 @@ def display():
 @mod.route('/report/locationMap/', methods=['POST', 'GET'])
 def location():
     setExits()
-    g.title = 'All Locations'
+    g.title = 'Count Locations'
     
     if db :
-        if g.orgID:
-            recs = Location.query.filter(Location.organization_ID == g.orgID)
-        else:
-            recs = Location.query.all()
-            
-        markerData = {}
         queryData = {}
+        queryData['mapType'] = 'locations'
+
+        #Get all orgs
+        getOrgs(queryData)
         
+        mapOrgs = []
+        mapEvents = []
+        if not request.form and g.orgID:
+            queryData['mapOrgs'] = [str(g.orgID)]
+        else:
+            getSearchFormSelectValues(mapOrgs,mapEvents) # all parameters must be empty lists
+            queryData['mapOrgs'] = mapOrgs #We don't need mapEvents for this map
+
+        sql = "select locationName, ID, latitude, longitude from location "
+        if '0' not in mapOrgs:
+            orgIDs = ""
+            for i in mapOrgs:
+                orgIDs += i + ","
+            sql += " where organization_ID in (%s) " % (orgIDs[0:-1])
+        
+        recs = db.engine.execute(sql).fetchall()
+        
+        markerData = {}
+        markerData["cluster"] = True
+        markerData["zoomToFit"] = False # can't zoom if there are no markers
         if recs:
-            markerData = {"markers":[]}
+            markerData["markers"] = []
 
             for rec in recs:
-                marker = makeBasicMarker(rec) # returns a dict or None
+                #db.engine.execute returns a list of sets without column names
+                #namedtuple creates an object that makeBasicMarker can access with dot notation
+                Fields = namedtuple('record', 'locationName ID latitude longitude')
+                record = Fields(rec[0], rec[1], rec[2], rec[3])
+
+                marker = makeBasicMarker(record) # returns a dict or None
                 
                 if marker:
-                    popup = render_template('map/locationListPopup.html', rec=rec)
+                    popup = render_template('map/locationListPopup.html', rec=record)
                     popup = escapeTemplateForJson(popup)
                     marker['popup'] = popup
                     
                     markerData["markers"].append(marker)
                     
-        markerData["cluster"] = True
-        markerData["zoomToFit"] = True
+                markerData["zoomToFit"] = True
             
         return render_template('map/JSONmap.html', markerData=markerData, queryData=queryData)
         
@@ -308,4 +309,43 @@ def makeBasicMarker(rec):
         return marker
     return None
     
+def getSearchFormSelectValues(mapOrgs,mapEvents):
+    # all parameters must be empty lists
+    # lists will be manipulated directly. 
+    # DON'T ASSIGN VALUES TO LISTS - USE .append()
     
+    if request.form and 'mapOrgs' in request.form.keys():
+        tempList = request.form.getlist('mapOrgs')
+        if '0' in tempList:
+            # if 'ALL' is selected just show all
+            mapOrgs.append('0')
+        else:
+            for i in tempList:
+                mapOrgs.append(i)
+    else:
+        mapOrgs.append('0')
+        
+    if request.form and 'mapEvents' in request.form.keys() and '0' not in mapOrgs:
+        tempList = request.form.getlist('mapEvents')
+        if '0' in tempList:
+            # if 'ALL' is selected just show all
+            mapEvents.append('0')
+        else:
+            for i in tempList:
+                mapEvents.append(i)
+    else:
+        mapEvents.append('0')
+    
+    
+def getOrgs(queryData):
+    # queryData is a dictionary
+    queryData["orgs"] = []
+    sql = "select * from organization where 1=1 "
+    sql += " order by 'name'"
+        
+    orgs = db.engine.execute(sql).fetchall()
+    
+    if orgs:
+        for org in orgs:
+            d = {'name':org.name, 'ID':str(org.ID)}
+            queryData['orgs'].append(d)
