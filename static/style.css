@@ -72,7 +72,7 @@ code {
     line-height:.8;
 }
 
- input, textarea {
+ input, textarea, button {
     font-size:10pt;
     font-family:helvetica,arial,sans-serif;
  }
