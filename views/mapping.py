@@ -7,6 +7,7 @@ from views.utils import printException
 from collections import namedtuple
 import json
 from datetime import datetime
+from views.trip import getAssignmentTripTotal
 
 mod = Blueprint('map', __name__)
 
@@ -219,7 +220,72 @@ def export():
     
     return response
         
+@mod.route('/report/map/liveCount/', methods=['post', 'get'])
+def liveCount():
+    """A simple page to show the counts for a specific count event.
+    The idea is that each refresh will update the location count displays
+    """
+    
+    g.title = "Live Count"
+    
+    #get the form data
+    mapOrgs = []
+    mapEvents = []
+    getSearchFormSelectValues(mapOrgs,mapEvents) # all parameters must be empty lists
+    
+    queryData = {}
+    queryData["mapOrgs"] = mapOrgs
+    queryData["mapEvents"] = mapEvents
+    queryData['mapType'] = 'liveCount'
 
+    #Get all orgs
+    getOrgs(queryData)
+
+    # get the events
+    sql = "select * from count_event "
+    haswhere = False
+    if mapOrgs and len(mapOrgs) > 0 and '0' not in mapOrgs:
+        for i in range(len(mapOrgs)):
+            if i != '0' and mapOrgs[i].isdigit():
+                if not haswhere:
+                    sql += " where count_event.organization_ID in ("
+                    haswhere=True
+                sql += "%s" % (mapOrgs[i])
+                if i < len(mapOrgs) -1 and mapOrgs[i+1].isdigit():
+                    sql +=","
+        if haswhere:
+            sql += ")"
+            
+    sql += " order by startDate desc"
+
+    events = db.engine.execute(sql).fetchall()
+    
+    queryData['events'] = []
+    if events:
+        for event in events:
+            d = {'name':event.title, 'ID':str(event.ID)}
+            queryData['events'].append(d)
+    
+    
+    #Select assignment records
+    eventIDs = ""
+    for i in mapEvents:
+        if i.isdigit():
+            eventIDs += i + ","
+        
+    sql = "select assignment.ID, assignment.countEvent_ID, assignment.location_ID, \
+            count_event.title, location.locationName, \
+            (select sum(trip.tripCount) from trip where trip.countEvent_ID in (%s) and trip.location_ID = location.ID) as tripTotal \
+            from assignment join location, count_event where \
+            assignment.countEvent_ID in (%s) \
+            and location.ID = assignment.location_ID \
+            and count_event.ID = assignment.countEvent_ID \
+            order by count_event.title, tripTotal desc, location.locationName" % (eventIDs[0:-1],eventIDs[0:-1])
+
+    recs = db.engine.execute(sql).fetchall()
+    
+    #Display the page
+    return render_template('map/liveCount.html', queryData=queryData, assignments=recs)
     
 def queryTripData(mapOrgs, mapEvents, exportStyle='summary'):
     
