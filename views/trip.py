@@ -197,20 +197,24 @@ def queryTripData(searchOrgs, searchEvents, searchType='summary'):
         eventIDs = eventIDs[0:-1] # remove trailing comma
     
     # the first 5 fields are used for map display
-    sql = "Select "
+    sql = "SELECT "
     if searchType == 'map':
-        sql += " distinct "
+        sql += " DISTINCT "
     sql += "location.locationName, "
     sql += "location.ID, "
     sql += "location.latitude, "
     sql += "location.longitude, "
     
     if searchType == 'map':
-        sql += "(select sum(trip.tripCount) from trip where \
-                trip.countEvent_ID in (%s) and location.ID = trip.location_ID) as locationTotal " % (eventIDs)
+        sql += "(SELECT SUM(trip.tripCount) FROM trip WHERE "
+        if len(eventIDs) >0:
+            sql  += "trip.countEvent_ID IN (%s) AND " % (eventIDs)
+            
+        sql += "location.ID = trip.location_ID) AS locationTotal "
+        
     if searchType != 'map':
         if searchType == "summary" :
-            sql += "sum(tripCount), " #using a summary function will compress detail
+            sql += "SUM(tripCount), " #using a summary function will compress detail
         if searchType in ("detail", "listing") :
             sql += " tripCount, "
         sql += "strftime('%Y-%m-%d %H:%M:%S', tripDate), "
@@ -223,31 +227,31 @@ def queryTripData(searchOrgs, searchEvents, searchType='summary'):
         if searchType == 'listing':
             sql += ", trip.ID, tripDate "
             
-    sql += "from trip JOIN location, organization, count_event, traveler "
-    sql += "Where "
+    sql += "FROM trip JOIN location, organization, count_event, traveler "
+    sql += "WHERE "
 
     if len(orgIDs) > 0:
-        sql += "(organization.ID in ( %s)) " % (orgIDs)
+        sql += "(organization.ID IN ( %s)) " % (orgIDs)
 
     if len(eventIDs) > 0:
         if len(orgIDs) >0:
-            sql += " and "
-        sql += "(count_event.ID in (%s)) " % (eventIDs)
+            sql += " AND "
+        sql += "(count_event.ID IN (%s)) " % (eventIDs)
 
     if len(orgIDs)+len(eventIDs) > 0:
-        sql += " and "
+        sql += " AND "
 
-    sql += "trip.countEvent_ID = count_event.ID and "
-    sql += "trip.location_ID = location.ID and "
-    sql += "trip.traveler_ID = traveler.ID and "
+    sql += "trip.countEvent_ID = count_event.ID AND "
+    sql += "trip.location_ID = location.ID AND "
+    sql += "trip.traveler_ID = traveler.ID AND "
     sql += "count_event.organization_ID = organization.ID "
     if searchType == "summary":
-        sql += "Group by organization.name, count_event.ID, location.Locationname "
-        sql += "Order by organization.name, count_event.startDate, location.locationName"
+        sql += "GROUP BY organization.name, count_event.ID, location.Locationname "
+        sql += "ORDER BY organization.name, count_event.startDate, location.locationName"
 
     else:
         #Detail
-        sql += "Order by organization.name, count_event.startDate, location.locationName, trip.tripDate, trip.turnDirection, traveler.name"
+        sql += "ORDER BY organization.name, count_event.startDate, location.locationName, trip.tripDate, trip.turnDirection, traveler.name"
 
     print sql
 
