@@ -360,3 +360,34 @@ table.edit-form-table td {
     font-size:inherit;
     cursor:inherit;
 }
+
+/* the generic list and map search form */
+div#searchControls, div#mapExport, div#mapExport {
+    margin:10pt 0;
+}
+div#mapExport {display:none;}
+
+table.searchForm {
+    background-color:#eee;
+    border-collapse:collapse;
+    border: #aaa solid 1pt;
+}
+
+.searchForm th, .searchForm td, .searchForm th, .searchForm td {
+    border:none;
+    font-size:10pt;
+    padding:2px 2px 2px 2px;
+}
+.searchForm th, .searchForm th {
+    vertical-align:top;
+    text-align:right;
+    padding:2px 2px 2px 8px;
+}
+
+#exportTable.searhcForm th, #exportTable.searhcForm td{
+    padding: 8px 2px 0px 2px;
+}
+
+.disabled {
+    color:#999;
+}

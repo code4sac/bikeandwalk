@@ -2,28 +2,35 @@
 {% block title %}{{ g.title }} List{% endblock %}
 {% block body %}
 	<h2>{{ g.title }} List</h2>
+	{% if queryData %}
+		{% include "searchControls.html" %}
+	{% endif %}
 	{%if recs %}
 		<table class="datatable">
-		<tr>
-			<th>ID</th>
-			<th>Count</th>
-			<th>Date / Time</th>
-			<th>Turn Direction</th>
-			<th>Location</th>
-			<th>Traveler</th>
-		</tr>
-		{% for rec in recs %}
-	    <tr>
-			<td><a href="{{ g.editURL }}{{ rec.ID }}/">{{ rec.ID }}</a></td>
-			<td>{{ rec.tripCount }}</td>
-			<td><a href="{{ g.editURL }}{{ rec.ID }}/">{{ rec.tripDate }}</a></td>
-			<td>{{ rec.turnDirection }}</td>
-			<td>{{ rec.locationName }}</td>
-			<td>{{ rec.travelerName }}</td>
-		</tr>
-		{% endfor %}
-	  </table>
-  	{% else %}
+			<tr>
+				<th>selected</th>
+				<th>ID</th>
+				<th>Count</th>
+				<th>Date / Time</th>
+				<th>Turn</th>
+				<th>Event</th>
+				<th>Location</th>
+				<th>Traveler</th>
+			</tr>
+			{% for rec in recs %}
+		    <tr>
+				<td><input type="checkbox" name="datarow" value="{{rec.ID}}" /></td>
+				<td><a href="{{ g.editURL }}{{ rec.ID }}/">{{ rec.ID }}</a></td>
+				<td>{{ rec.tripCount }}</td>
+				<td><a href="{{ g.editURL }}{{ rec.ID }}/">{{ rec.tripDate }}</a></td>
+				<td>{{ rec.turnDirection }}</td>
+				<td>{{ rec.eventTitle }}</td>
+				<td>{{ rec.locationName }}</td>
+				<td>{{ rec.travelerName }}</td>
+			</tr>
+			{% endfor %}
+		</table>
+	{% else %}
     	<p><em>No {{ g.title }}s here so far</em></p>
 	{% endif %}
   	<p id="addRecord"><a href="{{ g.editURL }}0/">Add a new {{ g.title }}</a></p>

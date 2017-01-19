@@ -1,0 +1,101 @@
+<div id="searchControls">
+	<form action="" name="searchControlsForm" method="post" accept-charset="utf-8">
+		<h4>Search:</h4>
+		<table id="searchControlsTable" class="searchForm">
+			<tr>
+				{% if queryData and queryData["orgs"] %}
+				<th>Org:</th>
+				<td>
+					<select id="searchOrgs" name="searchOrgs" class="searchSelect" {% if queryData['selectType'] and queryData['selectType'] == 'multiple' %} multiple size="4" {% endif %} >
+						{% if queryData['includeAllOption'] != False %}<option value="0" {% if queryData["searchOrgs"] and '0' in queryData["searchOrgs"] %}selected{% endif %} >All</option>{% endif %}
+						{% for org in queryData["orgs"] %}
+							<option value="{{org.ID}}" 
+								{%if queryData["searchOrgs"] and org.ID in queryData["searchOrgs"] %} selected {%endif%} 
+							>{{org.name}}</option>
+						{% endfor %}
+					</select>
+				</td>
+				{% endif %}
+				{% if queryData and queryData["events"] %}
+				<th>Events:</th>
+				<td>
+					<select id="searchEvents" name="searchEvents" class="searchSelect" {% if queryData['selectType'] and queryData['selectType'] == 'multiple' %} multiple size="4" {% endif %} >
+						{% if queryData['includeAllOption'] != False %}<option value="0" {% if queryData["searchEvents"] and '0' in queryData['searchEvents'] %}selected{% endif %}>All</option>{% endif %}
+							{% for event in queryData['events'] %}
+								<option value="{{event.ID}}" 
+									{%if queryData["searchEvents"] and event.ID in queryData["searchEvents"] %} selected {%endif%} 
+								>{{event.name}}</option>
+							{% endfor %}
+					</select>
+				</td>
+				{% endif %}
+				{% if queryData and queryData["travelers"] %}
+				<th>Travelers:</th>
+				<td>
+					travelers go here
+				</td>
+				{% endif %}
+				{% if queryData and queryData["features"] %}
+				<th>Features:</th>
+				<td>
+					Features go here
+				</td>
+				{% endif %}
+				<th>
+					<p><input id="searchButton" type="submit" name="searchButton" value="Search" /></p>
+				{% if queryData['searchType'] == 'trips' %}
+					<p><button id="exportButton" type="button" name="exportButton" >Export</button></p>
+				{% endif %}
+				</th>
+			</tr>
+		</table>
+	</form>
+	{% if queryData['searchType'] == 'trips' %}
+	<div id="tripExport">
+		<h4>Export Options...</h4>
+		<form action="{{ g.exportURL }}" id="tripExportForm" name="tripExportForm" method="post" accept-charset="utf-8">
+			<textarea style="display:none;" rows="3" cols="80" readonly id="queryDataArea" >{{ queryData|tojson|safe }}</textarea>
+			<table id="exportTable" class="searchForm">
+				<tr>
+					<th>Export Style:</th>
+					<td>
+						<select id="exportStyle" name="exportStyle">
+							<option value="summary" selected >Summary</option>
+							<option value="detail">Full Detail</option>
+							<!-- <option value="nbpd">NBPD Report</option> -->
+						</select>
+					</td>
+					<th>
+						<p><input type="submit" value="Download"></p>
+					</th>
+				</tr>
+			</table>
+		</form>
+		<script>
+			// prevent export if search criteria has changed
+			$('#exportButton').click(function(){$('#tripExport').toggle();});
+			$('select.searchSelect').change(
+				function(){
+					$('#tripExport').hide();
+					$('#exportButton').addClass('disabled').unbind('click').click(
+						function(){
+							alert('Selection changed.\nClick Search button first.');
+							return false;
+						}
+					);
+				}
+				)
+		
+			// can't seem to get the json data into an input field, so append a hidden textarea
+			 $("#tripExportForm").submit( function(eventObj) {
+					var theQuery = $('#queryDataArea').text();
+			      $('<input />').attr('type', 'hidden')
+			          .attr('name', "queryData")
+			          .attr('value', theQuery)
+			          .appendTo('#tripExportForm');
+			      return true;
+			  });
+		</script>
+	</div>
+	{% endif %}
+</div>

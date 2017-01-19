@@ -6,6 +6,7 @@ from views.utils import printException, getCountEventChoices, \
     getLocationChoices, getTravelerChoices, getTurnDirectionChoices, cleanRecordID
 from forms import TripForm
 from datetime import datetime
+from views import searchForm
 
 mod = Blueprint('trip',__name__)
 
@@ -15,15 +16,32 @@ def setExits():
     g.deleteURL = url_for('.delete')
     g.title = 'Trip'
     
-@mod.route("/trip/", methods=['GET'])
-@mod.route("/trip", methods=['GET'])
+@mod.route("/trip/", methods=['GET', 'POST'])
+@mod.route("/trip", methods=['GET', 'POST'])
 def display():
     setExits()
     if db :
         recs = None
-        recs = Trip.query.order_by(Trip.tripDate)
+        queryData = {}
+        queryData['searchType'] = 'tripList'
+        queryData['selectType'] = 'single'
+        queryData['includeAllOption'] = False
+        
+        searchOrgs = []
+        searchEvents = []
+        searchForm.getSelectValues(request.form,searchOrgs,searchEvents)
+        queryData['searchOrgs'] = searchOrgs
+        queryData['searchEvents'] = searchEvents
+        
+        #Get all orgs
+        searchForm.orgsToDict(queryData)
 
-        return render_template('trip/trip_list.html', recs=recs)
+        #get the Events
+        searchForm.eventsToDict(queryData)
+        
+        recs = queryTripData(searchOrgs, searchEvents, exportStyle='listing')
+        
+        return render_template('trip/trip_list.html', recs=recs, queryData=queryData )
         
     else:
         flash(printException('Could not open Database',"info"))
@@ -155,3 +173,75 @@ def getLocationTripTotal(locationID):
             
     return result
 
+def queryTripData(searchOrgs, searchEvents, exportStyle='summary'):
+
+    # the columns output are:
+    #   Location Name, Location ID, Latitude, Longitude, sum(tripCount), tripCount, 
+    #      tripDate, Event Start, Event End, Turn direction, Traveler name
+
+    # the first 5 fields are used for map display
+    sql = "Select "
+    sql += "location.locationName, "
+    sql += "location.ID, "
+    sql += "location.latitude, "
+    sql += "location.longitude, "
+
+    if exportStyle == "summary" :
+        sql += "sum(tripCount), " #using a summary function will compress detail
+    else:
+        sql += "tripCount, "
+
+    sql += "strftime('%Y-%m-%d %H:%M:%S', tripDate), "
+    sql += "trip.turnDirection, "
+    sql += "traveler.name as travelerName, "
+    sql += "organization.name, "
+    sql += "count_event.title as eventTitle, "
+    sql += "strftime('%Y-%m-%d %H:%M', count_event.startDate), "
+    sql += "strftime('%Y-%m-%d %H:%M', count_event.endDate) "
+    if exportStyle == 'listing':
+        sql += ", trip.ID, tripDate "
+    sql += "from trip JOIN location, organization, count_event, traveler "
+
+    sql += "Where "
+
+    orgIDs = ""
+    if searchOrgs and '0' not in searchOrgs:
+        for i in searchOrgs:
+            if i.isdigit():
+                orgIDs += i + ","
+
+        if len(orgIDs) > 0:
+            orgIDs = orgIDs[0:-1] # remove trailing comma
+            sql += "(organization.ID in ( %s)) " % (orgIDs)
+
+    eventIDs = ""
+    if searchEvents and '0' not in searchEvents:
+        for i in searchEvents:
+            if i.isdigit():
+                eventIDs += i + ","
+
+        if len(eventIDs) > 0:
+            eventIDs = eventIDs[0:-1] # remove trailing comma
+            if len(orgIDs) >0:
+                sql += " and "
+            sql += "(count_event.ID in (%s)) " % (eventIDs)
+
+    if len(orgIDs+eventIDs) > 0:
+        sql += " and "
+
+
+    sql += "trip.countEvent_ID = count_event.ID and "
+    sql += "trip.location_ID = location.ID and "
+    sql += "trip.traveler_ID = traveler.ID and "
+    sql += "count_event.organization_ID = organization.ID "
+    if exportStyle == "summary":
+        sql += "Group by organization.name, count_event.ID, location.Locationname "
+        sql += "Order by organization.name, count_event.ID, location.locationName"
+
+    else:
+        #Detail
+        sql += "Order by organization.name, count_event.ID, location.locationName, trip.tripDate, trip.turnDirection, traveler.name"
+
+    print sql
+
+    return db.engine.execute(sql).fetchall()

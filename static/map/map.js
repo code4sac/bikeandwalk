@@ -75,7 +75,7 @@ BAWAMap.prototype = {
 		var markerData;
 		var parseError =false;
 		var errorMess = '';
-		console.log('the Data: ' + data);
+		//console.log('the Data: ' + data);
 
 		try{
 			markerData = JSON.parse(data);

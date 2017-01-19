@@ -4,10 +4,11 @@ from flask import g, redirect, url_for, \
 from bikeandwalk import db, app
 from models import Trip, Location, Organization, CountEvent, Traveler, TravelerFeature, Feature
 from views.utils import printException
+from views import searchForm
 from collections import namedtuple
 import json
 from datetime import datetime
-from views.trip import getAssignmentTripTotal
+from views.trip import getAssignmentTripTotal, queryTripData
 
 mod = Blueprint('map', __name__)
 
@@ -22,46 +23,27 @@ def display():
     # Display the Trips map
     setExits()
     if db :
-        mapOrgs = []
-        mapEvents = []
-        getSearchFormSelectValues(mapOrgs,mapEvents) # all parameters must be empty lists
+        searchOrgs = []
+        searchEvents = []
+        searchForm.getSelectValues(request.form,searchOrgs,searchEvents) 
         
         queryData = {}
-        queryData["mapOrgs"] = mapOrgs
-        queryData["mapEvents"] = mapEvents
-        queryData['mapType'] = 'trips'
+        queryData["searchOrgs"] = searchOrgs
+        queryData["searchEvents"] = searchEvents
+        queryData['searchType'] = 'trips'
+        queryData['selectType'] = 'multiple'
+        queryData['includeAllOption'] = True
         
         #Get all orgs
-        getOrgs(queryData)
+        searchForm.orgsToDict(queryData)
 
-        # get the events
-        sql = "select * from count_event "
-        haswhere = False
-        if mapOrgs and len(mapOrgs) > 0 and '0' not in mapOrgs:
-            for i in range(len(mapOrgs)):
-                if i != '0' and mapOrgs[i].isdigit():
-                    if not haswhere:
-                        sql += " where count_event.organization_ID in ("
-                        haswhere=True
-                    sql += "%s" % (mapOrgs[i])
-                    if i < len(mapOrgs) -1 and mapOrgs[i+1].isdigit():
-                        sql +=","
-            if haswhere:
-                sql += ")"
-                
-        sql += " order by startDate desc"
-
-        events = db.engine.execute(sql).fetchall()
-        queryData['events'] = []
-        if events:
-            for event in events:
-                d = {'name':event.title, 'ID':str(event.ID)}
-                queryData['events'].append(d)
+        #get the Events
+        searchForm.eventsToDict(queryData)
         
         # Jun 10, 2016 modified query to speed up map display
         # The order of the selected fields is critical to creating a proper namedtuple below
         
-        recs = queryTripData(mapOrgs, mapEvents, 'summary')
+        recs = queryTripData(searchOrgs, searchEvents, 'summary')
         
         markerData = {"markers":[]}
         markerData["cluster"] = True
@@ -96,23 +78,25 @@ def location():
     
     if db :
         queryData = {}
-        queryData['mapType'] = 'locations'
-
-        #Get all orgs
-        getOrgs(queryData)
+        queryData['searchType'] = 'locations'
+        queryData['selectType'] = 'multiple'
+        queryData['includeAllOption'] = True
         
-        mapOrgs = []
-        mapEvents = []
+        #Get all orgs
+        searchForm.orgsToDict(queryData)
+        
+        searchOrgs = []
+        searchEvents = []
         if not request.form and g.orgID:
-            queryData['mapOrgs'] = [str(g.orgID)]
+            queryData['searchOrgs'] = [str(g.orgID)]
         else:
-            getSearchFormSelectValues(mapOrgs,mapEvents) # all parameters must be empty lists
-            queryData['mapOrgs'] = mapOrgs #We don't need mapEvents for this map
+            searchForm.getSelectValues(request.form, searchOrgs,searchEvents) # all parameters must be empty lists
+            queryData['searchOrgs'] = searchOrgs #We don't need searchEvents for this map
 
         sql = "select locationName, ID, latitude, longitude from location "
-        if '0' not in mapOrgs:
+        if '0' not in searchOrgs:
             orgIDs = ""
-            for i in mapOrgs:
+            for i in searchOrgs:
                 orgIDs += i + ","
             sql += " where organization_ID in (%s) " % (orgIDs[0:-1])
         
@@ -179,8 +163,8 @@ def export():
         
     # perform query
     recs = None
-    if 'mapOrgs' in data.keys() and 'mapEvents' in data.keys():
-        recs = queryTripData(data['mapOrgs'], data['mapEvents'], exportStyle)
+    if 'searchOrgs' in data.keys() and 'searchEvents' in data.keys():
+        recs = queryTripData(data['searchOrgs'], data['searchEvents'], exportStyle)
         
     #print recs
     csv = "Error occured while creating Export\n"
@@ -229,138 +213,52 @@ def liveCount():
     g.title = "Live Count"
     
     #get the form data
-    mapOrgs = []
-    mapEvents = []
-    getSearchFormSelectValues(mapOrgs,mapEvents) # all parameters must be empty lists
+    searchOrgs = []
+    searchEvents = []
+    searchForm.getSelectValues(request.form, searchOrgs,searchEvents) # all parameters must be empty lists
     
     queryData = {}
-    queryData["mapOrgs"] = mapOrgs
-    queryData["mapEvents"] = mapEvents
-    queryData['mapType'] = 'liveCount'
-
+    queryData["searchOrgs"] = searchOrgs
+    queryData["searchEvents"] = searchEvents
+    queryData['searhType'] = 'liveCount'
+    queryData['selectType'] = 'single'
+    queryData['includeAllOption'] = False
+    
     #Get all orgs
-    getOrgs(queryData)
+    searchForm.orgsToDict(queryData)
 
-    # get the events
-    sql = "select * from count_event "
-    haswhere = False
-    if mapOrgs and len(mapOrgs) > 0 and '0' not in mapOrgs:
-        for i in range(len(mapOrgs)):
-            if i != '0' and mapOrgs[i].isdigit():
-                if not haswhere:
-                    sql += " where count_event.organization_ID in ("
-                    haswhere=True
-                sql += "%s" % (mapOrgs[i])
-                if i < len(mapOrgs) -1 and mapOrgs[i+1].isdigit():
-                    sql +=","
-        if haswhere:
-            sql += ")"
-            
-    sql += " order by startDate desc"
-
-    events = db.engine.execute(sql).fetchall()
-    
-    queryData['events'] = []
-    if events:
-        for event in events:
-            d = {'name':event.title, 'ID':str(event.ID)}
-            queryData['events'].append(d)
-    
+    #get the Events
+    searchForm.eventsToDict(queryData)
     
     #Select assignment records
     eventIDs = ""
-    for i in mapEvents:
+    for i in searchEvents:
         if i.isdigit():
             eventIDs += i + ","
-        
+    
+    recs = None
+
     sql = "select assignment.ID, assignment.countEvent_ID, assignment.location_ID, \
             count_event.title, location.locationName, \
-            (select sum(trip.tripCount) from trip where trip.countEvent_ID in (%s) and trip.location_ID = location.ID) as tripTotal \
-            from assignment join location, count_event where \
-            assignment.countEvent_ID in (%s) \
-            and location.ID = assignment.location_ID \
-            and count_event.ID = assignment.countEvent_ID \
-            order by count_event.title, tripTotal desc, location.locationName" % (eventIDs[0:-1],eventIDs[0:-1])
+            (select sum(trip.tripCount) from trip where trip.countEvent_ID = count_event.ID and trip.location_ID = location.ID) as tripTotal \
+            from assignment join location, count_event "
+                
+    if eventIDs != "":
+        sql += " where assignment.countEvent_ID in (%s) " % (eventIDs[0:-1])
+                
+    sql += " and location.ID = assignment.location_ID \
+            and count_event.ID = assignment.countEvent_ID "
+    theOrg = "0"
+    if queryData['searchOrgs'] and len(queryData['searchOrgs']) > 0:
+        theOrg = queryData['searchOrgs'][0]
+        
+    sql += " and count_event.organization_ID = %s " % theOrg
+    sql += " order by tripTotal desc"
 
     recs = db.engine.execute(sql).fetchall()
     
     #Display the page
     return render_template('map/liveCount.html', queryData=queryData, assignments=recs)
-    
-def queryTripData(mapOrgs, mapEvents, exportStyle='summary'):
-    
-    # Jun 10, 2016 modified query to speed up map display
-    # The order of the selected fields is critical to creating a proper namedtuple below
-    
-    # the columns output are:
-    #   Location Name, Location ID, Latitude, Longitude, sum(tripCount), tripCount, 
-    #      tripDate, Event Start, Event End, Turn direction, Traveler name
-    
-    # the first 5 fields are used for map display
-    sql = "Select "
-    sql += "location.locationName, "
-    sql += "location.ID, "
-    sql += "location.latitude, "
-    sql += "location.longitude, "
-    
-    if exportStyle == "summary" :
-        sql += "sum(tripCount), " #using a summary function will compress detail
-    else:
-        sql += "tripCount, "
-        
-    sql += "strftime('%Y-%m-%d %H:%M:%S', tripDate), "
-    sql += "trip.turnDirection, "
-    sql += "traveler.name, "
-    sql += "organization.name, "
-    sql += "count_event.title, "
-    sql += "strftime('%Y-%m-%d %H:%M', count_event.startDate), "
-    sql += "strftime('%Y-%m-%d %H:%M', count_event.endDate) "
-    
-    sql += "from trip JOIN location, organization, count_event, traveler "
-    
-    sql += "Where "
-
-    orgIDs = ""
-    if mapOrgs and '0' not in mapOrgs:
-        for i in mapOrgs:
-            if i.isdigit():
-                orgIDs += i + ","
-                
-        if len(orgIDs) > 0:
-            orgIDs = orgIDs[0:-1] # remove trailing comma
-            sql += "(organization.ID in ( %s)) " % (orgIDs)
-            
-    eventIDs = ""
-    if mapEvents and '0' not in mapEvents:
-        for i in mapEvents:
-            if i.isdigit():
-                eventIDs += i + ","
-                
-        if len(eventIDs) > 0:
-            eventIDs = eventIDs[0:-1] # remove trailing comma
-            if len(orgIDs) >0:
-                sql += " and "
-            sql += "(count_event.ID in (%s)) " % (eventIDs)
-            
-    if len(orgIDs+eventIDs) > 0:
-        sql += " and "
-        
-        
-    sql += "trip.countEvent_ID = count_event.ID and "
-    sql += "trip.location_ID = location.ID and "
-    sql += "trip.traveler_ID = traveler.ID and "
-    sql += "count_event.organization_ID = organization.ID "
-    if exportStyle == "summary":
-        sql += "Group by organization.name, count_event.ID, location.Locationname "
-        sql += "Order by organization.name, count_event.ID, location.locationName"
-        
-    else:
-        #Detail
-        sql += "Order by organization.name, count_event.ID, location.locationName, trip.tripDate, trip.turnDirection, traveler.name"
-        
-    #print sql
-    
-    return db.engine.execute(sql).fetchall()
     
     
 def escapeTemplateForJson(popup):
@@ -379,44 +277,6 @@ def makeBasicMarker(rec):
            "locationID": rec.ID, "locationName": rec.locationName, "draggable": False, }
         return marker
     return None
-    
-def getSearchFormSelectValues(mapOrgs,mapEvents):
-    # all parameters must be empty lists
-    # lists will be manipulated directly. 
-    # DON'T ASSIGN VALUES TO LISTS - USE .append()
-    
-    if request.form and 'mapOrgs' in request.form.keys():
-        tempList = request.form.getlist('mapOrgs')
-        if '0' in tempList:
-            # if 'ALL' is selected just show all
-            mapOrgs.append('0')
-        else:
-            for i in tempList:
-                mapOrgs.append(i)
-    else:
-        mapOrgs.append('0')
-        
-    if request.form and 'mapEvents' in request.form.keys():
-        tempList = request.form.getlist('mapEvents')
-        if '0' in tempList:
-            # if 'ALL' is selected just show all
-            mapEvents.append('0')
-        else:
-            for i in tempList:
-                mapEvents.append(i)
-    else:
-        mapEvents.append('0')
+
     
     
-def getOrgs(queryData):
-    # queryData is a dictionary
-    queryData["orgs"] = []
-    sql = "select * from organization where 1=1 "
-    sql += " order by 'name'"
-        
-    orgs = db.engine.execute(sql).fetchall()
-    
-    if orgs:
-        for org in orgs:
-            d = {'name':org.name, 'ID':str(org.ID)}
-            queryData['orgs'].append(d)
