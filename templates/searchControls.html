@@ -43,14 +43,14 @@
 				{% endif %}
 				<th>
 					<p><input id="searchButton" type="submit" name="searchButton" value="Search" /></p>
-				{% if queryData['searchType'] == 'trips' %}
+				{% if queryData['searchType'] in ('trips', 'map') %}
 					<p><button id="exportButton" type="button" name="exportButton" >Export</button></p>
 				{% endif %}
 				</th>
 			</tr>
 		</table>
 	</form>
-	{% if queryData['searchType'] == 'trips' %}
+	{% if queryData['searchType'] in ('trips', 'map') %}
 	<div id="tripExport">
 		<h4>Export Options...</h4>
 		<form action="{{ g.exportURL }}" id="tripExportForm" name="tripExportForm" method="post" accept-charset="utf-8">
@@ -60,8 +60,11 @@
 					<th>Export Style:</th>
 					<td>
 						<select id="exportStyle" name="exportStyle">
-							<option value="summary" selected >Summary</option>
-							<option value="detail">Full Detail</option>
+							{% if queryData['searchType'] == 'map' %}
+							<option value='{{queryData['searchType']}}'>As Displayed, by Location</option>
+							{% endif %}
+							<option value="summary" >Summary, by Event</option>
+							<option value="detail">Detail</option>
 							<!-- <option value="nbpd">NBPD Report</option> -->
 						</select>
 					</td>

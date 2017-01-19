@@ -30,7 +30,7 @@ def display():
         queryData = {}
         queryData["searchOrgs"] = searchOrgs
         queryData["searchEvents"] = searchEvents
-        queryData['searchType'] = 'trips'
+        queryData['searchType'] = 'map'
         queryData['selectType'] = 'multiple'
         queryData['includeAllOption'] = True
         
@@ -43,7 +43,7 @@ def display():
         # Jun 10, 2016 modified query to speed up map display
         # The order of the selected fields is critical to creating a proper namedtuple below
         
-        recs = queryTripData(searchOrgs, searchEvents, 'summary')
+        recs = queryTripData(searchOrgs, searchEvents, queryData['searchType'])
         
         markerData = {"markers":[]}
         markerData["cluster"] = True
@@ -181,6 +181,10 @@ def export():
         csv = ""
         for rec in recs:
             row = ""
+            header = ''
+            if exportStyle == "map":
+                headers = "Location Name,Latitude,Longitude,Trip Count\n"
+                row = "\"%s\",\"%s\",\"%s\",%d\n" % (rec[0], rec[2], rec[3], rec[4])
             if exportStyle == "summary":
                 headers = "Location Name,Latitude,Longitude,Trip Count,Organization Name,Event Title,Event Start,Event End\n"
                 row = "\"%s\",\"%s\",\"%s\",%d,\"%s\",\"%s\",\"%s\",\"%s\"\n" % (rec[0], rec[2], rec[3], rec[4], rec[8], rec[9], rec[10], rec[11])
