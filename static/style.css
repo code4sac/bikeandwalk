@@ -365,7 +365,7 @@ table.edit-form-table td {
 div#searchControls, div#mapExport, div#mapExport {
     margin:10pt 0;
 }
-div#mapExport {display:none;}
+div#tripExport {display:none;}
 
 table.searchForm {
     background-color:#eee;
