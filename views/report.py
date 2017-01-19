@@ -19,6 +19,12 @@ def display():
     return render_template("report/report_list.html")
     
     
+    
+# as of Jan 19, 2017 this is no longer listed in the report menu but
+# it's a good example of how to use the csv and StringIO modules to output
+# a query result.
+# I may want to use it as a pattern later to replace the home-made version in mapping.py
+#
 @mod.route('/report/get_csv')
 @mod.route('/report/get_csv/')
 def getcsv():
