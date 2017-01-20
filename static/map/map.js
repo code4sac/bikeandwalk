@@ -118,7 +118,6 @@ BAWAMap.prototype = {
 						var divIcon = new L.DivIcon({
 					        className: 'divIcon',
 					        html: data.divIcon,
-							iconSize: new  L.Point(100, 100),
 							iconAnchor: new L.Point(20, 80),
 							popupAnchor: new L.Point(0, -80),
 					    });
