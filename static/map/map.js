@@ -114,6 +114,16 @@ BAWAMap.prototype = {
 					// create the marker
 					var draggable = (data.draggable == true );
 					var options = {"draggable": draggable};
+					if (data.divIcon != undefined){
+						var divIcon = new L.DivIcon({
+					        className: 'divIcon',
+					        html: data.divIcon,
+							iconSize: new  L.Point(100, 100),
+							iconAnchor: new L.Point(20, 80),
+							popupAnchor: new L.Point(0, -80),
+					    });
+						options.icon = divIcon;
+					}
 					var marker = L.marker([data.latitude, data.longitude],options);
 					// Put the maker into the cluster or map layer
 					if (markerData.cluster === true) {
@@ -134,7 +144,7 @@ BAWAMap.prototype = {
 					} // bindPopup
 					
 				} // Mimimal Data
-			
+					
 			} // end for
 			if (markerData.bbox != undefined){
 				alert("Bounding Box not implemented yet.")

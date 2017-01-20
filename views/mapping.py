@@ -55,12 +55,14 @@ def display():
                 #namedtuple creates an object that makeBasicMarker can access with dot notation
                 Fields = namedtuple('record', 'locationName ID latitude longitude tripCount')
                 record = Fields(rec[0], rec[1], rec[2], rec[3], rec[4])
-                
+
                 marker = makeBasicMarker(record) # returns a dict or None
                 if marker:
                     popup = render_template('map/tripCountMapPopup.html', rec=record)
                     popup = escapeTemplateForJson(popup)
                     marker['popup'] = popup
+                    
+                    marker["divIcon"] = getDivIcon(record.tripCount)
                     
                     markerData["markers"].append(marker)
                     
@@ -282,5 +284,23 @@ def makeBasicMarker(rec):
         return marker
     return None
 
+def getDivIcon(markerCount):
+    """
+    return an HTML block to be used as the DivIcon for a marker
+    """
+    if not markerCount:
+        markerCount = "n/a"
+    markerName = "BikeMarker_Blue.png"
+
+    if type(markerCount) is int:
+        if markerCount > 19:
+            markerName = "BikeMarker_Green.png"
+        if markerCount > 99:
+            markerName = "BikeMarker_Gold.png"
+        if markerCount > 199:
+            markerName = "BikeMarker_Red.png"
+            
+    divIcon = render_template("map/divicon.html", markerName=markerName, markerCount=markerCount)
     
+    return escapeTemplateForJson(divIcon)
     

@@ -253,6 +253,6 @@ def queryTripData(searchOrgs, searchEvents, searchType='summary'):
         #Detail
         sql += "ORDER BY organization.name, count_event.startDate, location.locationName, trip.tripDate, trip.turnDirection, traveler.name"
 
-    print sql
+    #print sql
 
     return db.engine.execute(sql).fetchall()
