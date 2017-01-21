@@ -274,6 +274,7 @@ def escapeTemplateForJson(popup):
     popup = popup.replace('"','\\"') # to escape double quotes in html
     popup = popup.replace('\r',' ') # replace any carriage returns with space
     popup = popup.replace('\n',' ') # replace any new lines with space
+    popup = popup.replace('\t',' ') # replace any tabs with space
     
     return popup
     
