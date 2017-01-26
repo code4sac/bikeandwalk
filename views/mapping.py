@@ -3,7 +3,7 @@ from flask import g, redirect, url_for, \
      render_template, flash, Blueprint, request, make_response, abort
 from bikeandwalk import db, app
 from models import Trip, Location, Organization, CountEvent, Traveler, TravelerFeature, Feature
-from views.utils import printException
+from views.utils import printException, getDatetimeFromString
 from views import searchForm
 from collections import namedtuple
 import json
@@ -150,6 +150,7 @@ def export():
         K = F.keys()
         
     # convert queryData from json
+    data = None
     if 'queryData' in K:
         data = request.form['queryData']
         try:
@@ -162,6 +163,11 @@ def export():
     exportStyle = 'summary'
     if 'exportStyle' in K:
         exportStyle = F['exportStyle']
+        
+        
+    if exportStyle == 'nbpd':
+        # this export is completely different...
+        return NBPD_Export(data)
         
     # perform query
     recs = None
@@ -182,8 +188,8 @@ def export():
     #       Trip Date, Turn direction, Traveler name, Organization Name, Event Title, Event Start, Event End
         csv = ""
         for rec in recs:
+            headers = "%s is an unknown export style." % (exportStyle)
             row = ""
-            header = ''
             if exportStyle == "map":
                 headers = "Location Name,Latitude,Longitude,Trip Count\n"
                 row = "\"%s\",\"%s\",\"%s\",%d\n" % (rec[0], rec[2], rec[3], rec[4])
@@ -193,9 +199,6 @@ def export():
             if exportStyle == "detail":
                 headers = "Location Name,Latitude,Longitude,Trip Count,Trip Date,Turn,Traveler,Organization Name,Event Title,Event Start,Event End\n"
                 row = "\"%s\",\"%s\",\"%s\",%d,\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"\n" % (rec[0], rec[2], rec[3], rec[4], rec[5], rec[6], rec[7], rec[8], rec[9], rec[10], rec[11])
-            if exportStyle == "nbpd":
-                headers = "NBPD Report not available yet"
-                row = ""
                 
             csv += row
             
@@ -203,7 +206,8 @@ def export():
    
     response = make_response(csv)
     now = datetime.now()
-    cd = "attachment; filename=BAW_%s_export_%d%d%d.csv" % (exportStyle, now.hour, now.minute, now.second)
+    now = now.strftime('%H%M%S')
+    cd = "attachment; filename=BAW_%s_export_%s.csv" % (exportStyle, now)
     
     response.headers['Content-Disposition'] = cd 
     response.mimetype='text/csv'
@@ -304,4 +308,102 @@ def getDivIcon(markerCount):
     divIcon = render_template("map/divicon.html", markerName=markerName, markerCount=markerCount)
     
     return escapeTemplateForJson(divIcon)
+    
+def NBPD_Export(data):
+    """Export data formatted in CSV text suitable to paste into the 
+       National Bike & Ped Documentation project spreadsheet.
+       The 'data' dict element searchEvents contains the count_event IDs to report on.
+    """
+    
+    if data == None or 'searchEvents' not in data.keys() \
+       or len(data['searchEvents']) != 1 or '0' in data['searchEvents']:
+        flash("You must select only one Event and you may not select 'All' for this export")
+        return redirect("/map/")
+
+    # Step 1, get all the locations for this event that have counts
+    sql = "select distinct location_ID from trip where countEvent_ID = %s order by location_ID" % (data['searchEvents'][0])
+    recs = db.engine.execute(sql).fetchall()
+    if recs == None:
+        flash("There are no trips to report for that Count Event")
+        return redirect("/map/")
+        
+    #put ids in a list
+    locs = []
+    for rec in recs: 
+        locs.append(str(rec.location_ID))
+    
+    # Step 2, get all the results
+    sql = """select count_event.title, count_event.weather, count_event.startDate, count_event.endDate, 
+             location_ID, sum(tripCount) as tripTotal, lower(feature.featureClass) as featureClass, lower(feature.featureValue) as featureValue
+             from trip JOIN location, count_event, traveler, traveler_feature, feature
+          """
+    sql += "where trip.countEvent_ID = %s and" % (data['searchEvents'][0])
+    sql += """(
+                (lower(featureClass) = "mode" and lower(featureValue) = "bicycle") or
+                (lower(featureClass) = "mode" and lower(featureValue) = "pedestrian") 
+                ) and 
+                trip.countEvent_ID = count_event.ID and 
+                trip.location_ID = location.ID and 
+                trip.traveler_ID = traveler.ID and 
+                traveler_feature.traveler_ID = trip.traveler_ID and 
+                traveler_feature.feature_ID = feature.ID  
+
+                Group by count_event.startDate, feature.featureValue, location.ID 
+                Order by count_event.startDate, feature.featureValue, location.ID
+            """
+    
+    recs = db.engine.execute(sql).fetchall()
+    if recs == None:
+        flash("No Trip Records Found for that event")
+        return redirect("/map/")
+        
+    # Step 3 for each locaion output location header rows
+    csv = ""
+    #location ID
+    for loc in locs:
+        csv += "Loc. #%s," % (loc) 
+    csv = csv[0:-1] + "\n" #replace last comma with return
+    
+    # Event Date
+    sD = getDatetimeFromString(recs[0]["startDate"]).strftime('%m/%m/%y')
+    for loc in locs:
+        csv += "%s," % (sD)
+    csv = csv[0:-1] + "\n" 
+    
+    # Time period
+    sT = getDatetimeFromString(recs[0]["startDate"]).strftime('%H:%M')
+    eT = getDatetimeFromString(recs[0]["endDate"]).strftime('%H:%M')
+    for loc in locs:
+        csv += "%s - %s," % (sT,eT)
+    csv = csv[0:-1] + "\n" 
+    
+    #weather
+    for loc in locs:
+        csv += recs[0]["weather"] + ","
+    csv = csv[0:-1] + "\n" 
+    
+    # Step 4, for each of 'bicycle', 'pedestrian' and 'other'
+    for mode in ["bicycle", "pedestrian", "other"]:
+        for loc in locs:
+            foundVal = "0"
+            for rec in recs:
+                if rec["location_ID"] == int(loc) and rec["featureValue"] == mode:
+                    foundVal = rec["tripTotal"]
+                    break
+
+            csv += "%s," %(foundVal)
+            
+        csv = csv[0:-1] + "\n" 
+        
+    
+    response = make_response(csv)
+    now = datetime.now()
+    now = now.strftime('%H%M%S')
+    cd = "attachment; filename=BAW_NBPD_export_%s.csv" % (now)
+
+    response.headers['Content-Disposition'] = cd 
+    response.mimetype='text/csv'
+
+    return response
+    
     
