@@ -7,12 +7,16 @@
  * @param zoomLevel
  * @constructor
  */
+	
 function BAWAMap(mapboxProjectId, mapboxAccessToken, mapDivId, zoomLevel) {
+	// create a layerGroup each for pushpin and canvas markers
+	this.pushPinLayer = new L.LayerGroup();
+	this.canvasLayer = new L.LayerGroup();
     this.map = L.map(mapDivId, {
-        center: [38.551253, -121.488683],
+        center: [43.551253, -121.488683],
         zoom: zoomLevel
     });
-
+	
     L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
         attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
         '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
@@ -24,7 +28,7 @@ function BAWAMap(mapboxProjectId, mapboxAccessToken, mapDivId, zoomLevel) {
     if (L.markerClusterGroup !== undefined) {
         this.cluster = L.markerClusterGroup();
     }
-
+	
     this.locations = [];
     this.geocodes = [];
 }
@@ -101,9 +105,9 @@ BAWAMap.prototype = {
 			*/
 			// create a cluster layer if needed
 			if (markerData.cluster === true) {
-	            this.map.addLayer(this.cluster);
+	            //this.map.addLayer(this.cluster);
 			}
-
+			
 			for (var i = 0; i < markerData.markers.length; i++) {
 			    data = markerData.markers[i]
 				if(	data.latitude != undefined && 
@@ -111,9 +115,32 @@ BAWAMap.prototype = {
 					!this.mapHasMarkerAt(data.latitude,data.longitude)
 					){
 					this.pushNewLocation(data.locationName, data.latitude, data.longitude)
-					// create the marker
-					var draggable = (data.draggable == true );
-					var options = {"draggable": draggable};
+					//var pushPinMarker = this.makePushpinMarker(data);
+					//var canvasMarker = this.makeCanvasMarker(data);
+					// create the push pin marker
+					
+					var options = {};
+					var draggable = false;
+					if (data.draggable != undefined){
+						draggable = (data.draggable == true );
+					}
+					options.draggable = draggable;
+					
+					var marker = L.marker([data.latitude, data.longitude],options);
+					
+					this.setDragFunction(marker);
+					
+					popper = "Unnamed Location"
+					if (data.popup != undefined) {
+						popper = data.popup;
+					} else {
+						if(data.locationName != undefined){
+							popper = data.locationName;
+						}
+					
+					} // bindPopup
+					marker.bindPopup(popper);
+					
 					if (data.divIcon != undefined){
 						var divIcon = new L.DivIcon({
 					        className: 'divIcon',
@@ -121,30 +148,44 @@ BAWAMap.prototype = {
 							iconAnchor: new L.Point(20, 80),
 							popupAnchor: new L.Point(0, -80),
 					    });
-						options.icon = divIcon;
 					}
-					var marker = L.marker([data.latitude, data.longitude],options);
-					// Put the maker into the cluster or map layer
+					marker.options.icon = divIcon;
+					// Put the maker into the cluster layer if reqested
 					if (markerData.cluster === true) {
 			            this.cluster.addLayer(marker);
-			        } else { marker.addTo(this.map); }
-			
-					this.setDragFunction(marker);
-					
-					if (data.popup != undefined) {
-						marker.bindPopup(data.popup);
+			        } 
+					// add the marker (layer) to the pushPinLayer LayerGroup
+					this.pushPinLayer.addLayer(marker);
+					/*
+					data.flowData = {
+								"south":{"inbound":0.8, "outbound":0.8, "alignment": 10},
+								"west":{"inbound":0.5,"outbound":0.5, "alignment": 10},
+								"north":{"inbound":0.25,"outbound":0.15, "alignment": 10},
+								"east":{"outbound":0.1,"inbound":0.2, "alignment": 10}
+								}
+					*/			
+					if(data.flowData != undefined){
+						// draw marker with canvas
+						var marker2 = L.flowMarker([data.latitude, data.longitude],options,data.flowData);
+						//marker2.bindTooltip("110", { permanent: true, direction: "top","offset": [35,-55] });
 					} else {
-						if(data.locationName != undefined){
-							marker.bindPopup(data.locationName);
-						} else {
-							marker.bindPopup("Unnamed Location");
-						}
+						// use the standard icon
+						var marker2 = L.marker([data.latitude, data.longitude],options);
+						marker2.options.icon = divIcon;
+					}
 					
-					} // bindPopup
+					marker2.bindPopup(popper);
+					this.canvasLayer.addLayer(marker2);
 					
-				} // Mimimal Data
+				} // Have minimal Data
 					
-			} // end for
+			} // end for: all markers created
+
+			if (markerData.cluster === true) {
+				this.pushPinLayer = this.cluster;
+			}
+			this.setZoomFunction(this.map,this.pushPinLayer,this.canvasLayer);
+			
 			if (markerData.bbox != undefined){
 				alert("Bounding Box not implemented yet.")
 				this.zoomToFitAllMarkers();
@@ -168,7 +209,7 @@ BAWAMap.prototype = {
 			// go to error page
 			// document.location = errorPage + errorMess + "/";
 		}
-		// end of addManyLocations()
+		// end of addMarkersFromJSON()
 	},
 	
 
@@ -326,7 +367,7 @@ BAWAMap.prototype = {
      */
     zoomToFitAllMarkers: function() {
         var bounds = new L.LatLngBounds(this.geocodes);
-        this.map.fitBounds(bounds);
+		this.map.fitBounds(bounds);
     },
 	setDragFunction: function(theMarker){
 		var self = this;
@@ -341,6 +382,20 @@ BAWAMap.prototype = {
             });
 		}
     },
+	setZoomFunction: function(theMap,clusterLayer,canvasLayer){
+		if(theMap != undefined){
+			theMap.on("zoomend", function (event) {
+				var theZoom = theMap.getZoom()
+				if (theZoom > 14) {
+					clusterLayer.remove();
+					canvasLayer.addTo(theMap);
+				} else {
+					canvasLayer.remove();
+					clusterLayer.addTo(theMap);
+				}
+			});
+		}
+	},
 
     /**
      * Update the location form input fields.
@@ -360,4 +415,5 @@ BAWAMap.prototype = {
 			if(theID != null){theID.value = "https://www.google.com/maps/place//@"+ latitude +","+ longitude +",17z";}
         }
     }
+
 };

@@ -41,24 +41,24 @@ L.FlowIcon = L.Icon.extend({
 
 			/*
 				flowData: {
-							"south":{"inbound":0.8, "outbound":0.8, "alignment": 10},
-							"west":{"inbound":0.5,"outbound":0.5, "alignment": 10},
-							"north":{"inbound":0.25,"outbound":0.15, "alignment": 10},
-							"east":{"outbound":0.1,"inbound":0.2, "alignment": 10}
+							"south":{"inbound":87, "outbound":59, "alignment": 10},
+							"west":{"inbound":66,"outbound":0, "alignment": 10},
+							"north":{"inbound":45,"outbound":80, "alignment": 10},
+							"east":{"outbound":25,"inbound":32, "alignment": 10}
 							}
 				"inbound" and "outbound" determine the length of the arrow from center to edge of canvas.
 				alignment is the number of degrees to rotate the canvas so that arrow aligns with streets on map.
 			*/
-				/*flowData= {
-							"south":{"inbound":0.8, "outbound":0.8, "alignment": 10},
-							"west":{"inbound":0.5,"outbound":0.5, "alignment": 10},
-							"north":{"inbound":0.25,"outbound":0.15, "alignment": 10},
-							"east":{"outbound":0.1,"inbound":0.2, "alignment": 10}
-							}
-				*/
            var theCenter = canvasWidth/2; 
            mapOrder = ["north","west","south","east"]
-
+           // determine the highest count for this location
+           var maxCount = 0;
+           for (var i = 0; i < 4; i++){
+               var thisDir = flowData[mapOrder[i]];
+              if (thisDir.inbound > maxCount) { maxCount = thisDir.inbound;}
+              if (thisDir.outbound > maxCount) { maxCount = thisDir.outbound;}
+           }
+           
            // draw one arrow, then turn grid, 90° and draw next
            var kind = "inbound";
            for (var j = 0; j < 2; j++){
@@ -86,11 +86,11 @@ L.FlowIcon = L.Icon.extend({
                        // draw something
                        if(kind == "inbound"){
                            var len = 0;
-                           if(thisDir.inbound != undefined){ len = thisDir.inbound}
+                           if(thisDir.inbound != undefined && maxCount > 0){ len = thisDir.inbound/maxCount}
                            this.drawInbound(ctx,len,theCenter);
                        } else {
                            var len = 0;
-                           if(thisDir.outbound != undefined){ len = thisDir.outbound}
+                           if(thisDir.outbound != undefined && maxCount > 0){ len = thisDir.outbound/maxCount}
                            this.drawOutbound(ctx,len,theCenter);
                        }
                        ctx.translate(theCenter, theCenter); // translate to canvas center 

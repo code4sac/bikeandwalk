@@ -52,11 +52,11 @@ def display():
             markerData["zoomToFit"] = True
             for rec in recs:
                 #db.engine.execute returns a list of sets without column names
-                #namedtuple creates an object that makeBasicMarker can access with dot notation
+                #namedtuple creates an object that getMarkerDict can access with dot notation
                 Fields = namedtuple('record', 'locationName ID latitude longitude tripCount')
                 record = Fields(rec[0], rec[1], rec[2], rec[3], rec[4])
 
-                marker = makeBasicMarker(record) # returns a dict or None
+                marker = getMarkerDict(record, searchEvents) # returns a dict or None
                 if marker:
                     popup = render_template('map/tripCountMapPopup.html', rec=record)
                     popup = escapeTemplateForJson(popup)
@@ -112,11 +112,11 @@ def location():
 
             for rec in recs:
                 #db.engine.execute returns a list of sets without column names
-                #namedtuple creates an object that makeBasicMarker can access with dot notation
+                #namedtuple creates an object that getMarkerDict can access with dot notation
                 Fields = namedtuple('record', 'locationName ID latitude longitude')
                 record = Fields(rec[0], rec[1], rec[2], rec[3])
 
-                marker = makeBasicMarker(record) # returns a dict or None
+                marker = getMarkerDict(record) # returns a dict or None
                 
                 if marker:
                     popup = render_template('map/locationListPopup.html', rec=record)
@@ -282,10 +282,40 @@ def escapeTemplateForJson(popup):
     
     return popup
     
-def makeBasicMarker(rec):
+def getMarkerDict(rec, searchEvents):
     if rec and rec.latitude.strip() != '' and rec.longitude.strip() !='':
-        marker = {"latitude": float(rec.latitude), "longitude": float(rec.longitude), \
-           "locationID": rec.ID, "locationName": rec.locationName, "draggable": False, }
+        marker = {"latitude": float(rec.latitude), "longitude": float(rec.longitude), 
+           "locationID": rec.ID, "locationName": rec.locationName, "draggable": False, 
+           }
+           
+        flowData = {}
+        '''
+        # collect data for each direction of travel
+             "south":{"inbound":89, "outbound":80, "alignment": 10},
+             "west":{"inbound":54,"outbound":25, "alignment": 10},
+             "north":{"inbound":35,"outbound":66, "alignment": 10},
+             "east":{"outbound":65,"inbound":54, "alignment": 10}
+        }
+        '''
+        flowRec = queryFlowData(rec.ID, searchEvents)
+        if flowRec:
+            rec = flowRec[0] # one row only
+            alignment = 15 # default for now., needs to come from location data
+            compassPoint = ["south","west","north","east"]
+            idx = 0
+            for direction in compassPoint:
+                if direction != "south":
+                    idx += 2
+                
+                dirData = {}
+                dirData["inbound"] = rec[idx]
+                dirData["outbound"] = rec[idx+1]
+
+                dirData["alignment"] = alignment
+                
+                flowData[direction] = dirData
+                
+        marker["flowData"] = flowData
         return marker
     return None
 
@@ -405,5 +435,38 @@ def NBPD_Export(data):
     response.mimetype='text/csv'
 
     return response
+    
+def queryFlowData(locID, searchEvents):
+    """Retrun a single row from db of counts by direction or None"""
+    
+    sql = """select (select ifnull(sum(tripCount),0) from trip where turnDirection LIKE "A%" and replaceMe ) as southBoundIn,
+    (select ifnull(sum(tripCount),0) from trip where (turnDirection = "A2" or turnDirection = "D3" or turnDirection = "B1")  and replaceMe ) as southBoundOut,
+
+    (select ifnull(sum(tripCount),0) from trip where turnDirection LIKE "B%" and replaceMe ) as westBoundIn,
+    (select ifnull(sum(tripCount),0) from trip where (turnDirection = "B2" or turnDirection = "A3" or turnDirection = "C1") and replaceMe ) as westBoundOut,
+
+    (select ifnull(sum(tripCount),0) from trip where turnDirection LIKE "C%" and replaceMe ) as northBoundIn,
+    (select ifnull(sum(tripCount),0) from trip where (turnDirection = "C2" or turnDirection = "B3" or turnDirection = "D1")  and replaceMe ) as northBoundOut,
+
+    (select ifnull(sum(tripCount),0) from trip where turnDirection LIKE "D%" and replaceMe ) as eastBoundIn,
+    (select ifnull(sum(tripCount),0) from trip where (turnDirection = "D2" or turnDirection = "C3" or turnDirection = "A1")  and replaceMe ) as eastBoundOut
+
+    from trip
+    where replaceMe limit 1
+    """
+    
+    crit = " location_ID = %d " % (locID )
+    if not "0" in searchEvents and len(searchEvents) > 0:
+        eventIDs = ""
+        for i in searchEvents:
+            eventIDs += "%s," % i
+            
+        crit += " and countEvent_ID in (%s) " % (eventIDs[0:-1])
+        
+    sql = sql.replace("replaceMe", crit)
+    
+    flowRow = db.engine.execute(sql).fetchall()
+    
+    return flowRow
     
     
