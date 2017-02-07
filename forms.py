@@ -1,4 +1,4 @@
-from wtforms import Form, BooleanField, StringField, HiddenField, SelectField, IntegerField, validators, TextAreaField
+from wtforms import Form, BooleanField, StringField, HiddenField, SelectField, IntegerField, validators, TextAreaField, DecimalField
 
     
 class AssignmentForm(Form):
@@ -29,7 +29,9 @@ class LocationForm(Form):
     #ID = HiddenField("ID")
     locationName = StringField("Location Name", [validators.DataRequired(),], )
     NS_Street = StringField("North South St.", [validators.DataRequired(),], )
+    NS_Heading = DecimalField("Heading for North/South Street", places=2)
     EW_Street = StringField("East West St.", [validators.DataRequired(),], )
+    EW_Heading = DecimalField("Heading for East/West", places=2)
     locationType = SelectField("Location Type", default="intersection",
         choices=[("intersection", "Intersection"),("screenline","Screen Line")], )
     city = StringField("City", [validators.DataRequired(),], )

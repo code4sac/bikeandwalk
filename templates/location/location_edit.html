@@ -3,8 +3,7 @@
 {% block title %}Edit {{ g.title }}{% endblock %}
 
 {% block head %}
-    <script type="text/javascript" src="{{ url_for('static', filename='map/leaflet/leaflet-src.js') }}"></script>
-    <script type="text/javascript" src="{{ url_for('static', filename='map/map.js') }}"></script>
+    {% include "map/mapHeaders.html" %}
 	<script type="text/javascript">
 		$(document).ready(function(){
 				// Initialize the map
@@ -19,9 +18,6 @@
 	            {% endif %}
 		});
 	</script>
-	
-    <link rel="stylesheet" href="{{ url_for('static', filename='map/leaflet/leaflet.css') }}" type="text/css" media="all" >
-    <link rel="stylesheet" href="{{ url_for('static', filename='map/map.css') }}" type="text/css" media="all" >
 {% endblock head %}
 
 {% block body %}
