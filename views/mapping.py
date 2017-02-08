@@ -291,27 +291,34 @@ def getMarkerDict(rec, searchEvents):
         flowData = {}
         '''
         # collect data for each direction of travel
-             "south":{"inbound":89, "outbound":80, "alignment": 10},
-             "west":{"inbound":54,"outbound":25, "alignment": 10},
-             "north":{"inbound":35,"outbound":66, "alignment": 10},
-             "east":{"outbound":65,"inbound":54, "alignment": 10}
+             "north":{"inbound":35,"outbound":66, "heading": 10},
+             "east":{"outbound":65,"inbound":54, "heading": 10}
+             "south":{"inbound":89, "outbound":80, "heading": 10},
+             "west":{"inbound":54,"outbound":25, "heading": 10},
         }
         '''
         flowRec = queryFlowData(rec.ID, searchEvents)
         if flowRec:
             rec = flowRec[0] # one row only
-            alignment = 15 # default for now., needs to come from location data
-            compassPoint = ["south","west","north","east"]
+            # the compass headings
+            headings = []
+            headings.append(rec[8]) #North
+            headings.append(rec[9]) #East
+            headings.append(rec[8]+180) #South
+            headings.append(rec[9]+180) #West
+            
+            compassPoint = ["north","east","south","west"]
             idx = 0
+            heading = 0
             for direction in compassPoint:
-                if direction != "south":
+                if direction != "north":
                     idx += 2
+                    heading += 1
                 
                 dirData = {}
                 dirData["inbound"] = rec[idx]
                 dirData["outbound"] = rec[idx+1]
-
-                dirData["alignment"] = alignment
+                dirData["heading"] = headings[heading]
                 
                 flowData[direction] = dirData
                 
@@ -439,20 +446,23 @@ def NBPD_Export(data):
 def queryFlowData(locID, searchEvents):
     """Retrun a single row from db of counts by direction or None"""
     
-    sql = """select (select ifnull(sum(tripCount),0) from trip where turnDirection LIKE "A%" and replaceMe ) as southBoundIn,
-    (select ifnull(sum(tripCount),0) from trip where (turnDirection = "A2" or turnDirection = "D3" or turnDirection = "B1")  and replaceMe ) as southBoundOut,
-
-    (select ifnull(sum(tripCount),0) from trip where turnDirection LIKE "B%" and replaceMe ) as westBoundIn,
-    (select ifnull(sum(tripCount),0) from trip where (turnDirection = "B2" or turnDirection = "A3" or turnDirection = "C1") and replaceMe ) as westBoundOut,
-
+    sql = """select 
     (select ifnull(sum(tripCount),0) from trip where turnDirection LIKE "C%" and replaceMe ) as northBoundIn,
     (select ifnull(sum(tripCount),0) from trip where (turnDirection = "C2" or turnDirection = "B3" or turnDirection = "D1")  and replaceMe ) as northBoundOut,
 
     (select ifnull(sum(tripCount),0) from trip where turnDirection LIKE "D%" and replaceMe ) as eastBoundIn,
-    (select ifnull(sum(tripCount),0) from trip where (turnDirection = "D2" or turnDirection = "C3" or turnDirection = "A1")  and replaceMe ) as eastBoundOut
+    (select ifnull(sum(tripCount),0) from trip where (turnDirection = "D2" or turnDirection = "C3" or turnDirection = "A1")  and replaceMe ) as eastBoundOut,
 
-    from trip
-    where replaceMe limit 1
+    (select ifnull(sum(tripCount),0) from trip where turnDirection LIKE "A%" and replaceMe ) as southBoundIn,
+    (select ifnull(sum(tripCount),0) from trip where (turnDirection = "A2" or turnDirection = "D3" or turnDirection = "B1")  and replaceMe ) as southBoundOut,
+
+    (select ifnull(sum(tripCount),0) from trip where turnDirection LIKE "B%" and replaceMe ) as westBoundIn,
+    (select ifnull(sum(tripCount),0) from trip where (turnDirection = "B2" or turnDirection = "A3" or turnDirection = "C1") and replaceMe ) as westBoundOut,
+    
+    location.NS_Heading,location.EW_Heading
+    from trip join location
+    where location.ID = location_ID
+    and replaceMe limit 1
     """
     
     crit = " location_ID = %d " % (locID )

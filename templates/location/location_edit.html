@@ -4,20 +4,54 @@
 
 {% block head %}
     {% include "map/mapHeaders.html" %}
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 	<script type="text/javascript">
 		$(document).ready(function(){
-				// Initialize the map
-	            var map = new BAWAMap('{{ config.MAPBOX_PROJECT_ID }}', '{{ config.MAPBOX_ACCESS_TOKEN }}', "locationMap", 15);
-	            // Check if we have the location
-	            {% if rec == None or rec.latitude == '' or rec.longitude == '' %}
-	                // No location, so add the current location
-	                map.addCurrentLocation('{{rec.locationName}}', 'latitude', 'longitude');
-	            {% else %}
-	                // Add the location
-	                map.addSimpleLocation('{{rec.locationName}}', {{rec.latitude}}, {{rec.longitude}}, true);
-	            {% endif %}
+	            // detect and handle when heading changes
+	            $("#NS_Heading, #EW_Heading").change(function(){refreshMarker();});
+	            
 		});
-	</script>
+        function refreshMarker(){
+            var locName = $("input#locationName").val();
+            var northSouthHeading = $("input#NS_Heading").val();
+            var eastWestHeading = $("input#EW_Heading").val();
+            var lat = $("input#latitude").val();
+            var lng = $("input#longitude").val();
+
+            map.addLocationMarker(locName, parseFloat(lat), parseFloat(lng), parseFloat(northSouthHeading), parseFloat(eastWestHeading));
+        }
+        
+        $( function() {
+          var sliderValue = {{ rec.NS_Heading }};
+          $( "#slider-northHeading" ).slider({
+            range: "max",
+            min: 0,
+            max: 359,
+            value: sliderValue,
+            slide: function( event, ui ) {
+              $( "#northHeading, input#NS_Heading" ).val( ui.value );
+              refreshMarker()
+            }
+          });
+          $( "#northHeading" ).val( $( "#slider-northHeading" ).slider( "value" ) );
+      
+          var sliderValue = {{ rec.EW_Heading }};
+          $( "#slider-eastHeading" ).slider({
+            range: "max",
+            min: 0,
+            max: 359,
+            value: sliderValue,
+            slide: function( event, ui ) {
+              $( "#eastHeading, input#EW_Heading" ).val( ui.value );
+              refreshMarker()
+            }
+          });
+          $( "#eastHeading" ).val( $( "#slider-eastHeading" ).slider( "value" ) );
+      
+        } );
+    </script>
+    
 {% endblock head %}
 
 {% block body %}
@@ -44,8 +78,34 @@
             </table>
         </form>
         </div>
+        <p style="margin-top:20pt"><button onclick="refreshMarker();" style="padding:4pt;">Center Marker in Map</button></p>
+        <p>
+          <label for="northHeading">Northbound Heading:</label>
+          <input type="text" id="northHeading" readonly style="border:0; color:#f6931f; font-weight:bold;">
+        </p>
+        <div  style="width:400px;margin:10px 0;" id="slider-northHeading"></div>
+        <p>
+          <label for="eastHeading">Eastbound Heading:</label>
+          <input type="text" id="eastHeading" readonly style="border:0; color:#f6931f; font-weight:bold;">
+        </p>
+        <div  style="width:400px;margin:10px 0;" id="slider-eastHeading"></div>
         <div id="locationMap"></div>
 	{% else %}
 		<dt>No form found</dt>
 	{% endif %}
+	
+	<script type="text/javascript" >
+	// Initialize the map
+    var map = new BAWAMap('{{ config.MAPBOX_PROJECT_ID }}', '{{ config.MAPBOX_ACCESS_TOKEN }}', "locationMap");
+    // Check if we have the location
+    {% if rec == None or rec.latitude == '' or rec.longitude == '' %}
+        // No location, so add the current location
+        map.addCurrentLocation('{{rec.locationName}}', 'latitude', 'longitude');
+    {% else %}
+        // Add the location
+        var marker = map.addLocationMarker('{{rec.locationName}}', {{rec.latitude}}, {{rec.longitude}}, {{ rec.NS_Heading }}, {{ rec.EW_Heading}});
+    {% endif %}
+    
+	
+	</script> 
 {% endblock body %}

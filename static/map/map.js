@@ -4,23 +4,27 @@
  * @param mapboxProjectId
  * @param mapboxAccessToken
  * @param mapDivId
- * @param zoomLevel
+ * @param flowMarkerMinZoom
  * @constructor
  */
 	
-function BAWAMap(mapboxProjectId, mapboxAccessToken, mapDivId, zoomLevel) {
+function BAWAMap(mapboxProjectId, mapboxAccessToken, mapDivId, flowMarkerMinZoom) {
 	// create a layerGroup each for pushpin and canvas markers
 	this.pushPinLayer = new L.LayerGroup();
 	this.canvasLayer = new L.LayerGroup();
+	if(flowMarkerMinZoom == undefined){
+	    flowMarkerMinZoom = 15;
+	}
     this.map = L.map(mapDivId, {
         center: [43.551253, -121.488683],
-        zoom: zoomLevel
+        zoom: 8,
+        flowMarkerMinZoom: flowMarkerMinZoom
     });
 	
     L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
         attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
         '<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
-        zoom: zoomLevel,
+        zoom: this.map.options.zoom,
         id: mapboxProjectId,
         accessToken: mapboxAccessToken
     }).addTo(this.map);
@@ -35,7 +39,7 @@ function BAWAMap(mapboxProjectId, mapboxAccessToken, mapDivId, zoomLevel) {
 
 BAWAMap.prototype = {
     constructor: BAWAMap,
-
+    
     /**
      * Add a simple location marker.
      *
@@ -158,10 +162,10 @@ BAWAMap.prototype = {
 					this.pushPinLayer.addLayer(marker);
 					/*
 					data.flowData = {
-								"south":{"inbound":0.8, "outbound":0.8, "alignment": 10},
-								"west":{"inbound":0.5,"outbound":0.5, "alignment": 10},
-								"north":{"inbound":0.25,"outbound":0.15, "alignment": 10},
-								"east":{"outbound":0.1,"inbound":0.2, "alignment": 10}
+								"south":{"inbound":0.8, "outbound":0.8, "heading": 10},
+								"west":{"inbound":0.5,"outbound":0.5, "heading": 10},
+								"north":{"inbound":0.25,"outbound":0.15, "heading": 10},
+								"east":{"inbound":0.1,"outbound":0.2, "heading": 10}
 								}
 					*/			
 					if(data.flowData != undefined){
@@ -335,31 +339,40 @@ BAWAMap.prototype = {
      * @param tripCount
      * @param draggable
      * @param cluster
+     
+     Feb 7, 2017 BL
+     This fuction now creates a 4 legged marker used when editing a location record
+     The marker can be aligned with the map to set the headings for the streets
      */
-    addLocationMarker: function(locationName, latitude, longitude, tripCount, draggable, cluster) {
-        var self = this;
-
-        // Create marker
-        var options = {"draggable": draggable === true};
-        var marker = L.marker([latitude, longitude], options);
-        if (cluster === false) {
-            marker.addTo(this.map);
+     
+     lastLocationMarker: undefined,
+     
+    //addLocationMarker: function(locationName, latitude, longitude, tripCount, draggable, cluster) {
+    addLocationMarker: function(locationName, latitude, longitude, northHeading, eastHeading) {
+        //distroy the old marker if one exists
+        if(this.lastLocationMarker != undefined){
+            this.lastLocationMarker.remove();
+            this.lastLocationMarker = undefined;
         }
-		this.setDragFunction(marker);
+        // Create marker
+        var options = {draggable: true};
+        var marker = L.alignmentMarker([latitude, longitude],options,northHeading,eastHeading)
+        marker.addTo(this.map);
+    	this.setDragFunction(marker);
+        this.lastLocationMarker = marker;
+
+        var position = marker.getLatLng();
+        this.updateFormLocationFields("latitude", "longitude", position.lat, position.lng);
 
 
         if (locationName !== undefined && locationName !== "") {
             // Create trip marker popup string
             var tripString = "<b>" + locationName + "</b>";
-            if (tripCount !== undefined) {
-                tripString += "<br>" + "Trip Count: " + tripCount;
-            }
-            marker.bindPopup(tripString).openPopup();
+            marker.bindPopup(tripString);
         }
-
-        if (cluster === true) {
-            this.cluster.addLayer(marker);
-        }
+        
+        this.map.fitBounds([marker.getLatLng()]);
+        return marker;
     },
 
     /**
@@ -386,7 +399,7 @@ BAWAMap.prototype = {
 		if(theMap != undefined){
 			theMap.on("zoomend", function (event) {
 				var theZoom = theMap.getZoom()
-				if (theZoom > 14) {
+				if (theZoom > this.options.flowMarkerMinZoom) {
 					clusterLayer.remove();
 					canvasLayer.addTo(theMap);
 				} else {
@@ -417,3 +430,4 @@ BAWAMap.prototype = {
     }
 
 };
+

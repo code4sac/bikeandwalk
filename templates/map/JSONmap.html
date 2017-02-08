@@ -17,7 +17,7 @@
 		<div id="tripsMap"></div>
         <script type="text/javascript">
             // Initialize the map
-            var map = new BAWAMap('{{ config.MAPBOX_PROJECT_ID }}', '{{ config.MAPBOX_ACCESS_TOKEN }}',"tripsMap", 14);
+            var map = new BAWAMap('{{ config.MAPBOX_PROJECT_ID }}', '{{ config.MAPBOX_ACCESS_TOKEN }}',"tripsMap");
 		</script>
 	{% if markerData != '' %}
         <script type="text/javascript">
