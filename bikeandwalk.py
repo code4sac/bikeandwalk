@@ -143,8 +143,6 @@ from views import assignment
 app.register_blueprint(assignment.mod)
 from views import count
 app.register_blueprint(count.mod)
-from views import persona
-app.register_blueprint(persona.mod)
 from views import location
 app.register_blueprint(location.mod)
 from views import trip
