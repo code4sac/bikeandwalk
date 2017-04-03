@@ -282,47 +282,49 @@ def escapeTemplateForJson(popup):
     
     return popup
     
-def getMarkerDict(rec, searchEvents):
+def getMarkerDict(rec, searchEvents=None):
     if rec and rec.latitude.strip() != '' and rec.longitude.strip() !='':
         marker = {"latitude": float(rec.latitude), "longitude": float(rec.longitude), 
            "locationID": rec.ID, "locationName": rec.locationName, "draggable": False, 
            }
            
         flowData = {}
-        '''
-        # collect data for each direction of travel
-             "north":{"inbound":35,"outbound":66, "heading": 10},
-             "east":{"outbound":65,"inbound":54, "heading": 10}
-             "south":{"inbound":89, "outbound":80, "heading": 10},
-             "west":{"inbound":54,"outbound":25, "heading": 10},
-        }
-        '''
-        flowRec = queryFlowData(rec.ID, searchEvents)
-        if flowRec:
-            rec = flowRec[0] # one row only
-            # the compass headings
-            headings = []
-            headings.append(rec[8]) #North
-            headings.append(rec[9]) #East
-            headings.append(rec[8]+180) #South
-            headings.append(rec[9]+180) #West
+        if searchEvents:
+            '''
+            # collect data for each direction of travel
+                 "north":{"inbound":35,"outbound":66, "heading": 10},
+                 "east":{"outbound":65,"inbound":54, "heading": 10}
+                 "south":{"inbound":89, "outbound":80, "heading": 10},
+                 "west":{"inbound":54,"outbound":25, "heading": 10},
+            }
+            '''
+            flowRec = queryFlowData(rec.ID, searchEvents)
+            if flowRec:
+                rec = flowRec[0] # one row only
+                # the compass headings
+                headings = []
+                headings.append(rec[8]) #North
+                headings.append(rec[9]) #East
+                headings.append(rec[8]+180) #South
+                headings.append(rec[9]+180) #West
             
-            compassPoint = ["north","east","south","west"]
-            idx = 0
-            heading = 0
-            for direction in compassPoint:
-                if direction != "north":
-                    idx += 2
-                    heading += 1
+                compassPoint = ["north","east","south","west"]
+                idx = 0
+                heading = 0
+                for direction in compassPoint:
+                    if direction != "north":
+                        idx += 2
+                        heading += 1
                 
-                dirData = {}
-                dirData["inbound"] = rec[idx]
-                dirData["outbound"] = rec[idx+1]
-                dirData["heading"] = headings[heading]
+                    dirData = {}
+                    dirData["inbound"] = rec[idx]
+                    dirData["outbound"] = rec[idx+1]
+                    dirData["heading"] = headings[heading]
                 
-                flowData[direction] = dirData
+                    flowData[direction] = dirData
                 
-        marker["flowData"] = flowData
+            marker["flowData"] = flowData
+            
         return marker
     return None
 
