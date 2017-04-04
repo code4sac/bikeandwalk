@@ -1,0 +1,32 @@
+	{% set screenLineDir = location.locationType[11:].upper() %} {# EW or NS #}
+	{% if screenLineDir == "EW" %}
+		<!-- East West -->
+		{% set streetName = location.EW_Street %}
+		{% set laneNames = ["D2","B2"] %}
+		{% set dirNames = ["Eastbound","Westbound"] %}
+	{% else %}
+		<!-- North South -->
+		{% set streetName = location.NS_Street %}
+		{% set laneNames = ["C2","A2"] %}
+		{% set dirNames = ["Northbound","Southbound"] %}
+	{% endif %}
+	<div id="screenlineTraffic">
+		<p id="eastWestStreetName">
+			<img class="arrows" src="{{ url_for('static', filename='count/images/arrows/EastToWest.png') }}" alt="spacer" />
+				&nbsp;{{ streetName }}&nbsp;
+			<img class="arrows" src="{{ url_for('static', filename='count/images/arrows/WestToEast.png') }}" alt="spacer" />
+		</p>
+		<p class="eastWestWay" style="border: 1pt black solid;border-bottom:0pt;border-left:0pt;border-right:0pt;width:90%; margin:auto">                                                                                                                             
+			<span id="{{laneNames[0]}}" class="entry W_Entry">{{laneNames[0]}}</span>
+			<img  id="laneSpacer" class="intersection" src="{{ url_for('static', filename='count/images/spacer.png') }}" alt="spacer" />
+			<span id="{{laneNames[1]}}" class="entry E_Entry">{{laneNames[1]}}</span>
+		</p>
+		<p style="position:relative;top:-6pt;color:#666;margin:auto;width:90%;text-align:center;border: 1pt black solid;border-top:0pt;border-left:0pt;border-right:0pt" >                                                                                                                             
+			<span id="dirName_1" style="font-size:10pt;">{{dirNames[0]}}</span>
+			<img id="dirSpacer" class="intersection" src="{{ url_for('static', filename='count/images/spacer.png') }}" alt="spacer" />
+			<span id="dirName_2" style="font-size:10pt;">{{dirNames[1]}}</span>
+		</p>
+	</div>
+	<div>
+		<p style="text-align:center;"><button onclick="swapDirections('#{{laneNames[0]}}','#{{laneNames[1]}}','#dirName_1','#dirName_2');">Swap Directions</button></p>
+	</div>

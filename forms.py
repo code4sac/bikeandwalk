@@ -20,11 +20,6 @@ class AssignmentEditFromListForm(AssignmentForm):
     countEvent_ID = HiddenField("Count Event ID")
     location_ID = HiddenField("Location ID")
 
-### Old weather field from Assignments, now in countEvent
-#weather = SelectField("Weather",
-#    choices=[("","Select Weather Type"),("Fair", "Fair"),("Rainy","Rainy"),("Very Cold", "Very Cold")], )
-
-  
 class LocationForm(Form):
     #ID = HiddenField("ID")
     locationName = StringField("Location Name", [validators.DataRequired(),], )
@@ -33,12 +28,14 @@ class LocationForm(Form):
     EW_Street = StringField("East West St.", [validators.DataRequired(),], )
     EW_Heading = DecimalField("Heading for East/West", places=2)
     locationType = SelectField("Location Type", default="intersection",
-        choices=[("intersection", "Intersection"),("screenline","Screen Line")], )
+        choices=[("intersection", "Intersection"),
+                ("screenline-ns","Screen Line (North/South)"),
+                ("screenline-ew","Screen Line (East/West)"),
+    ], )
     city = StringField("City", [validators.DataRequired(),], )
     state = StringField("State", [validators.DataRequired(),], )
     latitude = StringField("Latitude",  )
     longitude = StringField("Longitude", )
-    #organization_ID = IntegerField("Organization ID", [validators.DataRequired(),], )
 
 class TripForm(Form):
     #ID = HiddenField("ID")

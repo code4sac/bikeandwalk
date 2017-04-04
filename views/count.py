@@ -103,8 +103,13 @@ def count_begin(UID=""):
             travelers[elem]=traveler
             
     user = User.query.filter_by(ID=cntLoc.user_ID).first()
+    
+    gridType="intersection"
+    if location.locationType[0:10].upper() == "SCREENLINE":
+        gridType = "screenline"
+        
     #Ok, send the count page
-    return render_template("count/count.html", cntLoc=cntLoc, event=event, location=location, travelers=travelers, user=user)
+    return render_template("count/count.html", cntLoc=cntLoc, event=event, location=location, travelers=travelers, user=user, gridType=gridType)
     
 def isValidUID(UID=""):
     return Assignment.query.filter_by(assignmentUID= UID).exists()

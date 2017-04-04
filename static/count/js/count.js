@@ -443,3 +443,25 @@ function getTripTime() {
 	timeString += ("0" + d.getSeconds()).substr(-2)
     return timeString;
 }
+
+// swap the directional lane markers for Screenline counts
+var swapState  = 0;
+function swapDirections(leftDirID,rightDirID,leftDirName,rightDirName){
+	if(swapState == 1){
+		$(leftDirID).insertBefore("#laneSpacer");
+		$(leftDirID).removeClass('E_Entry').addClass('W_Entry');
+		$(rightDirID).insertAfter("#laneSpacer");
+		$(rightDirID).removeClass('W_Entry').addClass('E_Entry');
+		$(leftDirName).insertBefore("#dirSpacer");
+		$(rightDirName).insertAfter("#dirSpacer");
+		swapState = 0;
+	} else {
+		$(leftDirID).insertAfter("#laneSpacer");
+		$(leftDirID).removeClass('W_Entry').addClass('E_Entry');
+		$(rightDirID).insertBefore("#laneSpacer");
+		$(rightDirID).removeClass('E_Entry').addClass('W_Entry');
+		$(leftDirName).insertAfter("#dirSpacer");
+		$(rightDirName).insertBefore("#dirSpacer");
+		swapState = 1;
+	}
+}
