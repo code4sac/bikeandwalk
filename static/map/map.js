@@ -49,10 +49,16 @@ BAWAMap.prototype = {
      * @param longitude
      * @param draggable
      */
-    addSimpleLocation: function(locationName, latitude, longitude, draggable)  {
-        this.pushNewLocation(locationName, latitude, longitude);
-        this.setLocationMarkers(true, draggable, false);
-    },
+     addSimpleLocation: function(locationName, latitude, longitude, draggable)  {
+		this.pushNewLocation(locationName, latitude, longitude);
+		var options = {};
+ 		options.draggable = draggable;
+
+ 		var marker = L.marker([latitude, longitude],options);
+ 		marker.addTo(this.map);
+ 		marker.bindPopup(locationName);
+		this.zoomToFitAllMarkers();
+     },
 
     /**
      * Add a Trip location marker.
@@ -230,7 +236,8 @@ BAWAMap.prototype = {
 
             navigator.geolocation.getCurrentPosition(function(position) {
                 // Add the location
-                self.addSimpleLocation(locationName, position.coords.latitude, position.coords.longitude, true);
+                //self.addSimpleLocation(locationName, position.coords.latitude, position.coords.longitude, true);
+                self.addLocationMarker(locationName, position.coords.latitude, position.coords.longitude, 0, 90);
 
                 // Update location input fields
                 self.updateFormLocationFields(latitudeFieldId, longitudeFieldId,
