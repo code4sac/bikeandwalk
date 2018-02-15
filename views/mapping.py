@@ -344,7 +344,7 @@ def getDivIcon(markerCount):
         if markerCount > 199:
             markerName = "BikeMarker_Red.png"
             
-    divIcon = render_template("map/divicon.html", markerName=markerName, markerCount=markerCount)
+    divIcon = render_template("map/divIcon.html", markerName=markerName, markerCount=markerCount)
     
     return escapeTemplateForJson(divIcon)
     
