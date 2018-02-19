@@ -28,6 +28,13 @@ app.config.from_pyfile('settings.conf', silent=True)
 
 app.debug = app.config["DEBUG"]
 
+
+# work around some web servers that mess up root path
+from werkzeug.contrib.fixers import CGIRootFix
+if app.config['CGI_ROOT_FIX_APPLY'] == True:
+    fixPath = app.config.get("CGI_ROOT_FIX_PATH","/")
+    app.wsgi_app = CGIRootFix(app.wsgi_app, app_root=fixPath)
+
 # setup Flask-SQLAlchemy
 from flask.ext.sqlalchemy import SQLAlchemy
 app.config['SQLALCHEMY_DATABASE_URI'] = app.config["DATABASE_URI"]
@@ -51,8 +58,10 @@ def home():
     
 @app.route('/ping', methods=['GET'])
 def ping():
-    return "OK"
-    
+    if app.config['CGI_ROOT_FIX_APPLY'] == True:
+        return "Got Fix " + app.config.get("CGI_ROOT_FIX_PATH","No Path")
+    else:
+        return "OK"
 
 @app.before_request
 def before_request():
@@ -69,9 +78,10 @@ def before_request():
     freeDirectories = ("login","logout","count","static","ping","_auth","map",
             "report",) #first directory of request URL
     superUserDirectories = ("org","feature","trip","traveler","super",) #first directory of request URL
+    
     rootURL = request.path.split("/")
     rootURL = rootURL[1]
-
+    
     superRequired = rootURL in superUserDirectories
     noLoginRequired = rootURL in freeDirectories
     ### Otherwise, user must be an Org. admin

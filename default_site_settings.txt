@@ -2,8 +2,13 @@
 
 ## Changes to this settings file only take effect after restarting the server ###
 
+## ALL CONFIG NAMES MUST BE UPPERCASE!  ##
+
 # The basics...
 #DEBUG = True ## default is False
+
+#CGI_ROOT_FIX_APPLY = False #Some webservers mess up the root url
+#CGI_ROOT_FIX_PATH = "/" #this is usually correct path
 
 SECRET_KEY = "somereallylongstringtouseasakey"
 

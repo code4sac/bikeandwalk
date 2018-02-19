@@ -1,13 +1,16 @@
 ## Base Settings
 
 class Config(object):
+    HOST_NAME = "app.bikeandwalk.org"
     DEBUG = False
     TESTING = False
     SECRET_KEY = "somereallylongstringtouseasakey"
+    # work around for some web servers setting wrong path
+    CGI_ROOT_FIX_APPLY = False
+    CGI_ROOT_FIX_PATH = "/"
     
     DATABASE = "bikeandwalk.sqlite"
     DATABASE_PATH_PREFIX = '/Users/bleddy/Sites/app.bikeandwalk.org/'
-    #DATABASE_PATH_PREFIX = '/Users/JR/bikeandwalk/'
     DATABASE_URI = 'sqlite:///' + DATABASE_PATH_PREFIX + DATABASE
     
     # set session expiration in seconds
@@ -31,8 +34,6 @@ class Config(object):
     
     MAPBOX_PROJECT_ID = ""
     MAPBOX_ACCESS_TOKEN = ""
-    
-    HOST_NAME = "app.bikeandwalk.org"
 
 class ProductionConfig(Config):
     pass
