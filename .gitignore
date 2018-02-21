@@ -5,6 +5,9 @@ __pycache__/
 # C extensions
 *.so
 
+# for passenger virtualenv handling
+passenger_wsgi.py
+
 # Specific to bikeandwalk
 instance/
 *.sqlite
