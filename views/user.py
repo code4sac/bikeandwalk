@@ -75,7 +75,7 @@ def edit(id=0):
                 ## create a new record stub
                 rec = User(request.form['name'],request.form['email'])
                 db.session.add(rec)
-                db.session.commit() # this loads the new ID into rec
+                #db.session.commit() # this loads the new ID into rec
                 
                 rec.userName = db.null()
                 rec.password = db.null()
@@ -116,21 +116,25 @@ def edit(id=0):
                     rec.password = user_password
                 else:
                     rec.password = db.null()
-            
-            # create user_organization records
-            orgIDs = request.form.getlist("orgs")
-            if not orgIDs:
-                orgIDs = [request.form.get('org')]
-            makeUserOrgRecords(rec.ID,orgIDs)
     
             try:
                 db.session.commit()
+                # create user_organization records
+                # in the case of a new user, rec.ID is now available
+                orgIDs = request.form.getlist("orgs")
+                if not orgIDs:
+                    orgIDs = [request.form.get('org')]
+                makeUserOrgRecords(rec.ID,orgIDs)
+                db.session.commit()
+                
                 # if the username or email address are the same as g.user
                 # update g.user if it changes
                 if(editingCurrentUser != ''):
                     setUserStatus(editingCurrentUser)
                     views.login.setUserSession(editingCurrentUser)
                 
+            
+           
                 
             except Exception as e:
                 db.session.rollback()
