@@ -27,7 +27,7 @@ class Config(object):
     MAIL_PASSWORD = None
     MAIL_DEFAULT_SENDER = None
     MAIL_MAX_EMAILS = None
-    MAIL_SUPPRESS_SEND = TESTING
+    MAIL_SUPPRESS_SEND = False
     MAIL_ASCII_ATTACHMENTS = False
     
     # Uploads ...
@@ -35,6 +35,9 @@ class Config(object):
     
     MAPBOX_PROJECT_ID = ""
     MAPBOX_ACCESS_TOKEN = ""
+
+    LOCATION_DEFAULT_LNG = -121.74439430236818
+    LOCATION_DEFAULT_LAT = 38.54422161206573
 
 class ProductionConfig(Config):
     pass

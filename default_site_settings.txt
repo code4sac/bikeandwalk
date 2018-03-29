@@ -38,4 +38,8 @@ DATABASE_URI = 'sqlite:///' + DATABASE_PATH_PREFIX + DATABASE
 #MAPBOX_PROJECT_ID = ""
 #MAPBOX_ACCESS_TOKEN = ""
 
+# Sets the default location when creating a new location pin if geolocation is not available
+#LOCATION_DEFAULT_LNG = -121.74439430236818
+#LOCATION_DEFAULT_LAT = 38.54422161206573
+
 #HOST_NAME = "app.bikeandwalk.org"

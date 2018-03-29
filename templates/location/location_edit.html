@@ -4,12 +4,12 @@
 
 {% block head %}
     {% include "map/mapHeaders.html" %}
-    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 	<script type="text/javascript">
 		$(document).ready(function(){
 	            // detect and handle when heading changes
-	            $("#NS_Heading, #EW_Heading").change(function(){refreshMarker();});
+	            $("#NS_Heading, #EW_Heading, #latitude, #longitude").change(function(){refreshMarker();});
 	            
 		});
         function refreshMarker(){
@@ -23,7 +23,7 @@
         }
         
         $( function() {
-          var sliderValue = {{ rec.NS_Heading }};
+          var sliderValue = {{ rec.NS_Heading|default('0', true) }};
           $( "#slider-northHeading" ).slider({
             range: "max",
             min: 0,
@@ -36,7 +36,7 @@
           });
           $( "#northHeading" ).val( $( "#slider-northHeading" ).slider( "value" ) );
       
-          var sliderValue = {{ rec.EW_Heading }};
+          var sliderValue = {{ rec.EW_Heading|default('90', true) }};
           $( "#slider-eastHeading" ).slider({
             range: "max",
             min: 0,
@@ -100,7 +100,7 @@
     // Check if we have the location
     {% if rec == None or rec.latitude == '' or rec.longitude == '' %}
         // No location, so add the current location
-        map.addCurrentLocation('{{rec.locationName}}', 'latitude', 'longitude');
+        map.addCurrentLocation('{{rec.locationName}}', {{defaultLoc.lat}}, {{defaultLoc.lng}}, 'latitude', 'longitude', 'NS_Heading', 'EW_Heading');
     {% else %}
         // Add the location
         var marker = map.addLocationMarker('{{rec.locationName}}', {{rec.latitude}}, {{rec.longitude}}, {{ rec.NS_Heading }}, {{ rec.EW_Heading}});

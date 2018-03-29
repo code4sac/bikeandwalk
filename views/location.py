@@ -1,6 +1,6 @@
 from flask import request, g, redirect, url_for, \
      render_template, flash, Blueprint, abort
-from bikeandwalk import db
+from bikeandwalk import db, app
 from models import Location
 from views.trip import getLocationTripTotal
 from views.utils import printException, getDatetimeFromString, nowString, cleanRecordID
@@ -29,6 +29,10 @@ def display():
 @mod.route("/location/edit/<id>/", methods=['GET','POST'])
 def edit(id=0):
     setExits()
+    defaultLoc = {'lat': app.config['LOCATION_DEFAULT_LAT'], 'lng': app.config['LOCATION_DEFAULT_LNG']}
+    #LOCATION_DEFAULT_LNG
+    #LOCATION_DEFAULT_LAT
+    
     id = cleanRecordID(id)
     if id < 0:
         flash("That is not a valid ID")
@@ -52,7 +56,7 @@ def edit(id=0):
         db.session.commit()
         return redirect(g.listURL)
         
-    return render_template('location/location_edit.html', rec=rec, form=form)
+    return render_template('location/location_edit.html', rec=rec, form=form, defaultLoc=defaultLoc)
     
     
 @mod.route("/location/delete/", methods=['GET'])

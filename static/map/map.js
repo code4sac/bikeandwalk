@@ -230,40 +230,44 @@ BAWAMap.prototype = {
      * @param latitudeFieldId
      * @param longitudeFieldId
      */
-    addCurrentLocation: function(locationName, latitudeFieldId, longitudeFieldId) {
+    addCurrentLocation: function(locationName, defaultLat, defaultLng, latitudeFieldId, longitudeFieldId, NSheadingFieldID, EWheadingFieldID) {
         if (navigator.geolocation) {
             var self = this;
 
             navigator.geolocation.getCurrentPosition(function(position) {
                 // Add the location
                 //self.addSimpleLocation(locationName, position.coords.latitude, position.coords.longitude, true);
-                self.addLocationMarker(locationName, position.coords.latitude, position.coords.longitude, 0, 90);
+								var NSheading = 0;
+								var EWheading = 90;
+                self.addLocationMarker(locationName, position.coords.latitude, position.coords.longitude, NSheading, EWheading);
 
                 // Update location input fields
                 self.updateFormLocationFields(latitudeFieldId, longitudeFieldId,
-                                     position.coords.latitude, position.coords.longitude);
+                                     position.coords.latitude, position.coords.longitude, NSheadingFieldID, EWheadingFieldID, NSheading, EWheading);
 
-            }, function(error) {
-                switch(error.code) {
-                    case error.PERMISSION_DENIED:
-                        console.log("User denied the request for Geolocation.");
-                        break;
-                    case error.POSITION_UNAVAILABLE:
-                        console.log("Location information is unavailable.");
-                        break;
-                    case error.TIMEOUT:
-                        console.log("The request to get user location timed out.");
-                        break;
-                    case error.UNKNOWN_ERROR:
-                        console.log("An unknown error occurred.");
-                        break;
-                }
-            });
+            }, self.setDefaultLocation(locationName, defaultLat, defaultLng, latitudeFieldId, longitudeFieldId, NSheadingFieldID, EWheadingFieldID));
         } else {
             console.log("Geolocation is not supported by this browser.");
+						self.setDefaultLocation(locationName, defaultLat, defaultLng, latitudeFieldId, longitudeFieldId, NSheadingFieldID, EWheadingFieldID);
         }
     },
 
+		setDefaultLocation: function(locationName, defaultLat, defaultLng, latitudeFieldId, longitudeFieldId, NSheadingFieldID, EWheadingFieldID){
+			// set a default location if geolocation is not available
+      console.log("Setting default locaiton.");
+			var self = this;
+			// Davis Bike Hall of Fame
+			//var lng = -121.74439430236818;
+			//var lat = 38.54422161206573;
+			var NSheading = 0;
+			var EWheading = 90;
+			//alert("Could not determine your current location, so we placed a marker at the default location");
+      self.addLocationMarker(locationName, defaultLat, defaultLng, NSheading, EWheading);
+      // Update location input fields
+      self.updateFormLocationFields(latitudeFieldId, longitudeFieldId,
+                          defaultLat, defaultLng, NSheadingFieldID, EWheadingFieldID, NSheading, EWheading);
+		},
+		
     /**
      * Push a new location to the locations array.
      * Also pushes the location lat/lon to the geocodes array (used to zoom map to markers).
@@ -424,13 +428,22 @@ BAWAMap.prototype = {
      * @param longitudeFieldId
      * @param latitude
      * @param longitude
+     * @param NSheadingFieldID
+     * @param EWheadingFieldID
+     * @param NSheading
+     * @param EWheading
      */
-    updateFormLocationFields: function(latitudeFieldId, longitudeFieldId, latitude, longitude) {
+
+    updateFormLocationFields: function(latitudeFieldId, longitudeFieldId, latitude, longitude, NSheadingFieldID, EWheadingFieldID, NSheading, EWheading) {
         if (latitudeFieldId !== undefined && longitudeFieldId !== undefined) {
 			var theID = document.getElementById(latitudeFieldId);
 			if(theID != null){theID.value = latitude;}
 			theID = document.getElementById(longitudeFieldId);
 			if(theID != null){theID.value = longitude;}
+			theID = document.getElementById(NSheadingFieldID);
+			if(theID != null){theID.value = NSheading;}
+			theID = document.getElementById(EWheadingFieldID);
+			if(theID != null){theID.value = EWheading;}
 			theID = document.getElementById('mapURL');
 			if(theID != null){theID.value = "https://www.google.com/maps/place//@"+ latitude +","+ longitude +",17z";}
         }
