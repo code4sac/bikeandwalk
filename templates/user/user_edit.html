@@ -18,6 +18,12 @@
         <dd><input type=password size=30 name="confirmPassword" value=""/>
 
 		{% if g.role == 'super' or g.role == 'admin' %}
+        <dt>Organizations:</dt>
+		{% for org in orgs %}
+		<dd>
+			<label><input type="checkbox" id="org_{{org.ID}}" name="orgs" value="{{org.ID}}" {% if org.ID in selectedOrgs %}checked="checked"{% endif %} />&nbsp;{{org.name}}</label>
+		</dd>
+		{% endfor %}
         <dt>Role:</dt>
 		<dd><select name="role">
 			<option value="counter" {% if rec.role == 'counter' %}selected="selected" {% endif %}>counter</option>
@@ -29,7 +35,7 @@
 		{% else %}
 		<input type=hidden name="role" value="{{rec.role|default("counter",true)}}">
 		{% endif %}
-		<input type=hidden name="organization_ID" value="{{g.orgID}}">
+		<input type=hidden name="org" value="{{g.orgID}}">
         <dt>Inactive:<input type=checkbox  name="inactive" value="1" {% if rec.inactive %} checked="checked" {% endif %}/>
       </dl>
     </form>

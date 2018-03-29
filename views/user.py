@@ -3,8 +3,8 @@ from flask import request, session, g, redirect, url_for, abort, \
 from time import time
 import re
 from bikeandwalk import db,app
-from models import User
-from views.utils import printException, cleanRecordID
+from models import User, Organization, UserOrganization
+from views.utils import printException, cleanRecordID, getOrgUsers, getUserOrgs
 import hmac
 import hashlib
 import random
@@ -24,7 +24,7 @@ def setExits():
 def display():
     setExits()
     if db :
-        recs = User.query.filter(User.organization_ID == int(g.orgID)).order_by(User.name)
+        recs = getOrgUsers(g.orgID)
         return render_template('user/user_list.html', recs=recs)
 
     flash('Could not open Database')
@@ -35,8 +35,16 @@ def display():
 @mod.route('/user/edit/', methods=['POST', 'GET'])
 @mod.route('/user/edit/<id>/', methods=['POST', 'GET'])
 def edit(id=0):
+    #printException(str(request.form)) 
+    
     setExits()
     id = cleanRecordID(id)
+    orgs = Organization.query.order_by(Organization.name)
+    u = getUserOrgs(id)
+    selectedOrgs = []
+    for s in u:
+        selectedOrgs.append(s.ID)
+    
     if id < 0:
         flash("That is not a valid ID")
         return redirect(g.listURL)
@@ -50,90 +58,101 @@ def edit(id=0):
         if id > 0:
             rec = User.query.get(id)
             currentPassword = rec.password
-            
-        return render_template('user/user_edit.html', rec=rec, currentPassword=currentPassword)
-            
-    #have the request form
-    #ensure a value for the check box
-    inactive = request.form.get('inactive')
-    if not inactive: 
-        inactive = "0"
-        
-
-    if validForm():
-        if id > 0:
-            rec = User.query.get(id)
-        else:
-            ## create a new record stub
-            rec = User(request.form['name'],request.form['email'],request.form['organization_ID'])
-            db.session.add(rec)
-            rec.userName = db.null()
-            rec.password = db.null()
-        
-        #Are we editing the current user's record?
-        editingCurrentUser = ''
-        if(g.user == rec.userName):
-            editingCurrentUser = request.form['userName'].strip()
-        else: 
-            if(g.user == rec.email):
-                editingCurrentUser = request.form['email'].strip()
-            
-        #update the record
-        rec.name = request.form['name'].strip()
-        rec.email = request.form['email'].strip()
-        rec.role = request.form['role'].strip()
-        rec.inactive = str(inactive)
-        rec.organization_ID = request.form['organization_ID']
                 
-        ### for now the username and password are not used
-        user_name = ''
-        if request.form['userName']:
-            user_name = request.form['userName'].strip()
-            
-        if user_name != '':
-            rec.userName = user_name
-        else:
-            rec.userName = db.null()
-        
-        # Null values in db are returned as None
-        if str(rec.password) != 'NULL' and request.form['password'].strip() == '':
-            # Don't change the password
-            pass
-        else:
-            user_password = ''
-            if request.form['password'].strip() != '':
-                user_password = getPasswordHash(request.form['password'].strip())
-
-            if user_password != '':
-                rec.password = user_password
-            else:
-                rec.password = db.null()
-            
-        try:
-            db.session.commit()
-            # if the username or email address are the same as g.user
-            # update g.user if it changes
-            if(editingCurrentUser != ''):
-                setUserStatus(editingCurrentUser)
-                views.login.setUserSession(editingCurrentUser)
-                
-        except Exception as e:
-            db.session.rollback()
-            flash(printException('Error attempting to save '+g.title+' record.',"error",e))
-            
-        return redirect(g.listURL)
         
     else:
-        # form did not validate, giv user the option to keep their old password if there was one
-        currentPassword = ""
-        if request.form["password"] != "" and id > 0:
-            rec = User.query.get(id)
-            currentPassword = rec.password
+        #have the request form
+        #ensure a value for the check box
+        inactive = request.form.get('inactive')
+        if not inactive: 
+            inactive = "0"
         
 
-    # form not valid - redisplay
-    return render_template('user/user_edit.html', rec=request.form, currentPassword=currentPassword)
+        if validForm():
+            if id > 0:
+                rec = User.query.get(id)
+            else:
+                ## create a new record stub
+                rec = User(request.form['name'],request.form['email'])
+                db.session.add(rec)
+                db.session.commit() # this loads the new ID into rec
+                
+                rec.userName = db.null()
+                rec.password = db.null()
+        
+            #Are we editing the current user's record?
+            editingCurrentUser = ''
+            if(g.user == rec.userName):
+                editingCurrentUser = request.form['userName'].strip()
+            else: 
+                if(g.user == rec.email):
+                    editingCurrentUser = request.form['email'].strip()
+            
+            #update the record
+            rec.name = request.form['name'].strip()
+            rec.email = request.form['email'].strip()
+            rec.role = request.form['role'].strip()
+            rec.inactive = str(inactive)
+            
+            user_name = ''
+            if request.form['userName']:
+                user_name = request.form['userName'].strip()
+            
+            if user_name != '':
+                rec.userName = user_name
+            else:
+                rec.userName = db.null()
+        
+            # Null values in db are returned as None
+            if str(rec.password) != 'NULL' and request.form['password'].strip() == '':
+                # Don't change the password
+                pass
+            else:
+                user_password = ''
+                if request.form['password'].strip() != '':
+                    user_password = getPasswordHash(request.form['password'].strip())
 
+                if user_password != '':
+                    rec.password = user_password
+                else:
+                    rec.password = db.null()
+            
+            # create user_organization records
+            orgIDs = request.form.getlist("orgs")
+            if not orgIDs:
+                orgIDs = [request.form.get('org')]
+            makeUserOrgRecords(rec.ID,orgIDs)
+    
+            try:
+                db.session.commit()
+                # if the username or email address are the same as g.user
+                # update g.user if it changes
+                if(editingCurrentUser != ''):
+                    setUserStatus(editingCurrentUser)
+                    views.login.setUserSession(editingCurrentUser)
+                
+                
+            except Exception as e:
+                db.session.rollback()
+                flash(printException('Error attempting to save '+g.title+' record.',"error",e))
+            
+            return redirect(g.listURL)
+        
+        else:
+            # form did not validate, giv user the option to keep their old password if there was one
+            currentPassword = ""
+            if request.form["password"] != "" and id > 0:
+                rec = User.query.get(id)
+                currentPassword = rec.password
+            rec=request.form
+
+    # so the checkbox will be set on new record form
+    if len(selectedOrgs) == 0:
+        selectedOrgs.append(g.orgID)
+            
+    # display form
+    return render_template('user/user_edit.html', rec=rec, currentPassword=currentPassword, orgs=orgs, selectedOrgs=selectedOrgs)
+    
 
 @mod.route('/user/delete', methods=['GET'])
 @mod.route('/user/delete/', methods=['GET'])
@@ -172,6 +191,11 @@ def validForm():
     # Validate the form
     goodForm = True
     
+    #must have at least one organization selected
+    if not request.form.getlist('orgs') and not request.form['org']:
+        goodForm = False
+        flash("You must select at least one organization")
+    
     if request.form['name'].strip() == '':
         goodForm = False
         flash('Name may not be blank')
@@ -194,10 +218,6 @@ def validForm():
             goodForm = False
             flash('That doesn\'t look like a valid email address')
             
-    if request.form['organization_ID'] <= "0":
-        goodForm = False
-        flash('You must select an Organization')
-
     # user name must be unique
     uName = request.form['userName'].strip()
     if uName == "None":
@@ -235,7 +255,8 @@ def findUser(emailOrUserName=None,includeInactive=False):
         
     emailOrUserName = emailOrUserName.strip().lower()
     ## locate the user with this as their email or userName
-    sql = "SELECT * FROM user WHERE  lower(user.email) = '%s' OR lower(user.userName) = '%s'"
+    sql = "SELECT user.*, user_organization.organization_ID FROM user join user_organization WHERE lower(user.email) = '%s' OR lower(user.userName) = '%s'"
+    #sql = "SELECT * FROM user WHERE  lower(user.email) = '%s' OR lower(user.userName) = '%s'"
     sql = sql % (emailOrUserName, emailOrUserName)
     
     #Filter inactive if needed
@@ -243,7 +264,7 @@ def findUser(emailOrUserName=None,includeInactive=False):
         #Active user only
         sql = sql + " AND user.inactive = '0'"
     
-    sql = sql + " ;"
+    sql = sql + " LIMIT 1 ;"
     
     rec = db.engine.execute(sql).fetchone()
     if rec:
@@ -255,7 +276,7 @@ def setUserStatus(emailOrUserName):
     if emailOrUserName == None:
         return False
     emailOrUserName = emailOrUserName.strip()
-    rec = findUser(emailOrUserName.strip())
+    rec = findUser(emailOrUserName)
     if rec:
         g.user = emailOrUserName
         g.role = rec.role
@@ -315,4 +336,21 @@ def getUserPasswordHash(emailOrUserName=''):
     
 def looksLikeEmailAddress(email):
     return re.match(r"[^@]+@[^@]+\.[^@]+", email.strip())
+    
+def makeUserOrgRecords(userID,orgIDs):
+    """ create user_organization records for a user """
+    # orgIDs is a list, usually strings
+    
+    #first delete any current records
+    sql = "delete from user_organization where user_ID = '%s';" % (str(userID))
+    db.engine.execute(sql)
+    
+    #db.session.commit()
+    
+    recs=getUserOrgs(id)
+    for orgID in orgIDs:
+        rec = UserOrganization(cleanRecordID(userID),cleanRecordID(orgID))
+        db.session.add(rec)
+        
+    
     

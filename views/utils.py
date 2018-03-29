@@ -36,9 +36,23 @@ def getDatetimeFromString(dateString):
         
     return theDate.replace(microsecond=0)
 
+def getUserOrgs(userID):
+    """ return a db object of all the organizations associated with a user """
+    sql = "select * from organization where ID in (select organization_ID from user_organization where user_ID = '%s') order by name;"
+    sql = sql % (userID)
+    return db.engine.execute(sql).fetchall()
+    
+    
+def getOrgUsers(orgID):
+    """Return a db object of all the users associated with the organization """
+    sql = "select * from user where ID in (select user_ID from user_organization where organization_ID = '%s') order by name;"
+    sql = sql % (orgID)
+    return db.engine.execute(sql).fetchall()
+    
 def getUserChoices():
     a = [(0,u"Unassigned")]
-    b = [(x.ID, x.name) for x in User.query.filter(User.organization_ID == g.orgID).order_by('name')]
+    #b = [(x.ID, x.name) for x in User.query.filter(User.organization_ID == g.orgID).order_by('name')]
+    b = [(x.ID, x.name) for x in getOrgUsers(g.orgID)]
     return a + b
 
 def getCountEventChoices():

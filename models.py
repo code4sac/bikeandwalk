@@ -8,11 +8,23 @@ from sqlalchemy.orm import *
     I just have to accept it for now that 'countEvent' is created as 'count_event' in the 
     database.
 """
+
+class UserOrganization(db.Model):
+    ID = db.Column(db.Integer, primary_key=True)
+    user_ID = db.Column(db.Integer, db.ForeignKey('user.ID'), nullable=False)
+    organization_ID = db.Column(db.Integer, db.ForeignKey('organization.ID'), nullable=False )
+
+    def __init__(self, user_ID, organization_ID):
+        self.user_ID = user_ID
+        self.organization_ID = organization_ID
+
 class Organization(db.Model):
     ID = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), unique=True)
     email = db.Column(db.String(120), unique=True)
     defaultTimeZone = db.Column(db.String(3), default='PST')
+    users = relationship('User', secondary='user_organization',
+        backref=backref('orgs', lazy='dynamic'))
 
     def __init__(self, name, email,defaultTimeZone='PST'):
         self.name = name
@@ -21,7 +33,6 @@ class Organization(db.Model):
 
     def __repr__(self):
         return '<Org: %r>' % self.name
-        
 
 class User(db.Model):
     ID = db.Column(db.Integer, primary_key=True)
@@ -31,16 +42,15 @@ class User(db.Model):
     password = db.Column(db.String(20))
     role = db.Column(db.String(20), default='counter')
     inactive = db.Column(db.Integer, default=0)
-    organization_ID = db.Column(db.Integer, db.ForeignKey('organization.ID'), nullable=False)
     
-    def __init__(self, name, email, organization_ID):
+    def __init__(self, name, email):
         self.name = name
         self.email = email
-        self.organization_ID = organization_ID
 
     def __repr__(self):
         return '<User %r>' % self.name
-        
+ 
+      
 class Location(db.Model):
     ID = db.Column(db.Integer, primary_key=True)
     locationName = db.Column(db.Text, nullable=False)
