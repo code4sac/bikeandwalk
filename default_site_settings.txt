@@ -6,6 +6,7 @@
 
 # The basics...
 #DEBUG = True ## default is False
+#REQUIRE_SSL = False
 
 #CGI_ROOT_FIX_APPLY = False #Some webservers mess up the root url
 #CGI_ROOT_FIX_PATH = "/" #this is usually correct path

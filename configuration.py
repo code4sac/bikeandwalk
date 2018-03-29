@@ -5,6 +5,7 @@ class Config(object):
     DEBUG = False
     TESTING = False
     SECRET_KEY = "somereallylongstringtouseasakey"
+    REQUIRE_SSL = False
     # work around for some web servers setting wrong path
     CGI_ROOT_FIX_APPLY = False
     CGI_ROOT_FIX_PATH = "/"

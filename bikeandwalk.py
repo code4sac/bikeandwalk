@@ -20,7 +20,6 @@ import logging
 import configuration
 import requests
 import sys
-from flask_sslify import SSLify
 
 # create our little application :)
 app = Flask(__name__, instance_relative_config=True)
@@ -45,9 +44,6 @@ db = SQLAlchemy(app)
 # Create a mailer obj
 from flask_mail import Mail
 mail = Mail(app)
-
-#force all connections to SSL (except if DEBUG == True)
-sslify = SSLify(app, permanent=True)
 
 
 ## views modules need db from above
@@ -95,6 +91,10 @@ def before_request():
         #No login required
         pass
     else:
+        # Require a secure connection?
+        if app.config['REQUIRE_SSL'] and not app.config['DEBUG'] and not request.is_secure :
+            return redirect(request.url.replace("http://", "https://"))
+            
         # login required
         if g.user is None and rootURL !="":
             # no email in session, can only see the home page
