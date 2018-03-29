@@ -30,7 +30,7 @@ BEGIN;
 
 CREATE TABLE user_temp (
         "ID" INTEGER PRIMARY KEY AUTOINCREMENT,
-        name VARCHAR(80) UNIQUE NOT NULL,
+        name VARCHAR(80) NOT NULL,
         email VARCHAR(120) UNIQUE NOT NULL,
         "userName" VARCHAR(20) UNIQUE,
         password VARCHAR(20),
