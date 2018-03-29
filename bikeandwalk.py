@@ -20,6 +20,7 @@ import logging
 import configuration
 import requests
 import sys
+from flask_sslify import SSLify
 
 # create our little application :)
 app = Flask(__name__, instance_relative_config=True)
@@ -44,6 +45,10 @@ db = SQLAlchemy(app)
 # Create a mailer obj
 from flask_mail import Mail
 mail = Mail(app)
+
+#force all connections to SSL (except if DEBUG == True)
+sslify = SSLify(app, permanent=True)
+
 
 ## views modules need db from above
 #import models #### don't import models here, do it in views
