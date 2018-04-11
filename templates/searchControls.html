@@ -1,5 +1,5 @@
 <div id="searchControls">
-	<form action="" name="searchControlsForm" method="post" accept-charset="utf-8">
+	<form action="{{ g.mapURL | default("",True) }}" name="searchControlsForm" method="post" accept-charset="utf-8">
 		<h4>Search:</h4>
 		<table id="searchControlsTable" class="searchForm">
 			<tr>

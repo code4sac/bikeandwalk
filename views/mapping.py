@@ -9,6 +9,7 @@ from collections import namedtuple
 import json
 from datetime import datetime
 from views.trip import getAssignmentTripTotal, queryTripData
+from views.utils import cleanRecordID
 
 mod = Blueprint('map', __name__)
 
@@ -74,10 +75,21 @@ def display():
         
 @mod.route('/report/locationMap', methods=['POST', 'GET'])
 @mod.route('/report/locationMap/', methods=['POST', 'GET'])
-def location():
+@mod.route('/report/locationMap/<orgID>/', methods=['POST', 'GET'])
+def location(orgID="0"):
     setExits()
     g.title = 'Count Locations'
+    g.mapURL = url_for('.location')
     
+    searchOrgs = []
+    searchEvents = []
+    
+    # User specified a particular organization to list
+    orgID = cleanRecordID(orgID)
+    if orgID > 0:
+        g.orgID = orgID
+        searchOrgs.append(str(orgID))
+        
     if db :
         queryData = {}
         queryData['searchType'] = 'locations'
@@ -87,8 +99,6 @@ def location():
         #Get all orgs
         searchForm.orgsToDict(queryData)
         
-        searchOrgs = []
-        searchEvents = []
         if not request.form and g.orgID:
             queryData['searchOrgs'] = [str(g.orgID)]
         else:
