@@ -9,5 +9,5 @@ Werkzeug==0.11.2
 blinker==1.4
 itsdangerous==0.24
 ordereddict==1.1
-requests==2.8.1
+requests==2.20.0
 wsgiref==0.1.2
